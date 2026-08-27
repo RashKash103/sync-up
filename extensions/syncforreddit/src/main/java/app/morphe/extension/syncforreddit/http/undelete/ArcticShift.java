@@ -14,15 +14,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import app.morphe.extension.shared.Logger;
-import app.morphe.extension.shared.requests.Requester;
+import app.morphe.extension.syncforreddit.http.ArchiveRequests;
 
 /**
  * Reads archived Reddit content from Project Arctic Shift.
@@ -51,16 +49,11 @@ public class ArcticShift {
     private static JSONObject get(String url) throws IOException, JSONException {
         Logger.printDebug(() -> "Arctic Shift: " + url);
 
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Accept", "application/json");
-        connection.setUseCaches(false);
-
-        if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            connection.disconnect();
+        String body = ArchiveRequests.get(url, "application/json");
+        if (body == null || body.isEmpty()) {
             return null;
         }
-        return Requester.parseJSONObjectAndDisconnect(connection);
+        return new JSONObject(body);
     }
 
     /**

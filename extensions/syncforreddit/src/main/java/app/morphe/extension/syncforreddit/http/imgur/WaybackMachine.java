@@ -13,8 +13,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import app.morphe.extension.shared.Logger;
-import app.morphe.extension.shared.requests.Requester;
+import app.morphe.extension.syncforreddit.http.ArchiveRequests;
 
 /**
  * Looks up archived copies of URLs the origin no longer serves.
@@ -78,18 +76,13 @@ public class WaybackMachine {
     private static List<String> lookUp(String contentUrl, int limit) throws IOException, JSONException {
         Logger.printDebug(() -> "Wayback Machine: " + contentUrl);
 
-        HttpURLConnection connection = (HttpURLConnection) new URL(TIMEMAP_URL + contentUrl).openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Accept", "application/json");
-        connection.setUseCaches(false);
-
         List<String> snapshots = new ArrayList<>();
-        if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            connection.disconnect();
+        String body = ArchiveRequests.get(TIMEMAP_URL + contentUrl, "application/json");
+        if (body == null || body.isEmpty()) {
             return snapshots;
         }
 
-        JSONArray rows = Requester.parseJSONArrayAndDisconnect(connection);
+        JSONArray rows = new JSONArray(body);
 
         // Row 0 is the column header. Later rows are snapshots, oldest first, and many of them
         // are the redirects Imgur served on its way to removing something, so the status code

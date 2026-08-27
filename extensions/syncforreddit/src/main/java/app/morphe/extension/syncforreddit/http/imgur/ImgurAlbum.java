@@ -5,8 +5,6 @@ import androidx.annotation.Nullable;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -16,7 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import app.morphe.extension.shared.Logger;
-import app.morphe.extension.shared.requests.Requester;
+import app.morphe.extension.syncforreddit.http.ArchiveRequests;
 
 /**
  * Recovers the contents of an Imgur album from an archived copy of its page.
@@ -30,7 +28,7 @@ final class ImgurAlbum {
     private static final String ALBUM_URL = "https://imgur.com/a/";
 
     /** How many archived copies to try before giving up on an album. */
-    private static final int SNAPSHOTS_TO_TRY = 3;
+    private static final int SNAPSHOTS_TO_TRY = 5;
 
     private static final int CACHE_SIZE = 32;
 
@@ -77,16 +75,8 @@ final class ImgurAlbum {
     }
 
     private static String fetch(String url) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Accept", "text/html");
-        connection.setUseCaches(false);
-
-        if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            connection.disconnect();
-            return "";
-        }
-        return Requester.parseStringAndDisconnect(connection);
+        String body = ArchiveRequests.get(url, "text/html");
+        return body == null ? "" : body;
     }
 
     private static List<String> parse(String html) {
