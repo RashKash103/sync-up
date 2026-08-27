@@ -1,3 +1,9 @@
+## [1.2.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.12...v1.2.0-dev.13) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Make the archive traces visible in a log ([e5b9fe9](https://github.com/RashKash103/sync-up/commit/e5b9fe992d30d5875f12cb439206b9b9dffe5e0e))
+
 ## [1.2.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.11...v1.2.0-dev.12) (2026-08-27)
 
 ### ✨ New Features
