@@ -162,6 +162,12 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   successfully and fails verification at runtime, which looks like an unrelated bug.
 - **Check the register count** before using `v0` in injected code. `get_registers_size()` minus
   the parameters is what is free.
+- **A parameter register is not still the parameter later in the method.** Sync's compiler
+  reuses them as scratch locals: in `PostMoreBottomSheetFragment.o2`, `p1` holds the view that
+  was passed in for exactly two instructions before it is overwritten. Injecting at the end and
+  reading `p1` silently handed the extension the wrong object, and because it was still a
+  `View` subclass nothing complained. Disassemble the *patched* APK and read the registers at
+  the injection site rather than trusting `p1` to mean what it says.
 - **Do not add a `new-instance`** to a method another patch fingerprints by counting them. The
   Redgifs fingerprint counts `NEW_INSTANCE == 1` in the method it hooks.
 
