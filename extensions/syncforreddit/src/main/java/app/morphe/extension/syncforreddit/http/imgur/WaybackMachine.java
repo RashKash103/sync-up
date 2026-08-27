@@ -15,7 +15,9 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -57,13 +59,23 @@ public class WaybackMachine {
             return cached.isEmpty() ? null : cached;
         }
 
-        String snapshot = lookUp(contentUrl);
+        List<String> snapshots = lookUp(contentUrl, 1);
+        String snapshot = snapshots.isEmpty() ? null : snapshots.get(0);
         cache.put(contentUrl, snapshot == null ? "" : snapshot);
         return snapshot;
     }
 
-    @Nullable
-    private static String lookUp(String contentUrl) throws IOException, JSONException {
+    /**
+     * Several snapshots, oldest first, for callers that have to read the page rather than just
+     * serve it. An album page archived recently is a script shell with nothing in it, whereas
+     * older captures still carry the list of images, so it is worth trying more than one.
+     */
+    public static List<String> findSnapshots(String contentUrl, int limit)
+            throws IOException, JSONException {
+        return lookUp(contentUrl, limit);
+    }
+
+    private static List<String> lookUp(String contentUrl, int limit) throws IOException, JSONException {
         Logger.printDebug(() -> "Wayback Machine: " + contentUrl);
 
         HttpURLConnection connection = (HttpURLConnection) new URL(TIMEMAP_URL + contentUrl).openConnection();
@@ -71,9 +83,10 @@ public class WaybackMachine {
         connection.setRequestProperty("Accept", "application/json");
         connection.setUseCaches(false);
 
+        List<String> snapshots = new ArrayList<>();
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             connection.disconnect();
-            return null;
+            return snapshots;
         }
 
         JSONArray rows = Requester.parseJSONArrayAndDisconnect(connection);
@@ -81,20 +94,17 @@ public class WaybackMachine {
         // Row 0 is the column header. Later rows are snapshots, oldest first, and many of them
         // are the redirects Imgur served on its way to removing something, so the status code
         // has to be checked rather than simply taking the first.
-        String timestamp = null;
-        for (int i = 1; i < rows.length(); i++) {
+        for (int i = 1; i < rows.length() && snapshots.size() < limit; i++) {
             JSONArray row = rows.optJSONArray(i);
             if (row == null || row.length() < 5) continue;
 
             if ("200".equals(row.optString(4, ""))) {
-                timestamp = row.optString(1, null);
-                break;
+                String timestamp = row.optString(1, null);
+                if (timestamp != null) {
+                    snapshots.add(String.format(CONTENT_URL, timestamp, contentUrl));
+                }
             }
         }
-
-        if (timestamp == null) {
-            return null;
-        }
-        return String.format(CONTENT_URL, timestamp, contentUrl);
+        return snapshots;
     }
 }

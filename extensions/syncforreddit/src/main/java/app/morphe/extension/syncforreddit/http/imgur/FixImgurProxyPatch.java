@@ -2,6 +2,7 @@ package app.morphe.extension.syncforreddit.http.imgur;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,6 +33,7 @@ import okhttp3.ResponseBody;
 public class FixImgurProxyPatch extends PatchedditInterceptor {
     private static final String PROXY_HOST = "images.syncforreddit.com";
     private static final String IMAGE_PATH = "image";
+    private static final String ALBUM_PATH = "a";
 
     @Override
     public boolean isPatchIncluded() {
@@ -49,39 +51,80 @@ public class FixImgurProxyPatch extends PatchedditInterceptor {
             return chain.proceed(request);
         }
 
-        // The proxy takes /image/<signature>/<id>. Albums, which it served under /a/, need the
-        // list of images the album held and cannot be answered from the id alone.
+        // The proxy took /image/<signature>/<id> for one image and /a/<signature>/<id> for an
+        // album.
         List<String> segments = url.pathSegments();
-        if (segments.size() < 3 || !IMAGE_PATH.equals(segments.get(0))) {
+        if (segments.size() < 3) {
             Logger.printDebug(() -> "No local answer for the Imgur proxy path " + url.encodedPath());
             return gone(request);
         }
 
+        String kind = segments.get(0);
         String id = segments.get(segments.size() - 1);
         if (id.isEmpty()) {
             return gone(request);
         }
 
         try {
-            JSONObject data = new JSONObject();
-            data.put("link", "https://i.imgur.com/" + id + ".jpg");
+            if (IMAGE_PATH.equals(kind)) {
+                return respond(request, singleImage(id));
+            }
+            if (ALBUM_PATH.equals(kind)) {
+                List<String> images = ImgurAlbum.imagesOf(id);
+                if (images.isEmpty()) {
+                    Logger.printDebug(() -> "Could not recover the contents of album " + id);
+                    return gone(request);
+                }
+                return respond(request, album(images));
+            }
 
-            JSONObject body = new JSONObject();
-            body.put("data", data);
-
-            Logger.printDebug(() -> "Answering the Imgur proxy locally for " + id);
-            return new Response.Builder()
-                    .message("OK")
-                    .code(HttpURLConnection.HTTP_OK)
-                    .protocol(Protocol.HTTP_1_1)
-                    .request(request)
-                    .header("Content-Type", "application/json")
-                    .body(ResponseBody.create(body.toString(), MediaType.get("application/json")))
-                    .build();
+            Logger.printDebug(() -> "No local answer for the Imgur proxy path " + url.encodedPath());
+            return gone(request);
         } catch (JSONException ex) {
             Logger.printException(() -> "Could not build the Imgur response for " + id, ex);
             return gone(request);
         }
+    }
+
+    /**
+     * Sync reads only the link, and rebuilds Imgur addresses from the id to choose a size, so
+     * the ordinary address is what belongs here. If the image is gone, the undelete patch
+     * recovers it when Sync goes on to load it.
+     */
+    private static JSONObject singleImage(String id) throws JSONException {
+        JSONObject image = new JSONObject();
+        image.put("link", "https://i.imgur.com/" + id + ".jpg");
+
+        JSONObject body = new JSONObject();
+        body.put("data", image);
+        return body;
+    }
+
+    private static JSONObject album(List<String> images) throws JSONException {
+        JSONArray entries = new JSONArray();
+        for (String image : images) {
+            JSONObject entry = new JSONObject();
+            entry.put("link", image);
+            entries.put(entry);
+        }
+
+        JSONObject data = new JSONObject();
+        data.put("images", entries);
+
+        JSONObject body = new JSONObject();
+        body.put("data", data);
+        return body;
+    }
+
+    private static Response respond(Request request, JSONObject body) {
+        return new Response.Builder()
+                .message("OK")
+                .code(HttpURLConnection.HTTP_OK)
+                .protocol(Protocol.HTTP_1_1)
+                .request(request)
+                .header("Content-Type", "application/json")
+                .body(ResponseBody.create(body.toString(), MediaType.get("application/json")))
+                .build();
     }
 
     private static Response gone(Request request) {
