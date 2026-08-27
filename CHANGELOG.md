@@ -1,3 +1,9 @@
+## [1.1.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.0.2-dev.1...v1.1.0-dev.1) (2026-08-27)
+
+### ✨ New Features
+
+* Add patch redirecting Gfycat links to RedGifs ([8435fec](https://github.com/RashKash103/sync-up/commit/8435fec98c525b7fb9578bfe6c4c75335f899a93))
+
 ## [1.0.2-dev.1](https://github.com/RashKash103/sync-up/compare/v1.0.1...v1.0.2-dev.1) (2026-08-27)
 
 ### 🐛 Bug Fixes
