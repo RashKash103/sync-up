@@ -1,3 +1,9 @@
+## [1.2.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.5...v1.2.0-dev.6) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Hook the client Sync actually gives Glide ([a5f4a6f](https://github.com/RashKash103/sync-up/commit/a5f4a6f80530148af35a16ab78eec52273fdae91))
+
 ## [1.2.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.4...v1.2.0-dev.5) (2026-08-27)
 
 ### ✨ New Features
