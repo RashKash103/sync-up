@@ -25,6 +25,9 @@ internal const val SELECTION_OPTION_CLASS =
  * Builds the rows of the link options sheet. Unlike the post menu this one is assembled from
  * code, so another option can simply be registered alongside Sync's own.
  */
+/** Registers one row with the sheet, and is what an added option goes through as well. */
+internal const val REGISTER_OPTION_METHOD_NAME = "t4"
+
 internal val linkOptionsBuildFingerprint = Fingerprint(
     strings = listOf("Open in browser", "Copy link address", "Share link"),
     custom = { _, classDef -> classDef.sourceFile == "UrlSelectionDialogBottomSheet.java" }

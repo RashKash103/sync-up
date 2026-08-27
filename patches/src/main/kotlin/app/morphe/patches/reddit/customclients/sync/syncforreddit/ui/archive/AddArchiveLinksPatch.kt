@@ -77,8 +77,19 @@ val addArchiveLinksPatch = bytecodePatch(
         // The rows are built before the sheet is told which link it is for, so the option
         // only records which archive it belongs to and the link is read when it is tapped.
         linkOptionsBuildFingerprint.method.apply {
+            // Registered right after Sync's own first row rather than at the end of the method.
+            // The sheet puts a link preview above its rows, so options appended last sit below
+            // the fold of a sheet that opens collapsed, and are never seen.
+            var index = indexOfFirstInstructionOrThrow {
+                getReference<MethodReference>()?.name == REGISTER_OPTION_METHOD_NAME
+            } + 1
+            while (getInstruction(index).opcode == Opcode.MOVE_RESULT_OBJECT ||
+                    getInstruction(index).opcode == Opcode.IPUT_OBJECT) {
+                index++
+            }
+
             addInstructions(
-                instructions.lastIndex,
+                index,
                 """
                 invoke-static       { p0 }, $EXTENSION_CLASS_DESCRIPTOR->$ADD_OPTIONS_METHOD
                 """
