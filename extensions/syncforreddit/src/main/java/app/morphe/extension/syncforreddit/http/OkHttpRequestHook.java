@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import app.morphe.extension.shared.requests.BaseOkHttpRequestHook;
+import app.morphe.extension.syncforreddit.http.imgur.FixImgurProxyPatch;
 import app.morphe.extension.syncforreddit.http.imgur.UndeleteImgurPatch;
 import app.morphe.extension.syncforreddit.http.undelete.UndeleteRedditPatch;
 import okhttp3.Interceptor;
@@ -70,6 +71,7 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
         List<Interceptor> interceptors = new ArrayList<>();
         interceptors.add(new UndeleteRedditPatch());
         interceptors.add(new UndeleteImgurPatch());
+        interceptors.add(new FixImgurProxyPatch());
         return interceptors;
     }
 
