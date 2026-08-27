@@ -1,3 +1,13 @@
+## [1.2.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.3...v1.2.0-dev.4) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Detect Imgur's removed placeholder, not just a 404 ([4ac45fd](https://github.com/RashKash103/sync-up/commit/4ac45fd7bddaad4b5226be390082f3f355e7293e))
+
+### ✨ New Features
+
+* Add patch fixing Imgur links through Sync's dead proxy ([8c6c52f](https://github.com/RashKash103/sync-up/commit/8c6c52f6eaa36af193c6387eea38c686da4d9626))
+
 ## [1.2.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.2...v1.2.0-dev.3) (2026-08-27)
 
 ### 🐛 Bug Fixes
