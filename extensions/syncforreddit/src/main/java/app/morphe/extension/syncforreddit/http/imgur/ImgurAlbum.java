@@ -66,7 +66,7 @@ final class ImgurAlbum {
 
             images = parse(html);
             if (!images.isEmpty()) {
-                Logger.printDebug(() -> "Recovered " + albumId + " from " + snapshot);
+                Logger.printInfo(() -> "Recovered album " + albumId + " from " + snapshot);
                 break;
             }
         }

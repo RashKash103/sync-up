@@ -68,6 +68,7 @@ public class AddArchiveLinksPatch {
             int icon = iconFor(Utils.getContext());
             addLinkOption(sheet, icon, "Open in Wayback Machine", WAYBACK_MACHINE);
             addLinkOption(sheet, icon, "Open in archive.today", ARCHIVE_TODAY);
+            Logger.printInfo(() -> "Added the archive options to the link sheet");
         } catch (Exception ex) {
             Logger.printException(() -> "Could not add the archive link options", ex);
         }
@@ -148,6 +149,7 @@ public class AddArchiveLinksPatch {
                     index + 1);
             parent.addView(row(context, icon, "Open in archive.today", ARCHIVE_TODAY + url),
                     index + 2);
+            Logger.printInfo(() -> "Added the archive rows to the post menu");
         } catch (Exception ex) {
             Logger.printException(() -> "Could not add the archive rows", ex);
         }

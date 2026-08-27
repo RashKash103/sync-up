@@ -74,7 +74,7 @@ public class WaybackMachine {
     }
 
     private static List<String> lookUp(String contentUrl, int limit) throws IOException, JSONException {
-        Logger.printDebug(() -> "Wayback Machine: " + contentUrl);
+        Logger.printInfo(() -> "Wayback Machine: " + contentUrl);
 
         List<String> snapshots = new ArrayList<>();
         String body = ArchiveRequests.get(TIMEMAP_URL + contentUrl, "application/json");

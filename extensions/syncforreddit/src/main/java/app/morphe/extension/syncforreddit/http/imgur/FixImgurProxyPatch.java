@@ -72,7 +72,7 @@ public class FixImgurProxyPatch extends PatchedditInterceptor {
             if (ALBUM_PATH.equals(kind)) {
                 List<JSONObject> images = ImgurAlbum.imagesOf(id);
                 if (images.isEmpty()) {
-                    Logger.printDebug(() -> "Could not recover the contents of album " + id);
+                    Logger.printInfo(() -> "Could not recover the contents of album " + id);
                     return gone(request);
                 }
                 return respond(request, album(images));

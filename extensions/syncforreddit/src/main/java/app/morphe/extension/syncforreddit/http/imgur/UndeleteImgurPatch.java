@@ -69,7 +69,7 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
         if (cover.isEmpty()) {
             return null;
         }
-        Logger.printDebug(() -> "Showing the first image of album " + contentUrl);
+        Logger.printInfo(() -> "Showing the first image of album " + contentUrl);
         return cover;
     }
 
@@ -139,7 +139,7 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
             if (snapshot == null) {
                 String fullSize = withoutSizeSuffix(contentUrl);
                 if (fullSize != null) {
-                    Logger.printDebug(() -> "No archived copy of the sized " + contentUrl
+                    Logger.printInfo(() -> "No archived copy of the sized " + contentUrl
                             + ", trying the full image");
                     snapshot = WaybackMachine.findSnapshot(fullSize);
                 }
@@ -164,7 +164,7 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
         }
 
         if (snapshot == null) {
-            Logger.printDebug(() -> "No archived copy of " + contentUrl);
+            Logger.printInfo(() -> "No archived copy of " + contentUrl);
             return response;
         }
 
@@ -172,7 +172,7 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
         // on any of the paths above.
         response.close();
 
-        Logger.printDebug(() -> "Serving " + contentUrl + " from the Wayback Machine");
+        Logger.printInfo(() -> "Serving " + contentUrl + " from the Wayback Machine");
         return chain.proceed(request.newBuilder().url(snapshot).build());
     }
 }
