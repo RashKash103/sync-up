@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.1.0-dev.3",
   "patches": [
     {
       "name": "Disable Sync for Lemmy bottom sheet",
@@ -101,6 +101,22 @@
     {
       "name": "Modify login WebView",
       "description": "Modify the WebView used for logging into reddit to prevent login issues",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Redirect Gfycat links to RedGifs",
+      "description": "Answers Gfycat requests from RedGifs, which hosts much of the content that moved there before Gfycat shut down. Gfycat's domains no longer resolve, so without this every Gfycat link fails to load.",
       "use": true,
       "dependencies": [
         "BytecodePatch"

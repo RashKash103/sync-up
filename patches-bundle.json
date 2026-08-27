@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-27T03:29:14",
-  "description": "## [1.0.1](https://github.com/RashKash103/sync-up/compare/v1.0.0...v1.0.1) (2026-08-27)",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.0.1/patches-1.0.1.mpp",
+  "created_at": "2026-08-27T16:38:42",
+  "description": "## [1.1.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.1.0-dev.2...v1.1.0-dev.3) (2026-08-27)\n\n### 🐛 Bug Fixes\n\n* Stop showing the dead Gfycat link dialog ([ab56c79](https://github.com/RashKash103/sync-up/commit/ab56c796b1a4f051fd8a628858509d0c3360cf0a))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.1.0-dev.3/patches-1.1.0-dev.3.mpp",
   "signature_download_url": "",
-  "version": "1.0.1"
+  "version": "1.1.0-dev.3"
 }
