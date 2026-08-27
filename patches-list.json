@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0-dev.15",
+  "version": "1.2.0-dev.16",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -170,6 +170,23 @@
       "description": "Modify the WebView used for logging into reddit to prevent login issues",
       "use": true,
       "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Recover post thumbnails from the archive",
+      "description": "Restores the thumbnail beside a post whose Reddit preview has been purged, which is why an old Imgur album shows a blank tile even though opening it works. The linked image is fetched from the Wayback Machine only once its preview has actually failed.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
         "BytecodePatch"
       ],
       "compatiblePackages": {

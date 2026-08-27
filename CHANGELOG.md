@@ -1,3 +1,9 @@
+## [1.2.0-dev.16](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.15...v1.2.0-dev.16) (2026-08-27)
+
+### ✨ New Features
+
+* Recover post thumbnails from the archive ([35b535e](https://github.com/RashKash103/sync-up/commit/35b535eda52360260b7e38a679044c339061570b))
+
 ## [1.2.0-dev.15](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.14...v1.2.0-dev.15) (2026-08-27)
 
 ### 🐛 Bug Fixes

@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.2.0-dev.15](https://github.com/RashKash103/sync-up/releases/tag/v1.2.0-dev.15)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;15 patches total
+> **[v1.2.0-dev.16](https://github.com/RashKash103/sync-up/releases/tag/v1.2.0-dev.16)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;16 patches total
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;14 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;15 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -58,6 +58,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
+| [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Restores the thumbnail beside a post whose Reddit preview has been purged, which is why an old Imgur album shows a blank tile even though opening it works. The linked image is fetched from the Wayback Machine only once its preview has actually failed. |  |
 | [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Answers Gfycat requests from RedGifs, which hosts much of the content that moved there before Gfycat shut down. Gfycat's domains no longer resolve, so without this every Gfycat link fails to load. |  |
 | [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent |
 | [Use /user/ endpoint](#use-user-endpoint) | Replaces the deprecated endpoint for viewing user profiles /u with /user, that used to fix a bug. |  |
@@ -65,7 +66,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;13 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;14 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -80,6 +81,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
+| [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Restores the thumbnail beside a post whose Reddit preview has been purged, which is why an old Imgur album shows a blank tile even though opening it works. The linked image is fetched from the Wayback Machine only once its preview has actually failed. |  |
 | [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Answers Gfycat requests from RedGifs, which hosts much of the content that moved there before Gfycat shut down. Gfycat's domains no longer resolve, so without this every Gfycat link fails to load. |  |
 | [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent |
 | [Use /user/ endpoint](#use-user-endpoint) | Replaces the deprecated endpoint for viewing user profiles /u with /user, that used to fix a bug. |  |
@@ -87,7 +89,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;13 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;14 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -102,6 +104,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
+| [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Restores the thumbnail beside a post whose Reddit preview has been purged, which is why an old Imgur album shows a blank tile even though opening it works. The linked image is fetched from the Wayback Machine only once its preview has actually failed. |  |
 | [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Answers Gfycat requests from RedGifs, which hosts much of the content that moved there before Gfycat shut down. Gfycat's domains no longer resolve, so without this every Gfycat link fails to load. |  |
 | [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent |
 | [Use /user/ endpoint](#use-user-endpoint) | Replaces the deprecated endpoint for viewing user profiles /u with /user, that used to fix a bug. |  |
