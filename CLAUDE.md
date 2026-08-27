@@ -181,9 +181,16 @@ okhttp3 requests directly rather than using `HttpURLConnection`. It obtains its 
 what `interceptHttpRequests` hooks, anchored on `BasicNetwork` because Volley is not obfuscated,
 unlike the four near identical client builders in `OkHttpHelper`.
 
-**Glide does not share that client.** It builds a plain `OkHttpClient` of its own in
-`OkHttpUrlLoader$Factory`, so image traffic is invisible unless that is hooked too. Anything
-touching images needs it.
+**Images do not go through the Volley client.** Sync registers its own Glide loader in
+`YourAppGlideModule` and hands it `OkHttpHelper.a()`, a *different* client again. The Glide
+OkHttp integration is declared in the manifest and its `OkHttpUrlLoader$Factory` builds a
+client of its own, but Sync's registration supersedes it, so hooking that one alone does
+nothing. Anything touching images has to hook the client passed in `YourAppGlideModule`.
+That class keeps its name, since Glide's generated code refers to it.
+
+There are at least three distinct OkHttp clients in play: Volley's, Glide's, and the several
+`OkHttpHelper` builds for other purposes. Before assuming an interceptor will see a request,
+find out which client actually issues it.
 
 **Requests are Volley `Request` subclasses**, one per endpoint, named for what they do
 (`OAuthCommentsRequest`, `GrabRedgifRequest`, `ImgurGalleryRequest`). They parse with

@@ -7,7 +7,9 @@ import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 internal const val OKHTTP_EXTENSION_CLASS_DESCRIPTOR =
@@ -49,7 +51,29 @@ val interceptHttpRequests = bytecodePatch(
 
         // endregion
 
-        // region Glide, which loads images through a client of its own.
+        // region The client Sync hands to Glide, which every image loads through.
+
+        glideRegisterComponentsFingerprint.method.apply {
+            val index = indexOfFirstInstructionOrThrow {
+                opcode == Opcode.INVOKE_STATIC &&
+                        getReference<MethodReference>()?.returnType == "Lokhttp3/OkHttpClient;"
+            }
+            // The register the client was moved into, which is then handed to Glide.
+            val clientRegister = getInstruction<OneRegisterInstruction>(index + 1).registerA
+
+            addInstructions(
+                index + 2,
+                """
+                invoke-static       { v$clientRegister }, $OKHTTP_EXTENSION_CLASS_DESCRIPTOR->$INSTALL_CLIENT_METHOD
+                move-result-object  v$clientRegister
+                """
+            )
+        }
+
+        // endregion
+
+        // region The Glide integration's own client, unused while Sync supplies one, hooked so
+        // that anything falling back to it is covered too.
 
         glideClientFactoryFingerprint.method.apply {
             val index = indexOfFirstInstructionOrThrow {

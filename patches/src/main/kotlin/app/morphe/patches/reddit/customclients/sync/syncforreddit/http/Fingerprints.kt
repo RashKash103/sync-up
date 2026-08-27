@@ -1,7 +1,9 @@
 package app.morphe.patches.reddit.customclients.sync.syncforreddit.http
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 /**
  * Sync bundles a modified Volley whose BasicNetwork issues okhttp3 calls directly, so every
@@ -24,4 +26,19 @@ internal val glideClientFactoryFingerprint = Fingerprint(
     returnType = "Lokhttp3/Call${'$'}Factory;",
     parameters = listOf(),
     custom = { _, classDef -> classDef.sourceFile == "OkHttpUrlLoader.java" }
+)
+
+/**
+ * Sync hands Glide a client of its own here rather than letting the Glide OkHttp integration
+ * build one, so this is the client every image actually loads through. The class keeps its
+ * name because Glide's generated code refers to it, which makes it a dependable anchor.
+ */
+internal val glideRegisterComponentsFingerprint = Fingerprint(
+    definingClass = "Lcom/laurencedawson/reddit_sync/YourAppGlideModule;",
+    returnType = "V",
+    custom = { method, _ ->
+        method.implementation?.instructions?.any {
+            it.getReference<MethodReference>()?.returnType == "Lokhttp3/OkHttpClient;"
+        } == true
+    }
 )
