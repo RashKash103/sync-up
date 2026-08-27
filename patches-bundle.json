@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-27T19:23:21",
-  "description": "## [1.2.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.8...v1.2.0-dev.9) (2026-08-27)\n\n### 🐛 Bug Fixes\n\n* Give Imgur recovery a size fallback and enough time ([7525fd3](https://github.com/RashKash103/sync-up/commit/7525fd3a16adf2e53b40bf83f684994eebff6dd8))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.9/patches-1.2.0-dev.9.mpp",
+  "created_at": "2026-08-27T19:40:35",
+  "description": "## [1.2.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.9...v1.2.0-dev.10) (2026-08-27)\n\n### 🐛 Bug Fixes\n\n* Supply the album fields Sync requires, and read the link when tapped ([586ab51](https://github.com/RashKash103/sync-up/commit/586ab5152d52856f9ce638b8008a705fb71a89b8))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.10/patches-1.2.0-dev.10.mpp",
   "signature_download_url": "",
-  "version": "1.2.0-dev.9"
+  "version": "1.2.0-dev.10"
 }

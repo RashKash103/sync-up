@@ -1,3 +1,9 @@
+## [1.2.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.9...v1.2.0-dev.10) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Supply the album fields Sync requires, and read the link when tapped ([586ab51](https://github.com/RashKash103/sync-up/commit/586ab5152d52856f9ce638b8008a705fb71a89b8))
+
 ## [1.2.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.8...v1.2.0-dev.9) (2026-08-27)
 
 ### 🐛 Bug Fixes
