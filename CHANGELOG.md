@@ -1,3 +1,9 @@
+## [1.0.2-dev.1](https://github.com/RashKash103/sync-up/compare/v1.0.1...v1.0.2-dev.1) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Emulate the removed RedGifs /info endpoint ([a875281](https://github.com/RashKash103/sync-up/commit/a8752812c16470c99cf7391c8fe139115aee5d28))
+
 ## [1.0.1](https://github.com/RashKash103/sync-up/compare/v1.0.0...v1.0.1) (2026-08-27)
 
 ## [1.0.1-dev.1](https://github.com/RashKash103/sync-up/compare/v1.0.0...v1.0.1-dev.1) (2026-08-27)
