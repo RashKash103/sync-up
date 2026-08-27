@@ -34,6 +34,20 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
         return false;
     }
 
+    /**
+     * Imgur mostly does not answer a removed image with a 404. It redirects to a placeholder
+     * image carrying the words "The image you are requesting does not exist or is no longer
+     * available", which arrives as a perfectly ordinary 200 and gets displayed as the picture.
+     */
+    private static boolean isMissing(Response response) {
+        if (response.code() == HttpURLConnection.HTTP_NOT_FOUND) {
+            return true;
+        }
+        // The request the response came from, which after a redirect is the placeholder.
+        String path = response.request().url().encodedPath();
+        return path.startsWith("/removed.");
+    }
+
     @NonNull
     @Override
     protected Response doIntercept(@NonNull Chain chain) throws IOException {
@@ -45,7 +59,7 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
         }
 
         Response response = chain.proceed(request);
-        if (response.code() != HttpURLConnection.HTTP_NOT_FOUND) {
+        if (!isMissing(response)) {
             return response;
         }
 
