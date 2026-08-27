@@ -1,3 +1,12 @@
+## [1.2.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.1.0...v1.2.0-dev.1) (2026-08-27)
+
+### ✨ New Features
+
+* Add HTTP request interception for Sync ([36c681a](https://github.com/RashKash103/sync-up/commit/36c681ab530c4df775a12dea792e4c15bf91e8b2))
+* Add patch adding archive links to the post menu ([82e7ad3](https://github.com/RashKash103/sync-up/commit/82e7ad3c2d3454b8c2ee186b7701f556cc04a8ff))
+* Add patch restoring removed Imgur images ([2ed9895](https://github.com/RashKash103/sync-up/commit/2ed98953b52d12aeb185be2281005c9995a4d37e))
+* Add patch restoring removed Reddit content ([27d5cb0](https://github.com/RashKash103/sync-up/commit/27d5cb044e4d53ed4c1543cfbc4e4aade2c3a822))
+
 ## [1.1.0](https://github.com/RashKash103/sync-up/compare/v1.0.1...v1.1.0) (2026-08-27)
 
 ### 🐛 Bug Fixes
