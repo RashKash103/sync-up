@@ -8,6 +8,7 @@
 package app.morphe.extension.syncforreddit.http.imgur;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.json.JSONException;
 
@@ -28,10 +29,39 @@ import okhttp3.Response;
  * interception patch hooks Glide's client as well.
  */
 public class UndeleteImgurPatch extends PatchedditInterceptor {
+    /** The letters Imgur appends to an id for its sized copies. */
+    private static final String SIZE_SUFFIXES = "sbtmlh";
+
     @Override
     public boolean isPatchIncluded() {
         // Overridden by patch.
         return false;
+    }
+
+    /**
+     * Imgur names a sized copy by appending one letter to the id, and ids themselves are five
+     * or seven characters, so a six or eight character one ending in a size letter is a sized
+     * copy rather than an image in its own right.
+     */
+    @Nullable
+    private static String withoutSizeSuffix(String contentUrl) {
+        int slash = contentUrl.lastIndexOf('/');
+        int dot = contentUrl.lastIndexOf('.');
+        if (slash < 0 || dot <= slash + 1) {
+            return null;
+        }
+
+        String id = contentUrl.substring(slash + 1, dot);
+        if (id.length() != 6 && id.length() != 8) {
+            return null;
+        }
+        if (SIZE_SUFFIXES.indexOf(id.charAt(id.length() - 1)) < 0) {
+            return null;
+        }
+
+        return contentUrl.substring(0, slash + 1)
+                + id.substring(0, id.length() - 1)
+                + contentUrl.substring(dot);
     }
 
     /**
@@ -67,6 +97,18 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
         String snapshot;
         try {
             snapshot = WaybackMachine.findSnapshot(contentUrl);
+
+            // Sync asks for a sized copy in places such as the feed, and the archive rarely
+            // holds those: it captured what pages linked to, which is the image itself. The
+            // full image stands in perfectly well, since it is only being scaled down.
+            if (snapshot == null) {
+                String fullSize = withoutSizeSuffix(contentUrl);
+                if (fullSize != null) {
+                    Logger.printDebug(() -> "No archived copy of the sized " + contentUrl
+                            + ", trying the full image");
+                    snapshot = WaybackMachine.findSnapshot(fullSize);
+                }
+            }
         } catch (JSONException ex) {
             Logger.printException(() -> "Could not read the Wayback Machine index", ex);
             return response;
