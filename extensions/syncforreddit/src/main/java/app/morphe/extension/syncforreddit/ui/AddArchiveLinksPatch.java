@@ -60,8 +60,11 @@ public class AddArchiveLinksPatch {
      * code rather than from a layout, so an option is registered rather than a view inserted.
      */
     public static void addLinkOptions(AbstractSelectionDialogBottomSheet sheet) {
+        // Logged on entry, so a capture distinguishes "never called" from "called and failed".
+        Logger.printInfo(() -> "Adding the archive options to the link sheet");
         try {
             if (sheet == null) {
+                Logger.printInfo(() -> "No sheet to add the archive options to");
                 return;
             }
 
@@ -69,7 +72,9 @@ public class AddArchiveLinksPatch {
             addLinkOption(sheet, icon, "Open in Wayback Machine", WAYBACK_MACHINE);
             addLinkOption(sheet, icon, "Open in archive.today", ARCHIVE_TODAY);
             Logger.printInfo(() -> "Added the archive options to the link sheet");
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
+            // Throwable rather than Exception: a missing class or a changed signature arrives
+            // as an Error, and catching only Exception let those disappear silently.
             Logger.printException(() -> "Could not add the archive link options", ex);
         }
     }
@@ -116,6 +121,7 @@ public class AddArchiveLinksPatch {
     }
 
     public static void addArchiveRows(View root, String url) {
+        Logger.printInfo(() -> "Adding the archive rows to the post menu");
         // A menu that loses two rows is a much better outcome than one that crashes the app.
         try {
             if (root == null || url == null || url.isEmpty()) {
@@ -150,7 +156,7 @@ public class AddArchiveLinksPatch {
             parent.addView(row(context, icon, "Open in archive.today", ARCHIVE_TODAY + url),
                     index + 2);
             Logger.printInfo(() -> "Added the archive rows to the post menu");
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Logger.printException(() -> "Could not add the archive rows", ex);
         }
     }
