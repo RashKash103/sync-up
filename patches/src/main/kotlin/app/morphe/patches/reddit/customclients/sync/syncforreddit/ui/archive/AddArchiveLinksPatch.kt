@@ -12,6 +12,7 @@ private const val EXTENSION_CLASS_DESCRIPTOR =
 private const val ADD_ROWS_METHOD =
     "addArchiveRows(Landroid/view/View;Ljava/lang/String;)V"
 
+// An abstract class rather than an interface, so its methods take invoke-virtual.
 private const val POST_MODEL = "Lxa/d;"
 private const val SHEET_CLASS =
     "Lcom/laurencedawson/reddit_sync/ui/fragment_dialogs/bottom/PostMoreBottomSheetFragment;"
@@ -34,8 +35,8 @@ val addArchiveLinksPatch = bytecodePatch(
             addInstructions(
                 instructions.lastIndex,
                 """
-                iget-object         v0, p0, $SHEET_CLASS->P0 $POST_MODEL
-                invoke-interface    { v0 }, $POST_MODEL->e1()Ljava/lang/String;
+                iget-object         v0, p0, $SHEET_CLASS->P0:$POST_MODEL
+                invoke-virtual      { v0 }, $POST_MODEL->e1()Ljava/lang/String;
                 move-result-object  v0
                 invoke-static       { p1, v0 }, $EXTENSION_CLASS_DESCRIPTOR->$ADD_ROWS_METHOD
                 """
