@@ -11,9 +11,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.List;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.requests.PatchedditInterceptor;
@@ -36,6 +38,39 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
     public boolean isPatchIncluded() {
         // Overridden by patch.
         return false;
+    }
+
+    /**
+     * @return An archived copy of the first image of the album this id belongs to, or null if
+     *         it is not an album or nothing could be recovered.
+     */
+    @Nullable
+    private static String albumCover(String contentUrl) throws IOException, JSONException {
+        int slash = contentUrl.lastIndexOf('/');
+        int dot = contentUrl.lastIndexOf('.');
+        if (slash < 0 || dot <= slash + 1) {
+            return null;
+        }
+
+        String id = contentUrl.substring(slash + 1, dot);
+        // Sync asks for a sized copy of the cover as well, and the suffix is not part of the
+        // album's id.
+        if ((id.length() == 6 || id.length() == 8)
+                && SIZE_SUFFIXES.indexOf(id.charAt(id.length() - 1)) >= 0) {
+            id = id.substring(0, id.length() - 1);
+        }
+
+        List<JSONObject> images = ImgurAlbum.imagesOf(id);
+        if (images.isEmpty()) {
+            return null;
+        }
+
+        String cover = images.get(0).optString("link", "");
+        if (cover.isEmpty()) {
+            return null;
+        }
+        Logger.printDebug(() -> "Showing the first image of album " + contentUrl);
+        return cover;
     }
 
     /**
@@ -107,6 +142,16 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
                     Logger.printDebug(() -> "No archived copy of the sized " + contentUrl
                             + ", trying the full image");
                     snapshot = WaybackMachine.findSnapshot(fullSize);
+                }
+            }
+
+            // An album has an id of its own, which is never an image, so asking the archive
+            // for it finds nothing. Sync uses it anyway when showing an album post, so fall
+            // back to the first image the album held.
+            if (snapshot == null) {
+                String cover = albumCover(contentUrl);
+                if (cover != null) {
+                    snapshot = WaybackMachine.findSnapshot(cover);
                 }
             }
         } catch (JSONException ex) {
