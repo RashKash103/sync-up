@@ -5,7 +5,12 @@
 > The only patches that have been tested are the ones I use myself; everything
 > else is unverified. Review the code before you run it, and expect rough edges.
 
+[![Add to Morphe](https://img.shields.io/github/v/release/RashKash103/sync-up?sort=semver&display_name=tag&label=Add%20to%20Morphe&labelColor=1f1f26&color=6750a4&style=for-the-badge)](https://morphe.software/add-source?github=RashKash103/sync-up)
+
 Morphe patches for [Sync for Reddit](https://play.google.com/store/apps/details?id=com.laurencedawson.reddit_sync).
+
+Click the badge above to add this patch source to Morphe Manager. It always shows the
+current release.
 
 ## ❓ About
 
