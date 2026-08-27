@@ -1,3 +1,9 @@
+## [1.2.0-dev.17](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.16...v1.2.0-dev.17) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Recover Imgur videos the way images already were ([cf9d739](https://github.com/RashKash103/sync-up/commit/cf9d739c06f96dd5663ce410f63895f4256be062))
+
 ## [1.2.0-dev.16](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.15...v1.2.0-dev.16) (2026-08-27)
 
 ### ✨ New Features

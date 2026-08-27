@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-27T22:32:21",
-  "description": "## [1.2.0-dev.16](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.15...v1.2.0-dev.16) (2026-08-27)\n\n### ✨ New Features\n\n* Recover post thumbnails from the archive ([35b535e](https://github.com/RashKash103/sync-up/commit/35b535eda52360260b7e38a679044c339061570b))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.16/patches-1.2.0-dev.16.mpp",
+  "created_at": "2026-08-27T23:20:44",
+  "description": "## [1.2.0-dev.17](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.16...v1.2.0-dev.17) (2026-08-27)\n\n### 🐛 Bug Fixes\n\n* Recover Imgur videos the way images already were ([cf9d739](https://github.com/RashKash103/sync-up/commit/cf9d739c06f96dd5663ce410f63895f4256be062))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.17/patches-1.2.0-dev.17.mpp",
   "signature_download_url": "",
-  "version": "1.2.0-dev.16"
+  "version": "1.2.0-dev.17"
 }
