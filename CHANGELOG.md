@@ -1,3 +1,9 @@
+## [1.2.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.8...v1.2.0-dev.9) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Give Imgur recovery a size fallback and enough time ([7525fd3](https://github.com/RashKash103/sync-up/commit/7525fd3a16adf2e53b40bf83f684994eebff6dd8))
+
 ## [1.2.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.7...v1.2.0-dev.8) (2026-08-27)
 
 ### ✨ New Features
