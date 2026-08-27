@@ -35,7 +35,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.2.0-dev.4](https://github.com/RashKash103/sync-up/releases/tag/v1.2.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;15 patches total
+> **[v1.2.0-dev.5](https://github.com/RashKash103/sync-up/releases/tag/v1.2.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;15 patches total
 <details open>
 <summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;14 patches</summary>
 <br>
@@ -53,7 +53,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
 | [Disable ads](#disable-ads) |  |  |
 | [Fix /s/ links](#fix-s-links) |  |  |
-| [Fix Imgur links](#fix-imgur-links) | Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests with the ordinary Imgur address instead. Albums cannot be recovered this way, only single images. |  |
+| [Fix Imgur links](#fix-imgur-links) | Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests locally instead. Album contents are read from an archived copy of the album page, which only works for albums the archive captured while Imgur still rendered them. |  |
 | [Fix Redgifs API](#fix-redgifs-api) |  |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
@@ -75,7 +75,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift. Restored text is marked to show why it was taken down. Only text can be recovered, and only where the archive has it. |  |
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
 | [Fix /s/ links](#fix-s-links) |  |  |
-| [Fix Imgur links](#fix-imgur-links) | Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests with the ordinary Imgur address instead. Albums cannot be recovered this way, only single images. |  |
+| [Fix Imgur links](#fix-imgur-links) | Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests locally instead. Album contents are read from an archived copy of the album page, which only works for albums the archive captured while Imgur still rendered them. |  |
 | [Fix Redgifs API](#fix-redgifs-api) |  |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
@@ -97,7 +97,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift. Restored text is marked to show why it was taken down. Only text can be recovered, and only where the archive has it. |  |
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
 | [Fix /s/ links](#fix-s-links) |  |  |
-| [Fix Imgur links](#fix-imgur-links) | Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests with the ordinary Imgur address instead. Albums cannot be recovered this way, only single images. |  |
+| [Fix Imgur links](#fix-imgur-links) | Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests locally instead. Album contents are read from an archived copy of the album page, which only works for albums the archive captured while Imgur still rendered them. |  |
 | [Fix Redgifs API](#fix-redgifs-api) |  |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |

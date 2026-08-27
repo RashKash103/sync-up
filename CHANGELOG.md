@@ -1,3 +1,9 @@
+## [1.2.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.4...v1.2.0-dev.5) (2026-08-27)
+
+### ✨ New Features
+
+* Recover Imgur album contents from archived pages ([6c807d8](https://github.com/RashKash103/sync-up/commit/6c807d8c2e5950f612ea991bcc696d26559d909b))
+
 ## [1.2.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.3...v1.2.0-dev.4) (2026-08-27)
 
 ### 🐛 Bug Fixes

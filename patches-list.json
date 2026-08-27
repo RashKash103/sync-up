@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0-dev.4",
+  "version": "1.2.0-dev.5",
   "patches": [
     {
       "name": "Add archive links to the post menu",
@@ -103,7 +103,7 @@
     },
     {
       "name": "Fix Imgur links",
-      "description": "Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests with the ordinary Imgur address instead. Albums cannot be recovered this way, only single images.",
+      "description": "Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests locally instead. Album contents are read from an archived copy of the album page, which only works for albums the archive captured while Imgur still rendered them.",
       "use": true,
       "dependencies": [
         "BytecodePatch",
