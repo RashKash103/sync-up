@@ -128,3 +128,7 @@ node_modules/
 # Ignore IDEA files
 .idea/
 local.properties
+
+# Device logs captured while debugging.
+sync-logcat.txt
+*.logcat
