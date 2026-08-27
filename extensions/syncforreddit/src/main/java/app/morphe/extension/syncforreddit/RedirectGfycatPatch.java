@@ -9,8 +9,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.fixes.redgifs.RedgifsTokenManager;
@@ -18,7 +20,6 @@ import app.morphe.extension.shared.requests.PatchedditInterceptor;
 import app.morphe.extension.shared.requests.Requester;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -44,15 +45,21 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
 
     private static final RedirectGfycatPatch INSTANCE = new RedirectGfycatPatch();
 
-    private static OkHttpClient instrumentedSource;
-    private static OkHttpClient instrumentedClient;
-
     private RedirectGfycatPatch() {}
+
+    /**
+     * Registered on the shared request hook, which covers the client Sync's Volley uses and
+     * the one it hands to Glide. Installing it on a single client left image loads, and so
+     * every Gfycat thumbnail, going straight to a domain that no longer resolves.
+     */
+    public static RedirectGfycatPatch get() {
+        return INSTANCE;
+    }
 
     @Override
     public boolean isPatchIncluded() {
-        // The interceptor is only ever installed by this patch, so reaching here means it applies.
-        return true;
+        // Overridden by patch.
+        return false;
     }
 
     /**
@@ -62,18 +69,6 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
     public static String getUserAgent() {
         // To be filled in by patch
         return "";
-    }
-
-    /**
-     * Derives a client carrying this interceptor. Called with the client Sync's bundled Volley
-     * uses for every request, so the result is cached rather than rebuilt per request.
-     */
-    public static synchronized OkHttpClient install(OkHttpClient client) {
-        if (instrumentedClient == null || instrumentedSource != client) {
-            instrumentedSource = client;
-            instrumentedClient = client.newBuilder().addInterceptor(INSTANCE).build();
-        }
-        return instrumentedClient;
     }
 
     @NonNull
@@ -91,12 +86,6 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
                 && url.encodedPath().startsWith(GFYCAT_API_PATH);
         boolean isPageRequest = host.equals(GFYCAT_HOST) || host.equals("www." + GFYCAT_HOST);
 
-        if (!isApiRequest && !isPageRequest) {
-            // Gfycat's media subdomains are gone as well. Answering them without a lookup keeps
-            // a feed full of dead thumbnails from spending a RedGifs request on every one.
-            return gone(request);
-        }
-
         // Assigned once: the lambdas below capture it, so it has to stay effectively final.
         String id = normalizeId(isApiRequest
                 ? url.encodedPath().substring(GFYCAT_API_PATH.length())
@@ -109,10 +98,25 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
         try {
             // Lets a genuine connection failure surface as one, rather than being reported as
             // content that no longer exists.
-            MediaUrls media = fetchFromRedgifs(id);
+            MediaUrls media = lookup(id);
             if (media == null) {
                 Logger.printDebug(() -> "No RedGifs mirror for Gfycat id " + id);
                 return gone(request);
+            }
+
+            if (!isApiRequest && !isPageRequest) {
+                // A request to one of Gfycat's media subdomains, which is how every thumbnail in
+                // a feed is loaded. Reissuing it against the mirror is what makes those load,
+                // rather than leaving a feed of blank tiles.
+                String mirrored = mediaFor(media, url.encodedPath());
+                if (mirrored == null) {
+                    return gone(request);
+                }
+                Logger.printDebug(() -> "Serving Gfycat media " + id + " from RedGifs");
+                return chain.proceed(request.newBuilder()
+                        .url(mirrored)
+                        .header("User-Agent", getUserAgent())
+                        .build());
             }
 
             Logger.printDebug(() -> "Serving Gfycat id " + id + " from RedGifs");
@@ -152,11 +156,69 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
     private static final class MediaUrls {
         final String highQuality;
         final String lowQuality;
+        @Nullable final String poster;
+        @Nullable final String thumbnail;
 
-        MediaUrls(String highQuality, String lowQuality) {
+        MediaUrls(String highQuality, String lowQuality, @Nullable String poster,
+                  @Nullable String thumbnail) {
             this.highQuality = highQuality;
             this.lowQuality = lowQuality;
+            this.poster = poster;
+            this.thumbnail = thumbnail;
         }
+    }
+
+    /**
+     * Stands in for an id RedGifs does not have, so that a feed full of dead Gfycat links asks
+     * about each one once rather than on every pass Glide makes over it.
+     */
+    private static final MediaUrls NO_MIRROR = new MediaUrls("", "", null, null);
+
+    private static final int CACHE_SIZE = 64;
+
+    private static final Map<String, MediaUrls> lookups =
+            new LinkedHashMap<String, MediaUrls>(CACHE_SIZE, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, MediaUrls> eldest) {
+                    return size() > CACHE_SIZE;
+                }
+            };
+
+    /**
+     * @return The mirrored media, or null if RedGifs has no such gif.
+     */
+    @Nullable
+    private static MediaUrls lookup(String id) throws IOException, JSONException {
+        synchronized (lookups) {
+            MediaUrls cached = lookups.get(id);
+            if (cached != null) {
+                return cached == NO_MIRROR ? null : cached;
+            }
+        }
+
+        MediaUrls media = fetchFromRedgifs(id);
+
+        synchronized (lookups) {
+            lookups.put(id, media == null ? NO_MIRROR : media);
+        }
+        return media;
+    }
+
+    /**
+     * Picks the mirrored URL matching what the original request asked for. Sync loads a still
+     * for a feed tile and the video itself when a post is opened, and both go to the same
+     * subdomains, so the extension is what distinguishes them.
+     */
+    @Nullable
+    private static String mediaFor(MediaUrls media, String path) {
+        String lower = path.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".mp4")) {
+            return lower.contains("-mobile") ? media.lowQuality : media.highQuality;
+        }
+        if (lower.endsWith(".gif")) {
+            return media.thumbnail != null ? media.thumbnail : media.poster;
+        }
+        return media.poster != null ? media.poster : media.thumbnail;
     }
 
     /**
@@ -190,7 +252,8 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
         if (highQuality == null) {
             return null;
         }
-        return new MediaUrls(highQuality, lowQuality);
+        return new MediaUrls(highQuality, lowQuality,
+                optionalString(urls, "poster"), optionalString(urls, "thumbnail"));
     }
 
     /**
