@@ -1,3 +1,9 @@
+## [1.2.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.6...v1.2.0-dev.7) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Time out and throttle the archive requests ([3335323](https://github.com/RashKash103/sync-up/commit/3335323b1b9c6a1e9173c1aa206a5692eaa40c35))
+
 ## [1.2.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.5...v1.2.0-dev.6) (2026-08-27)
 
 ### 🐛 Bug Fixes
