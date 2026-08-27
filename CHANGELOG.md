@@ -1,3 +1,15 @@
+## [1.1.0](https://github.com/RashKash103/sync-up/compare/v1.0.1...v1.1.0) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Answer Gfycat's scrape fallback from RedGifs too ([d358a35](https://github.com/RashKash103/sync-up/commit/d358a352d3d39d17aa5166021e58131c1e6c8194))
+* Emulate the removed RedGifs /info endpoint ([a875281](https://github.com/RashKash103/sync-up/commit/a8752812c16470c99cf7391c8fe139115aee5d28))
+* Stop showing the dead Gfycat link dialog ([ab56c79](https://github.com/RashKash103/sync-up/commit/ab56c796b1a4f051fd8a628858509d0c3360cf0a))
+
+### ✨ New Features
+
+* Add patch redirecting Gfycat links to RedGifs ([8435fec](https://github.com/RashKash103/sync-up/commit/8435fec98c525b7fb9578bfe6c4c75335f899a93))
+
 ## [1.1.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.1.0-dev.2...v1.1.0-dev.3) (2026-08-27)
 
 ### 🐛 Bug Fixes
