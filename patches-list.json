@@ -1,10 +1,10 @@
 {
-  "version": "1.2.0-dev.10",
+  "version": "1.2.0-dev.11",
   "patches": [
     {
-      "name": "Add archive links to the post menu",
-      "description": "Adds Wayback Machine and archive.today options to the menu behind a post's overflow button, next to \"Open in browser\". Useful for reading a page that has since been taken down or put behind a paywall.",
-      "use": false,
+      "name": "Add archive links to menus",
+      "description": "Adds Wayback Machine and archive.today options to the menu behind a post's overflow button and to the one behind a link, next to \"Open in browser\". Useful for reading a page that has since been taken down or put behind a paywall. Nothing is requested until one of them is tapped.",
+      "use": true,
       "dependencies": [
         "BytecodePatch"
       ],

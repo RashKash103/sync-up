@@ -1,3 +1,9 @@
+## [1.2.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.10...v1.2.0-dev.11) (2026-08-27)
+
+### ✨ New Features
+
+* Enable the archive links by default and widen the name ([9abfc56](https://github.com/RashKash103/sync-up/commit/9abfc56419889ce38e615601d9e55482f40c27d4))
+
 ## [1.2.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.9...v1.2.0-dev.10) (2026-08-27)
 
 ### 🐛 Bug Fixes
