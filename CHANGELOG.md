@@ -1,3 +1,9 @@
+## [1.2.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.1...v1.2.0-dev.2) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Correct the smali in the archive links patch ([f0c5c98](https://github.com/RashKash103/sync-up/commit/f0c5c98fce884b5571228ea668c1e8182dc07ffd))
+
 ## [1.2.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.1.0...v1.2.0-dev.1) (2026-08-27)
 
 ### ✨ New Features
