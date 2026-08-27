@@ -6,16 +6,6 @@
 * Put the archive link options where they can be seen ([4c5bd41](https://github.com/RashKash103/sync-up/commit/4c5bd410d62e67ec705a2acf4e87fb455aaeff6d))
 * Recover Imgur album thumbnails ([a74c35a](https://github.com/RashKash103/sync-up/commit/a74c35a9bccbf081597a3eed58689ff62c23bf7f))
 
-## [1.2.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.12...v1.2.0-dev.13) (2026-08-27)
-
-### 🐛 Bug Fixes
-
-* Load Gfycat thumbnails from RedGifs ([ec28f58](https://github.com/RashKash103/sync-up/commit/ec28f584caf6953b7fef9338b05719daf67794de))
-* Log on entry to the menu patches, and catch Errors ([ae9b3b3](https://github.com/RashKash103/sync-up/commit/ae9b3b39eab07ffb955f09ea9fe1914c24bdf61f))
-* Make the archive traces visible in a log ([639ce49](https://github.com/RashKash103/sync-up/commit/639ce49d63fcbe18e6051dcf49addf2cde4bbcbf))
-* Put the archive link options where they can be seen ([4c5bd41](https://github.com/RashKash103/sync-up/commit/4c5bd410d62e67ec705a2acf4e87fb455aaeff6d))
-* Recover Imgur album thumbnails ([a74c35a](https://github.com/RashKash103/sync-up/commit/a74c35a9bccbf081597a3eed58689ff62c23bf7f))
-
 ## [1.2.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.13...v1.2.0-dev.14) (2026-08-27)
 
 ### 🐛 Bug Fixes
