@@ -1,3 +1,9 @@
+## [1.2.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.11...v1.2.0-dev.12) (2026-08-27)
+
+### ✨ New Features
+
+* Fall back to an album's first image for its thumbnail ([46b597a](https://github.com/RashKash103/sync-up/commit/46b597adf9229dab01e88450516e4000eea18c9d))
+
 ## [1.2.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.10...v1.2.0-dev.11) (2026-08-27)
 
 ### ✨ New Features
