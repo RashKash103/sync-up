@@ -29,6 +29,8 @@ val interceptHttpRequests = bytecodePatch(
     compatibleWith(*SyncForRedditCompatible)
 
     execute {
+        // region Volley, which carries every Reddit API request.
+
         volleyPerformRequestFingerprint.method.apply {
             val index = indexOfFirstInstructionOrThrow {
                 val reference = getReference<MethodReference>()
@@ -44,5 +46,27 @@ val interceptHttpRequests = bytecodePatch(
                 """
             )
         }
+
+        // endregion
+
+        // region Glide, which loads images through a client of its own.
+
+        glideClientFactoryFingerprint.method.apply {
+            val index = indexOfFirstInstructionOrThrow {
+                val reference = getReference<MethodReference>()
+                reference?.name == "<init>" && reference.definingClass == "Lokhttp3/OkHttpClient;"
+            }
+            val clientRegister = getInstruction<FiveRegisterInstruction>(index).registerC
+
+            addInstructions(
+                index + 1,
+                """
+                invoke-static       { v$clientRegister }, $OKHTTP_EXTENSION_CLASS_DESCRIPTOR->$INSTALL_CLIENT_METHOD
+                move-result-object  v$clientRegister
+                """
+            )
+        }
+
+        // endregion
     }
 }

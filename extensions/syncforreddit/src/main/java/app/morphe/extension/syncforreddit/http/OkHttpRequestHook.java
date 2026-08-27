@@ -1,9 +1,12 @@
 package app.morphe.extension.syncforreddit.http;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import app.morphe.extension.shared.requests.BaseOkHttpRequestHook;
+import app.morphe.extension.syncforreddit.http.imgur.UndeleteImgurPatch;
 import app.morphe.extension.syncforreddit.http.undelete.UndeleteRedditPatch;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -22,8 +25,10 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
     // to reach those through a reference of its own type, not through the base class field.
     private static final OkHttpRequestHook HOOK = new OkHttpRequestHook();
 
-    private static OkHttpClient instrumentedSource;
-    private static OkHttpClient instrumentedClient;
+    // Keyed by source client, because this is installed at more than one site and Sync's
+    // Volley and Glide each have a client of their own. A single slot would rebuild the
+    // derived client on every call as the two sites took turns.
+    private static final Map<OkHttpClient, OkHttpClient> instrumented = new IdentityHashMap<>();
 
     private OkHttpRequestHook() {}
 
@@ -40,25 +45,31 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
     public static synchronized OkHttpClient install(OkHttpClient client) {
         init();
 
-        if (instrumentedClient == null || instrumentedSource != client) {
-            instrumentedSource = client;
-
-            OkHttpClient.Builder builder = client.newBuilder();
-            for (Interceptor interceptor : HOOK.getInterceptors()) {
-                builder.addInterceptor(interceptor);
-            }
-            for (Interceptor interceptor : HOOK.getNetworkInterceptors()) {
-                builder.addNetworkInterceptor(interceptor);
-            }
-            instrumentedClient = builder.build();
+        OkHttpClient existing = instrumented.get(client);
+        if (existing != null) {
+            return existing;
         }
-        return instrumentedClient;
+
+        OkHttpClient.Builder builder = client.newBuilder();
+        for (Interceptor interceptor : HOOK.getInterceptors()) {
+            builder.addInterceptor(interceptor);
+        }
+        for (Interceptor interceptor : HOOK.getNetworkInterceptors()) {
+            builder.addNetworkInterceptor(interceptor);
+        }
+
+        OkHttpClient derived = builder.build();
+        instrumented.put(client, derived);
+        // The derived client is handed back to callers, so it can come back in as the source.
+        instrumented.put(derived, derived);
+        return derived;
     }
 
     @Override
     protected List<Interceptor> getInterceptors() {
         List<Interceptor> interceptors = new ArrayList<>();
         interceptors.add(new UndeleteRedditPatch());
+        interceptors.add(new UndeleteImgurPatch());
         return interceptors;
     }
 
