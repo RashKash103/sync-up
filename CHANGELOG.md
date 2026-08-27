@@ -1,3 +1,9 @@
+## [1.2.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.13...v1.2.0-dev.14) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Log on entry to the menu patches, and catch Errors ([9cb2015](https://github.com/RashKash103/sync-up/commit/9cb201584ab0499bef87a08b8c8b290f295ec288))
+
 ## [1.2.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.12...v1.2.0-dev.13) (2026-08-27)
 
 ### 🐛 Bug Fixes
