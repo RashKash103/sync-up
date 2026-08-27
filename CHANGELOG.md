@@ -1,3 +1,9 @@
+## [1.2.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.7...v1.2.0-dev.8) (2026-08-27)
+
+### ✨ New Features
+
+* Add the archive links to the link options sheet too ([de216b6](https://github.com/RashKash103/sync-up/commit/de216b6661f1ec8304f8846591f2a4d631f2f1f5))
+
 ## [1.2.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.6...v1.2.0-dev.7) (2026-08-27)
 
 ### 🐛 Bug Fixes
