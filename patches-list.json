@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0-dev.14",
+  "version": "1.2.0-dev.13",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -186,6 +186,7 @@
       "description": "Answers Gfycat requests from RedGifs, which hosts much of the content that moved there before Gfycat shut down. Gfycat's domains no longer resolve, so without this every Gfycat link fails to load.",
       "use": true,
       "dependencies": [
+        "BytecodePatch",
         "BytecodePatch"
       ],
       "compatiblePackages": {

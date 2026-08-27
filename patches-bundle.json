@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-27T20:44:12",
-  "description": "## [1.2.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.13...v1.2.0-dev.14) (2026-08-27)\n\n### 🐛 Bug Fixes\n\n* Log on entry to the menu patches, and catch Errors ([9cb2015](https://github.com/RashKash103/sync-up/commit/9cb201584ab0499bef87a08b8c8b290f295ec288))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.14/patches-1.2.0-dev.14.mpp",
+  "created_at": "2026-08-27T22:00:14",
+  "description": "## [1.2.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.12...v1.2.0-dev.13) (2026-08-27)\n\n### 🐛 Bug Fixes\n\n* Load Gfycat thumbnails from RedGifs ([ec28f58](https://github.com/RashKash103/sync-up/commit/ec28f584caf6953b7fef9338b05719daf67794de))\n* Log on entry to the menu patches, and catch Errors ([ae9b3b3](https://github.com/RashKash103/sync-up/commit/ae9b3b39eab07ffb955f09ea9fe1914c24bdf61f))\n* Make the archive traces visible in a log ([639ce49](https://github.com/RashKash103/sync-up/commit/639ce49d63fcbe18e6051dcf49addf2cde4bbcbf))\n* Put the archive link options where they can be seen ([4c5bd41](https://github.com/RashKash103/sync-up/commit/4c5bd410d62e67ec705a2acf4e87fb455aaeff6d))\n* Recover Imgur album thumbnails ([a74c35a](https://github.com/RashKash103/sync-up/commit/a74c35a9bccbf081597a3eed58689ff62c23bf7f))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.13/patches-1.2.0-dev.13.mpp",
   "signature_download_url": "",
-  "version": "1.2.0-dev.14"
+  "version": "1.2.0-dev.13"
 }
