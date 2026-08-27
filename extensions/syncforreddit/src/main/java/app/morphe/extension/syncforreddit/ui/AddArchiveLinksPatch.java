@@ -14,9 +14,14 @@ import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.laurencedawson.reddit_sync.ui.fragment_dialogs.bottom.material_dialogs.base.AbstractSelectionDialogBottomSheet;
 import com.laurencedawson.reddit_sync.ui.views.core.MaterialRow;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.Utils;
 
 /**
  * Adds archive options to the menu behind a post's overflow button, next to Sync's own
@@ -39,7 +44,67 @@ public class AddArchiveLinksPatch {
     private static final String ICON = "outline_history_24";
     private static final String FALLBACK_ICON = "outline_open_in_browser_24";
 
+    /**
+     * What each option this patch added should open. Weak, so an option is forgotten along
+     * with the sheet that held it.
+     */
+    private static final Map<Object, String> optionTargets = new WeakHashMap<>();
+
     private AddArchiveLinksPatch() {}
+
+    /**
+     * Adds the same two entries to Sync's link options sheet. That sheet builds its rows from
+     * code rather than from a layout, so an option is registered rather than a view inserted.
+     */
+    public static void addLinkOptions(AbstractSelectionDialogBottomSheet sheet, String url) {
+        try {
+            if (sheet == null || url == null || url.isEmpty()) {
+                return;
+            }
+
+            int icon = iconFor(Utils.getContext());
+            addLinkOption(sheet, icon, "Open in Wayback Machine", WAYBACK_MACHINE + url);
+            addLinkOption(sheet, icon, "Open in archive.today", ARCHIVE_TODAY + url);
+        } catch (Exception ex) {
+            Logger.printException(() -> "Could not add the archive link options", ex);
+        }
+    }
+
+    private static void addLinkOption(AbstractSelectionDialogBottomSheet sheet, int icon,
+                                      String title, String target) {
+        AbstractSelectionDialogBottomSheet.h option =
+                sheet.t4(new AbstractSelectionDialogBottomSheet.h(icon, title));
+        optionTargets.put(option, target);
+    }
+
+    /**
+     * @return Whether this was one of the options added here, in which case Sync should not go
+     *         on to handle it.
+     */
+    public static boolean handleLinkOption(Object option) {
+        try {
+            String target = optionTargets.get(option);
+            if (target == null) {
+                return false;
+            }
+            open(Utils.getContext(), target);
+            return true;
+        } catch (Exception ex) {
+            Logger.printException(() -> "Could not open the archive link", ex);
+            return false;
+        }
+    }
+
+    private static int iconFor(Context context) {
+        if (context == null) {
+            return 0;
+        }
+        Resources resources = context.getResources();
+        String packageName = context.getPackageName();
+
+        int icon = resources.getIdentifier(ICON, "drawable", packageName);
+        return icon != 0 ? icon : resources.getIdentifier(FALLBACK_ICON, "drawable", packageName);
+    }
 
     public static void addArchiveRows(View root, String url) {
         // A menu that loses two rows is a much better outcome than one that crashes the app.

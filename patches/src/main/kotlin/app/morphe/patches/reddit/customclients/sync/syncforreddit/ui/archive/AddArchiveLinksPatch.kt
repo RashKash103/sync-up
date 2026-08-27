@@ -1,11 +1,17 @@
 package app.morphe.patches.reddit.customclients.sync.syncforreddit.ui.archive
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
@@ -13,6 +19,12 @@ private const val EXTENSION_CLASS_DESCRIPTOR =
 
 private const val ADD_ROWS_METHOD =
     "addArchiveRows(Landroid/view/View;Ljava/lang/String;)V"
+
+private const val ADD_OPTIONS_METHOD =
+    "addLinkOptions($SELECTION_SHEET_CLASS" + "Ljava/lang/String;)V"
+
+private const val HANDLE_OPTION_METHOD =
+    "handleLinkOption(Ljava/lang/Object;)Z"
 
 // An abstract class rather than an interface, so its methods take invoke-virtual.
 private const val POST_MODEL = "Lxa/d;"
@@ -51,5 +63,37 @@ val addArchiveLinksPatch = bytecodePatch(
                 """
             )
         }
+
+        // region The link options sheet, which builds its rows from code.
+
+        // Read the field the click handler takes the link from, rather than naming an
+        // obfuscated field here.
+        val urlField = linkOptionsClickFingerprint.method.instructions.first {
+            it.opcode == Opcode.IGET_OBJECT &&
+                    it.getReference<FieldReference>()?.type == "Ljava/lang/String;"
+        }.getReference<FieldReference>()!!
+
+        linkOptionsBuildFingerprint.method.apply {
+            addInstructions(
+                instructions.lastIndex,
+                """
+                iget-object         v0, p0, ${urlField.definingClass}->${urlField.name}:${urlField.type}
+                invoke-static       { p0, v0 }, $EXTENSION_CLASS_DESCRIPTOR->$ADD_OPTIONS_METHOD
+                """
+            )
+        }
+
+        linkOptionsClickFingerprint.method.addInstructionsWithLabels(
+            0,
+            """
+            invoke-static       { p1 }, $EXTENSION_CLASS_DESCRIPTOR->$HANDLE_OPTION_METHOD
+            move-result         v0
+            if-eqz              v0, :handled_by_sync
+            return-void
+            """,
+            ExternalLabel("handled_by_sync", linkOptionsClickFingerprint.method.getInstruction(0))
+        )
+
+        // endregion
     }
 }
