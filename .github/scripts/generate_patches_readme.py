@@ -204,7 +204,10 @@ def build_content(expanded=False):
 raw_ver = data["version"]
 # Strip leading "v" if present
 ver   = raw_ver.lstrip("v")
-total = sum(len(e["patches"]) for e in by_pkg.values()) + len(universal)
+# Count distinct patches. A patch compatible with several packages (Sync for Reddit
+# ships as three) appears under each of them, so summing the per-package counts
+# would report it once per package.
+total = len({name for e in by_pkg.values() for name in e["patches"]} | set(universal))
 
 readme = readme_path.read_text(encoding="utf-8")
 
