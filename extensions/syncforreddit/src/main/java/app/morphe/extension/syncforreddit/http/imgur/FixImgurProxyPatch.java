@@ -70,7 +70,7 @@ public class FixImgurProxyPatch extends PatchedditInterceptor {
                 return respond(request, singleImage(id));
             }
             if (ALBUM_PATH.equals(kind)) {
-                List<String> images = ImgurAlbum.imagesOf(id);
+                List<JSONObject> images = ImgurAlbum.imagesOf(id);
                 if (images.isEmpty()) {
                     Logger.printDebug(() -> "Could not recover the contents of album " + id);
                     return gone(request);
@@ -100,12 +100,10 @@ public class FixImgurProxyPatch extends PatchedditInterceptor {
         return body;
     }
 
-    private static JSONObject album(List<String> images) throws JSONException {
+    private static JSONObject album(List<JSONObject> images) throws JSONException {
         JSONArray entries = new JSONArray();
-        for (String image : images) {
-            JSONObject entry = new JSONObject();
-            entry.put("link", image);
-            entries.put(entry);
+        for (JSONObject image : images) {
+            entries.put(image);
         }
 
         JSONObject data = new JSONObject();

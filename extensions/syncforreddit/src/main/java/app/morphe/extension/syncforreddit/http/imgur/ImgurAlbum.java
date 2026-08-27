@@ -1,8 +1,8 @@
 package app.morphe.extension.syncforreddit.http.imgur;
 
-import androidx.annotation.Nullable;
-
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,31 +21,28 @@ import app.morphe.extension.syncforreddit.http.ArchiveRequests;
  *
  * <p>There is no way to derive an album's images from its id, and Sync reached them through a
  * proxy that no longer exists, so the page itself has to be read. Imgur used to render the
- * album server side and embed the list in the markup; pages captured since then are a script
- * shell with nothing in them, so older snapshots are tried first.
+ * album server side and embed the list as JSON; pages captured since then are a script shell
+ * with nothing in them, so older snapshots are tried first.
  */
 final class ImgurAlbum {
     private static final String ALBUM_URL = "https://imgur.com/a/";
 
     /** How many archived copies to try before giving up on an album. */
-    private static final int SNAPSHOTS_TO_TRY = 5;
+    private static final int SNAPSHOTS_TO_TRY = 3;
 
     private static final int CACHE_SIZE = 32;
 
-    /** The embedded list, which carries the right extension for each image. */
-    private static final Pattern EMBEDDED_IMAGE = Pattern.compile(
-            "\"hash\"\\s*:\\s*\"([A-Za-z0-9]{5,10})\".{0,200}?\"ext\"\\s*:\\s*\"(\\.[A-Za-z0-9]+)\"",
-            Pattern.DOTALL);
+    private static final String EMBEDDED_LIST = "\"album_images\"";
 
-    /** Fallback for layouts that only ever named the images in markup. */
+    /** Only used where the embedded list is absent, and carries no dimensions. */
     private static final Pattern LINKED_IMAGE = Pattern.compile(
             "i\\.imgur\\.com/([A-Za-z0-9]{5,10})(\\.[A-Za-z0-9]+)");
 
-    private static final Map<String, List<String>> cache =
-            Collections.synchronizedMap(new LinkedHashMap<String, List<String>>(
+    private static final Map<String, List<JSONObject>> cache =
+            Collections.synchronizedMap(new LinkedHashMap<String, List<JSONObject>>(
                     CACHE_SIZE + 1, 0.75f, true) {
                 @Override
-                protected boolean removeEldestEntry(Map.Entry<String, List<String>> eldest) {
+                protected boolean removeEldestEntry(Map.Entry<String, List<JSONObject>> eldest) {
                     return size() > CACHE_SIZE;
                 }
             });
@@ -53,17 +50,21 @@ final class ImgurAlbum {
     private ImgurAlbum() {}
 
     /**
-     * @return The image URLs in album order, empty when nothing could be recovered.
+     * @return Images in album order, shaped as Sync's own parser expects, empty when nothing
+     *         could be recovered.
      */
-    static List<String> imagesOf(String albumId) throws IOException, JSONException {
-        List<String> cached = cache.get(albumId);
+    static List<JSONObject> imagesOf(String albumId) throws IOException, JSONException {
+        List<JSONObject> cached = cache.get(albumId);
         if (cached != null) {
             return cached;
         }
 
-        List<String> images = new ArrayList<>();
+        List<JSONObject> images = new ArrayList<>();
         for (String snapshot : WaybackMachine.findSnapshots(ALBUM_URL + albumId, SNAPSHOTS_TO_TRY)) {
-            images = parse(fetch(snapshot));
+            String html = ArchiveRequests.get(snapshot, "text/html");
+            if (html == null) continue;
+
+            images = parse(html);
             if (!images.isEmpty()) {
                 Logger.printDebug(() -> "Recovered " + albumId + " from " + snapshot);
                 break;
@@ -74,38 +75,112 @@ final class ImgurAlbum {
         return images;
     }
 
-    private static String fetch(String url) throws IOException {
-        String body = ArchiveRequests.get(url, "text/html");
-        return body == null ? "" : body;
-    }
-
-    private static List<String> parse(String html) {
-        List<String> images = collect(EMBEDDED_IMAGE, html);
-        return images.isEmpty() ? collect(LINKED_IMAGE, html) : images;
+    private static List<JSONObject> parse(String html) throws JSONException {
+        List<JSONObject> images = embedded(html);
+        return images.isEmpty() ? linked(html) : images;
     }
 
     /**
-     * Order matters, and an album page names its cover twice, so duplicates are dropped while
-     * keeping the first position of each.
+     * The list Imgur rendered into the page, which carries the dimensions Sync insists on.
      */
-    private static List<String> collect(Pattern pattern, String html) {
-        List<String> images = new ArrayList<>();
-        Matcher matcher = pattern.matcher(html);
-        while (matcher.find()) {
-            String image = "https://i.imgur.com/" + matcher.group(1) + matcher.group(2);
-            if (!images.contains(image)) {
-                images.add(image);
-            }
+    private static List<JSONObject> embedded(String html) throws JSONException {
+        List<JSONObject> images = new ArrayList<>();
+
+        int marker = html.indexOf(EMBEDDED_LIST);
+        if (marker < 0) {
+            return images;
+        }
+        int start = html.indexOf('{', marker);
+        if (start < 0) {
+            return images;
+        }
+        String block = objectAt(html, start);
+        if (block == null) {
+            return images;
+        }
+
+        JSONArray entries = new JSONObject(block).optJSONArray("images");
+        if (entries == null) {
+            return images;
+        }
+
+        for (int i = 0; i < entries.length(); i++) {
+            JSONObject entry = entries.optJSONObject(i);
+            if (entry == null) continue;
+
+            String hash = entry.optString("hash", "");
+            if (hash.isEmpty()) continue;
+
+            String extension = entry.optString("ext", ".jpg");
+            images.add(image(
+                    "https://i.imgur.com/" + hash + extension,
+                    entry.optInt("width"),
+                    entry.optInt("height"),
+                    entry.optString("title"),
+                    entry.optString("description")));
         }
         return images;
     }
 
-    @Nullable
-    static String albumIdFrom(List<String> pathSegments) {
-        if (pathSegments.size() < 2) {
-            return null;
+    /**
+     * A last resort for layouts that only named the images in markup. The dimensions are
+     * unknown, and Sync only uses them to size the view before the image arrives.
+     */
+    private static List<JSONObject> linked(String html) throws JSONException {
+        List<JSONObject> images = new ArrayList<>();
+        List<String> seen = new ArrayList<>();
+
+        Matcher matcher = LINKED_IMAGE.matcher(html);
+        while (matcher.find()) {
+            String link = "https://i.imgur.com/" + matcher.group(1) + matcher.group(2);
+            if (seen.contains(link)) continue;
+
+            seen.add(link);
+            images.add(image(link, 0, 0, "", ""));
         }
-        String id = pathSegments.get(pathSegments.size() - 1);
-        return id.isEmpty() ? null : id;
+        return images;
+    }
+
+    private static JSONObject image(String link, int width, int height, String title,
+                                    String description) throws JSONException {
+        JSONObject image = new JSONObject();
+        image.put("link", link);
+        // Read with getInt rather than optInt by Sync, so they have to be present.
+        image.put("width", width);
+        image.put("height", height);
+        image.put("title", title);
+        image.put("description", description);
+        return image;
+    }
+
+    /**
+     * Reads one JSON object out of a larger document, respecting braces inside strings.
+     */
+    private static String objectAt(String text, int start) {
+        int depth = 0;
+        boolean inString = false;
+        boolean escaped = false;
+
+        for (int i = start; i < text.length(); i++) {
+            char c = text.charAt(i);
+
+            if (escaped) {
+                escaped = false;
+            } else if (c == '\\') {
+                escaped = true;
+            } else if (c == '"') {
+                inString = !inString;
+            } else if (!inString) {
+                if (c == '{') {
+                    depth++;
+                } else if (c == '}') {
+                    depth--;
+                    if (depth == 0) {
+                        return text.substring(start, i + 1);
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

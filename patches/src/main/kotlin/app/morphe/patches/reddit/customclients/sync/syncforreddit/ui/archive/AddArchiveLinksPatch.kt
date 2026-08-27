@@ -21,10 +21,10 @@ private const val ADD_ROWS_METHOD =
     "addArchiveRows(Landroid/view/View;Ljava/lang/String;)V"
 
 private const val ADD_OPTIONS_METHOD =
-    "addLinkOptions($SELECTION_SHEET_CLASS" + "Ljava/lang/String;)V"
+    "addLinkOptions($SELECTION_SHEET_CLASS)V"
 
 private const val HANDLE_OPTION_METHOD =
-    "handleLinkOption(Ljava/lang/Object;)Z"
+    "handleLinkOption(Ljava/lang/Object;Ljava/lang/String;)Z"
 
 // An abstract class rather than an interface, so its methods take invoke-virtual.
 private const val POST_MODEL = "Lxa/d;"
@@ -73,12 +73,13 @@ val addArchiveLinksPatch = bytecodePatch(
                     it.getReference<FieldReference>()?.type == "Ljava/lang/String;"
         }.getReference<FieldReference>()!!
 
+        // The rows are built before the sheet is told which link it is for, so the option
+        // only records which archive it belongs to and the link is read when it is tapped.
         linkOptionsBuildFingerprint.method.apply {
             addInstructions(
                 instructions.lastIndex,
                 """
-                iget-object         v0, p0, ${urlField.definingClass}->${urlField.name}:${urlField.type}
-                invoke-static       { p0, v0 }, $EXTENSION_CLASS_DESCRIPTOR->$ADD_OPTIONS_METHOD
+                invoke-static       { p0 }, $EXTENSION_CLASS_DESCRIPTOR->$ADD_OPTIONS_METHOD
                 """
             )
         }
@@ -86,7 +87,8 @@ val addArchiveLinksPatch = bytecodePatch(
         linkOptionsClickFingerprint.method.addInstructionsWithLabels(
             0,
             """
-            invoke-static       { p1 }, $EXTENSION_CLASS_DESCRIPTOR->$HANDLE_OPTION_METHOD
+            iget-object         v1, p0, ${urlField.definingClass}->${urlField.name}:${urlField.type}
+            invoke-static       { p1, v1 }, $EXTENSION_CLASS_DESCRIPTOR->$HANDLE_OPTION_METHOD
             move-result         v0
             if-eqz              v0, :handled_by_sync
             return-void
