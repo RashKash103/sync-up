@@ -1,3 +1,9 @@
+## [1.2.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.2...v1.2.0-dev.3) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Add the archive rows while p1 still holds the view ([946656c](https://github.com/RashKash103/sync-up/commit/946656cd886e280cebf52ddc5a671e3f7e16b3cc))
+
 ## [1.2.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.1...v1.2.0-dev.2) (2026-08-27)
 
 ### 🐛 Bug Fixes
