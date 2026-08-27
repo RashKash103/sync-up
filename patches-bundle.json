@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-27T04:28:17",
-  "description": "## [1.1.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.0.2-dev.1...v1.1.0-dev.1) (2026-08-27)\n\n### ✨ New Features\n\n* Add patch redirecting Gfycat links to RedGifs ([8435fec](https://github.com/RashKash103/sync-up/commit/8435fec98c525b7fb9578bfe6c4c75335f899a93))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.1.0-dev.1/patches-1.1.0-dev.1.mpp",
+  "created_at": "2026-08-27T16:23:31",
+  "description": "## [1.1.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-08-27)\n\n### 🐛 Bug Fixes\n\n* Answer Gfycat's scrape fallback from RedGifs too ([d358a35](https://github.com/RashKash103/sync-up/commit/d358a352d3d39d17aa5166021e58131c1e6c8194))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.1.0-dev.2/patches-1.1.0-dev.2.mpp",
   "signature_download_url": "",
-  "version": "1.1.0-dev.1"
+  "version": "1.1.0-dev.2"
 }

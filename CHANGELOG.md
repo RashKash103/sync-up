@@ -1,3 +1,9 @@
+## [1.1.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Answer Gfycat's scrape fallback from RedGifs too ([d358a35](https://github.com/RashKash103/sync-up/commit/d358a352d3d39d17aa5166021e58131c1e6c8194))
+
 ## [1.1.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.0.2-dev.1...v1.1.0-dev.1) (2026-08-27)
 
 ### ✨ New Features
