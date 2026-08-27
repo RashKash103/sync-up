@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import app.morphe.extension.shared.requests.BaseOkHttpRequestHook;
+import app.morphe.extension.syncforreddit.http.undelete.UndeleteRedditPatch;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
@@ -56,8 +57,9 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
 
     @Override
     protected List<Interceptor> getInterceptors() {
-        // Contributed by the patches that need them.
-        return new ArrayList<>();
+        List<Interceptor> interceptors = new ArrayList<>();
+        interceptors.add(new UndeleteRedditPatch());
+        return interceptors;
     }
 
     @Override
