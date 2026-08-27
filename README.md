@@ -30,7 +30,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> _This section is regenerated from `patches-list.json` every time a release is published._
+> **[v1.0.0](https://github.com/RashKash103/sync-up/releases/tag/v1.0.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;26 patches total
 <details open>
 <summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;9 patches</summary>
 <br>
@@ -97,6 +97,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Enable Android debugging](#enable-android-debugging) | Enables Android developer debugging capabilities. Including this patch can slow down the app. |  |
 
 </details>
+
 <!-- PATCHES_END -->
 
 ## 🚀 Getting started
