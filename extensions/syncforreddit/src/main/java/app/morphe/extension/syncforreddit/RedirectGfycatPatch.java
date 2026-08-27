@@ -94,7 +94,7 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
         if (!isApiRequest && !isPageRequest) {
             // Gfycat's media subdomains are gone as well. Answering them without a lookup keeps
             // a feed full of dead thumbnails from spending a RedGifs request on every one.
-            return notFound(request);
+            return gone(request);
         }
 
         // Assigned once: the lambdas below capture it, so it has to stay effectively final.
@@ -103,7 +103,7 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
                 : lastPathSegment(url));
 
         if (id.isEmpty()) {
-            return notFound(request);
+            return gone(request);
         }
 
         try {
@@ -112,7 +112,7 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
             MediaUrls media = fetchFromRedgifs(id);
             if (media == null) {
                 Logger.printDebug(() -> "No RedGifs mirror for Gfycat id " + id);
-                return notFound(request);
+                return gone(request);
             }
 
             Logger.printDebug(() -> "Serving Gfycat id " + id + " from RedGifs");
@@ -121,7 +121,7 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
                     : respond(request, "text/html", scrapeBody(media));
         } catch (JSONException ex) {
             Logger.printException(() -> "Could not parse RedGifs response for Gfycat id " + id, ex);
-            return notFound(request);
+            return gone(request);
         }
     }
 
@@ -231,13 +231,15 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
     }
 
     /**
-     * Sync shows its own "this video does not exist" dialog when a Gfycat request 404s, which
-     * is a better outcome than the connection error a dead domain would otherwise produce.
+     * Deliberately not a 404. Sync answers a 404 on a Gfycat link with a dialog whose only
+     * action is to open the link in a browser, which can never work now that the domain is
+     * gone, and it would appear for every unmirrored link. Any other status falls through to
+     * Sync's ordinary error instead, which is the lesser annoyance.
      */
-    private static Response notFound(Request request) {
+    private static Response gone(Request request) {
         return new Response.Builder()
-                .message("Not Found")
-                .code(HttpURLConnection.HTTP_NOT_FOUND)
+                .message("Gone")
+                .code(HttpURLConnection.HTTP_GONE)
                 .protocol(Protocol.HTTP_1_1)
                 .request(request)
                 .header("Content-Type", "application/json")
