@@ -1,3 +1,9 @@
+## [1.1.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.1.0-dev.2...v1.1.0-dev.3) (2026-08-27)
+
+### 🐛 Bug Fixes
+
+* Stop showing the dead Gfycat link dialog ([ab56c79](https://github.com/RashKash103/sync-up/commit/ab56c796b1a4f051fd8a628858509d0c3360cf0a))
+
 ## [1.1.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-08-27)
 
 ### 🐛 Bug Fixes
