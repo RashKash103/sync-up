@@ -52,14 +52,29 @@ public class WaybackMachine {
      */
     @Nullable
     public static String findSnapshot(String contentUrl) throws IOException, JSONException {
-        String cached = cache.get(contentUrl);
+        return findSnapshot(contentUrl, false);
+    }
+
+    /**
+     * @param mediaOnly Ignore snapshots of a page rather than of the file itself. Imgur answers
+     *                  a link to something it no longer holds with an ordinary HTML page, and
+     *                  the archive captured plenty of those. Serving one where an image or a
+     *                  video is expected fails in the decoder instead of here, which reads as
+     *                  a blank thumbnail or a video that will not play.
+     * @return A URL serving the archived copy, or null if there is no usable snapshot.
+     */
+    @Nullable
+    public static String findSnapshot(String contentUrl, boolean mediaOnly)
+            throws IOException, JSONException {
+        String key = (mediaOnly ? "media:" : "any:") + contentUrl;
+        String cached = cache.get(key);
         if (cached != null) {
             return cached.isEmpty() ? null : cached;
         }
 
-        List<String> snapshots = lookUp(contentUrl, 1);
+        List<String> snapshots = lookUp(contentUrl, 1, mediaOnly);
         String snapshot = snapshots.isEmpty() ? null : snapshots.get(0);
-        cache.put(contentUrl, snapshot == null ? "" : snapshot);
+        cache.put(key, snapshot == null ? "" : snapshot);
         return snapshot;
     }
 
@@ -70,10 +85,11 @@ public class WaybackMachine {
      */
     public static List<String> findSnapshots(String contentUrl, int limit)
             throws IOException, JSONException {
-        return lookUp(contentUrl, limit);
+        return lookUp(contentUrl, limit, false);
     }
 
-    private static List<String> lookUp(String contentUrl, int limit) throws IOException, JSONException {
+    private static List<String> lookUp(String contentUrl, int limit, boolean mediaOnly)
+            throws IOException, JSONException {
         Logger.printInfo(() -> "Wayback Machine: " + contentUrl);
 
         List<String> snapshots = new ArrayList<>();
@@ -91,11 +107,12 @@ public class WaybackMachine {
             JSONArray row = rows.optJSONArray(i);
             if (row == null || row.length() < 5) continue;
 
-            if ("200".equals(row.optString(4, ""))) {
-                String timestamp = row.optString(1, null);
-                if (timestamp != null) {
-                    snapshots.add(String.format(CONTENT_URL, timestamp, contentUrl));
-                }
+            if (!"200".equals(row.optString(4, ""))) continue;
+            if (mediaOnly && row.optString(3, "").startsWith("text/")) continue;
+
+            String timestamp = row.optString(1, null);
+            if (timestamp != null) {
+                snapshots.add(String.format(CONTENT_URL, timestamp, contentUrl));
             }
         }
         return snapshots;

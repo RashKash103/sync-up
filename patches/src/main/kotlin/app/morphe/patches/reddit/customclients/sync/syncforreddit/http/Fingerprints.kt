@@ -42,3 +42,25 @@ internal val glideRegisterComponentsFingerprint = Fingerprint(
         } == true
     }
 )
+
+internal const val OKHTTP_DATA_SOURCE_FACTORY =
+    "Lcom/google/android/exoplayer2/ext/okhttp/OkHttpDataSource\$Factory;"
+
+internal const val DEFAULT_DATA_SOURCE_FACTORY =
+    "Lcom/google/android/exoplayer2/upstream/DefaultDataSource\$Factory;"
+
+/**
+ * Builds the data sources the video player reads through, and is the only place its client is
+ * in reach. Videos are the one kind of media that reaches neither Volley nor Glide.
+ */
+internal val exoPlayerDataSourceFingerprint = Fingerprint(
+    name = "<init>",
+    parameters = listOf(),
+    returnType = "V",
+    custom = { method, _ ->
+        method.implementation?.instructions?.any {
+            val reference = it.getReference<MethodReference>()
+            reference?.definingClass == OKHTTP_DATA_SOURCE_FACTORY && reference.name == "<init>"
+        } == true
+    },
+)

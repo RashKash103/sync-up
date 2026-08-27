@@ -15,7 +15,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.requests.PatchedditInterceptor;
@@ -110,7 +112,52 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
         }
         // The request the response came from, which after a redirect is the placeholder.
         String path = response.request().url().encodedPath();
-        return path.startsWith("/removed.");
+        if (path.startsWith("/removed.")) {
+            return true;
+        }
+
+        // A video Imgur no longer holds is answered with a page rather than a redirect, and the
+        // status is a plain 200. Nothing downstream can do anything with it: the player reports
+        // that it recognises no format, and Glide fails to pull a frame out of it.
+        String contentType = response.header("Content-Type", "");
+        return isVideo(path) && contentType != null && contentType.startsWith("text/");
+    }
+
+    private static boolean isVideo(String path) {
+        String lower = path.toLowerCase(Locale.ROOT);
+        return lower.endsWith(".mp4") || lower.endsWith(".gifv");
+    }
+
+    /**
+     * Imgur serves a video under several extensions for the same id, and which one is archived
+     * is not the one being asked for. A .gifv is a page wrapping the video, so a capture of it
+     * is of no use to a thumbnail; the still Imgur generates or the video itself both are.
+     *
+     * @return The addresses worth asking the archive about, in order of preference.
+     */
+    private static List<String> videoCandidates(HttpUrl url) {
+        String path = url.encodedPath();
+        int dot = path.lastIndexOf('.');
+        String id = path.substring(1, dot);
+
+        // The sized copy of a video still carries the suffix, and it is not part of the id.
+        // Only a length that is one over an ordinary id can be one, since plenty of ids end in
+        // one of those letters in their own right.
+        if ((id.length() == 6 || id.length() == 8)
+                && SIZE_SUFFIXES.indexOf(id.charAt(id.length() - 1)) >= 0) {
+            id = id.substring(0, id.length() - 1);
+        }
+
+        String base = url.scheme() + "://" + url.host() + "/" + id;
+        List<String> candidates = new ArrayList<>();
+        if (path.toLowerCase(Locale.ROOT).endsWith(".mp4")) {
+            // Being asked for the video itself, so a still would not play.
+            candidates.add(base + ".mp4");
+        } else {
+            candidates.add(base + ".jpg");
+            candidates.add(base + ".mp4");
+        }
+        return candidates;
     }
 
     @NonNull
@@ -131,7 +178,20 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
         String contentUrl = url.toString();
         String snapshot;
         try {
-            snapshot = WaybackMachine.findSnapshot(contentUrl);
+            if (isVideo(url.encodedPath())) {
+                snapshot = null;
+                for (String candidate : videoCandidates(url)) {
+                    snapshot = WaybackMachine.findSnapshot(candidate, true);
+                    if (snapshot != null) {
+                        break;
+                    }
+                }
+                return snapshot == null
+                        ? missing(contentUrl, response)
+                        : serve(chain, request, contentUrl, snapshot, response);
+            }
+
+            snapshot = WaybackMachine.findSnapshot(contentUrl, true);
 
             // Sync asks for a sized copy in places such as the feed, and the archive rarely
             // holds those: it captured what pages linked to, which is the image itself. The
@@ -141,7 +201,7 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
                 if (fullSize != null) {
                     Logger.printInfo(() -> "No archived copy of the sized " + contentUrl
                             + ", trying the full image");
-                    snapshot = WaybackMachine.findSnapshot(fullSize);
+                    snapshot = WaybackMachine.findSnapshot(fullSize, true);
                 }
             }
 
@@ -151,7 +211,7 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
             if (snapshot == null) {
                 String cover = albumCover(contentUrl);
                 if (cover != null) {
-                    snapshot = WaybackMachine.findSnapshot(cover);
+                    snapshot = WaybackMachine.findSnapshot(cover, true);
                 }
             }
         } catch (JSONException ex) {
@@ -163,13 +223,20 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
             return response;
         }
 
-        if (snapshot == null) {
-            Logger.printInfo(() -> "No archived copy of " + contentUrl);
-            return response;
-        }
+        return snapshot == null
+                ? missing(contentUrl, response)
+                : serve(chain, request, contentUrl, snapshot, response);
+    }
 
+    private static Response missing(String contentUrl, Response response) {
+        Logger.printInfo(() -> "No archived copy of " + contentUrl);
+        return response;
+    }
+
+    private static Response serve(Chain chain, Request request, String contentUrl,
+                                  String snapshot, Response response) throws IOException {
         // Closed only once a replacement is certain, so the original is still returned intact
-        // on any of the paths above.
+        // on any of the paths that decline to use one.
         response.close();
 
         Logger.printInfo(() -> "Serving " + contentUrl + " from the Wayback Machine");

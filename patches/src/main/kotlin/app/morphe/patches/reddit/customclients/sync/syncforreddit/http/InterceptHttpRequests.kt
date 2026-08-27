@@ -2,6 +2,8 @@ package app.morphe.patches.reddit.customclients.sync.syncforreddit.http
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.instructions
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
@@ -10,6 +12,7 @@ import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 internal const val OKHTTP_EXTENSION_CLASS_DESCRIPTOR =
@@ -91,6 +94,61 @@ val interceptHttpRequests = bytecodePatch(
             )
         }
 
+        // region The video player, which reads through a client of its own.
+
+        exoPlayerDataSourceFingerprint.method.apply {
+            val clientIndex = indexOfFirstInstructionOrThrow {
+                opcode == Opcode.INVOKE_STATIC &&
+                        getReference<MethodReference>()?.returnType == "Lokhttp3/OkHttpClient;"
+            }
+            val clientRegister = getInstruction<OneRegisterInstruction>(clientIndex + 1).registerA
+
+            addInstructions(
+                clientIndex + 2,
+                """
+                invoke-static       { v$clientRegister }, $OKHTTP_EXTENSION_CLASS_DESCRIPTOR->$INSTALL_CLIENT_METHOD
+                move-result-object  v$clientRegister
+                """
+            )
+
+            // The player only reads through that client while Sync is caching videos. With the
+            // setting off it builds a plain data source, which reaches the network on its own
+            // and so is not seen here at all. Handing that one the client backed factory leaves
+            // it able to open local files as before while its requests become visible.
+            val factoryField = instructions.first {
+                it.opcode == Opcode.IPUT_OBJECT &&
+                        it.getReference<FieldReference>()?.type == OKHTTP_DATA_SOURCE_FACTORY
+            }.getReference<FieldReference>()!!
+
+            val plainSourceIndex = indexOfFirstInstructionOrThrow {
+                val reference = getReference<MethodReference>()
+                reference?.definingClass == DEFAULT_DATA_SOURCE_FACTORY &&
+                        reference.name == "<init>" && reference.parameterTypes.size == 1
+            }
+            val construction = getInstruction<FiveRegisterInstruction>(plainSourceIndex)
+            val instanceRegister = construction.registerC
+            val contextRegister = construction.registerD
+
+            // Free by this point: what it last held was consumed when the cache was attached.
+            val thisRegister = implementation!!.registerCount - 1
+            val freeRegister = (0 until implementation!!.registerCount).first {
+                it != instanceRegister && it != contextRegister && it != thisRegister
+            }
+
+            addInstructions(
+                plainSourceIndex,
+                "iget-object v$freeRegister, p0, ${factoryField.definingClass}->" +
+                        "${factoryField.name}:${factoryField.type}"
+            )
+            replaceInstruction(
+                plainSourceIndex + 1,
+                "invoke-direct       { v$instanceRegister, v$contextRegister, v$freeRegister }, " +
+                        "$DEFAULT_DATA_SOURCE_FACTORY-><init>(Landroid/content/Context;" +
+                        "Lcom/google/android/exoplayer2/upstream/DataSource\$Factory;)V"
+            )
+        }
+
         // endregion
+
     }
 }
