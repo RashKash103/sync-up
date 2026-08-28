@@ -13,3 +13,12 @@ internal val postThumbnailBindFingerprint = Fingerprint(
     parameters = listOf(POST_MODEL),
     returnType = "V",
 )
+
+/**
+ * Binds a post to the larger image a card shows, which is a different view from the thumbnail
+ * beside a compact post and takes the post from a field rather than a parameter. Identified by
+ * the two traces it leaves while working out how tall the image should be.
+ */
+internal val cardMediaBindFingerprint = Fingerprint(
+    strings = listOf("Calculated: ", "Calculated 2: "),
+)
