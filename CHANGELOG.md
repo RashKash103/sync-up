@@ -1,3 +1,9 @@
+## [1.2.0-dev.21](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.20...v1.2.0-dev.21) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Stop a slow archive putting an error in front of the user ([786c412](https://github.com/RashKash103/sync-up/commit/786c412fc158f26a3f23d47c1d2d7004735bb57c))
+
 ## [1.2.0-dev.20](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.19...v1.2.0-dev.20) (2026-08-28)
 
 ### 🐛 Bug Fixes
