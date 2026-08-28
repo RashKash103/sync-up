@@ -1,3 +1,9 @@
+## [1.2.1-dev.3](https://github.com/RashKash103/sync-up/compare/v1.2.1-dev.2...v1.2.1-dev.3) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Stop calling every missing name a deleted account ([2c98f15](https://github.com/RashKash103/sync-up/commit/2c98f15e0cec7c71d626a03281f8e2c7ed7e2cc8))
+
 ## [1.2.1-dev.2](https://github.com/RashKash103/sync-up/compare/v1.2.1-dev.1...v1.2.1-dev.2) (2026-08-28)
 
 ### 🐛 Bug Fixes
