@@ -1,3 +1,10 @@
+## [1.2.0-dev.20](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.19...v1.2.0-dev.20) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Answer a .gifv with the video rather than a still ([cd25664](https://github.com/RashKash103/sync-up/commit/cd25664f923a13f59824659480c56a4c8c58c41f))
+* Ask the archive about a thread by its id alone ([8a5c4f4](https://github.com/RashKash103/sync-up/commit/8a5c4f42e37d886f62c67eea1cb956607328e0c1))
+
 ## [1.2.0-dev.19](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.18...v1.2.0-dev.19) (2026-08-28)
 
 ### 🐛 Bug Fixes

@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-28T00:21:16",
-  "description": "## [1.2.0-dev.19](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.18...v1.2.0-dev.19) (2026-08-28)\n\n### 🐛 Bug Fixes\n\n* Put back a name where only the account was deleted ([8acd4f3](https://github.com/RashKash103/sync-up/commit/8acd4f3b0a60d421d2cfd38b323810d0a940bb81))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.19/patches-1.2.0-dev.19.mpp",
+  "created_at": "2026-08-28T00:43:56",
+  "description": "## [1.2.0-dev.20](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.19...v1.2.0-dev.20) (2026-08-28)\n\n### 🐛 Bug Fixes\n\n* Answer a .gifv with the video rather than a still ([cd25664](https://github.com/RashKash103/sync-up/commit/cd25664f923a13f59824659480c56a4c8c58c41f))\n* Ask the archive about a thread by its id alone ([8a5c4f4](https://github.com/RashKash103/sync-up/commit/8a5c4f42e37d886f62c67eea1cb956607328e0c1))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.20/patches-1.2.0-dev.20.mpp",
   "signature_download_url": "",
-  "version": "1.2.0-dev.19"
+  "version": "1.2.0-dev.20"
 }
