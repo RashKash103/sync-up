@@ -1,5 +1,6 @@
 package app.morphe.patches.reddit.customclients.sync.syncforreddit.http
 
+import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
@@ -34,6 +35,41 @@ val interceptHttpRequests = bytecodePatch(
     compatibleWith(*SyncForRedditCompatible)
 
     execute {
+        // region Every client Sync hands out.
+
+        // Sync keeps its clients in one helper and reaches them through getters. Hooking those
+        // covers whatever asks for one, which hooking the places that use them does not: the
+        // video player builds a data source straight from two of these getters rather than
+        // from the holder that everything else goes through, so its requests were the only
+        // ones the extension never saw.
+        OKHTTP_HELPER_CLIENT_GETTERS.forEach { name ->
+            Fingerprint(
+                definingClass = OKHTTP_HELPER_CLASS,
+                name = name,
+                parameters = listOf(),
+                returnType = "Lokhttp3/OkHttpClient;",
+            ).method.apply {
+                // A getter can return from more than one place, and every one of them hands out
+                // a client.
+                instructions.withIndex()
+                    .filter { (_, instruction) -> instruction.opcode == Opcode.RETURN_OBJECT }
+                    .map { (index, _) -> index }
+                    .reversed()
+                    .forEach { index ->
+                        val register = getInstruction<OneRegisterInstruction>(index).registerA
+                        addInstructions(
+                            index,
+                            """
+                            invoke-static       { v$register }, $OKHTTP_EXTENSION_CLASS_DESCRIPTOR->$INSTALL_CLIENT_METHOD
+                            move-result-object  v$register
+                            """
+                        )
+                    }
+            }
+        }
+
+        // endregion
+
         // region Volley, which carries every Reddit API request.
 
         volleyPerformRequestFingerprint.method.apply {

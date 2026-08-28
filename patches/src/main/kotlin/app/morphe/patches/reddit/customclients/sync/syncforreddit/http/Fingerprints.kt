@@ -64,3 +64,8 @@ internal val exoPlayerDataSourceFingerprint = Fingerprint(
         } == true
     },
 )
+
+/** Sync's holder for the several clients it uses, each reached through a getter of its own. */
+internal const val OKHTTP_HELPER_CLASS = "La8/a;"
+
+internal val OKHTTP_HELPER_CLIENT_GETTERS = listOf("a", "b", "c", "d", "e")

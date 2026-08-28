@@ -47,6 +47,11 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
      * call with, so the result is cached rather than rebuilt per request.
      */
     public static synchronized OkHttpClient install(OkHttpClient client) {
+        if (client == null) {
+            // Sync hands out its clients through getters that read a field, and a field can be
+            // read before it has been filled in.
+            return null;
+        }
         init();
 
         OkHttpClient existing = instrumented.get(client);
