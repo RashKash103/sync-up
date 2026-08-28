@@ -1,3 +1,9 @@
+## [1.2.0-dev.25](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.24...v1.2.0-dev.25) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Instrument every client Sync hands out, not every place it uses one ([652d445](https://github.com/RashKash103/sync-up/commit/652d445dcbf40c7f8ee95bd6671c626f6ea2f647))
+
 ## [1.2.0-dev.24](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.23...v1.2.0-dev.24) (2026-08-28)
 
 ### 🐛 Bug Fixes
