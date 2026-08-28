@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-27T23:20:44",
-  "description": "## [1.2.0-dev.17](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.16...v1.2.0-dev.17) (2026-08-27)\n\n### 🐛 Bug Fixes\n\n* Recover Imgur videos the way images already were ([cf9d739](https://github.com/RashKash103/sync-up/commit/cf9d739c06f96dd5663ce410f63895f4256be062))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.17/patches-1.2.0-dev.17.mpp",
+  "created_at": "2026-08-28T00:14:54",
+  "description": "## [1.2.0-dev.18](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.17...v1.2.0-dev.18) (2026-08-28)\n\n### 🐛 Bug Fixes\n\n* Accept ranged captures from the archive ([43c0cb2](https://github.com/RashKash103/sync-up/commit/43c0cb2b7ac9178efdab84bcf2f876d1d977ae27))\n* Judge a removed Imgur video by what was asked for ([588b154](https://github.com/RashKash103/sync-up/commit/588b1544f4db0f5820ea610ead61ab6c599834d4))\n* Record the thumbnails a feed of cards loads ([d62c854](https://github.com/RashKash103/sync-up/commit/d62c8548aa9bac83aeeffa735ce1b5e6474a5b6e))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.18/patches-1.2.0-dev.18.mpp",
   "signature_download_url": "",
-  "version": "1.2.0-dev.17"
+  "version": "1.2.0-dev.18"
 }

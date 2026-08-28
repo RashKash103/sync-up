@@ -1,3 +1,11 @@
+## [1.2.0-dev.18](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.17...v1.2.0-dev.18) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Accept ranged captures from the archive ([43c0cb2](https://github.com/RashKash103/sync-up/commit/43c0cb2b7ac9178efdab84bcf2f876d1d977ae27))
+* Judge a removed Imgur video by what was asked for ([588b154](https://github.com/RashKash103/sync-up/commit/588b1544f4db0f5820ea610ead61ab6c599834d4))
+* Record the thumbnails a feed of cards loads ([d62c854](https://github.com/RashKash103/sync-up/commit/d62c8548aa9bac83aeeffa735ce1b5e6474a5b6e))
+
 ## [1.2.0-dev.17](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.16...v1.2.0-dev.17) (2026-08-27)
 
 ### 🐛 Bug Fixes
