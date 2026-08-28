@@ -115,7 +115,8 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
         JSONObject submission = firstChildData(listings.optJSONObject(0));
         JSONArray comments = childrenOf(listings.optJSONObject(1));
 
-        boolean submissionRemoved = submission != null && isRemoved(submission, "selftext");
+        boolean submissionRemoved = submission != null
+                && (isRemoved(submission, "selftext") || isDeletedAuthor(submission));
         Set<String> removedComments = new HashSet<>();
         if (comments != null) {
             collectRemoved(comments, removedComments);
@@ -130,13 +131,23 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
         if (submissionRemoved) {
             JSONObject archived = ArcticShift.getSubmission(submissionId);
             if (archived != null) {
-                changed |= merge(submission, archived, "selftext");
+                if (isRemoved(submission, "selftext")) {
+                    changed |= merge(submission, archived, "selftext");
+                }
+                changed |= restoreAuthor(submission, archived);
             }
         }
 
         if (!removedComments.isEmpty()) {
+            int wanted = removedComments.size();
             Map<String, JSONObject> archived = ArcticShift.getCommentTree(submissionId);
+            Logger.printInfo(() -> "Thread " + submissionId + ": " + wanted
+                    + " comments to restore, " + archived.size() + " archived");
+
             if (!archived.isEmpty()) {
+                removedComments.retainAll(archived.keySet());
+                Logger.printInfo(() -> "Thread " + submissionId + ": the archive has "
+                        + removedComments.size() + " of them");
                 changed |= restoreComments(comments, archived);
             }
         }
@@ -174,7 +185,9 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
             JSONObject data = child.optJSONObject("data");
             if (data == null) continue;
 
-            if (isRemoved(data, "body")) {
+            // An account that has been deleted takes the name off comments whose text is
+            // still there, so the text is not the only thing worth asking about.
+            if (isRemoved(data, "body") || isDeletedAuthor(data)) {
                 String id = data.optString("id", null);
                 if (id != null) into.add(id);
             }
@@ -194,11 +207,14 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
             JSONObject data = child.optJSONObject("data");
             if (data == null) continue;
 
-            if (isRemoved(data, "body")) {
-                JSONObject source = archived.get(data.optString("id", ""));
-                if (source != null) {
+            JSONObject source = archived.get(data.optString("id", ""));
+            if (source != null) {
+                if (isRemoved(data, "body")) {
                     changed |= merge(data, source, "body");
                 }
+                // Restored on its own as well, since a comment can keep its text and lose only
+                // the name above it.
+                changed |= restoreAuthor(data, source);
             }
 
             JSONArray replies = repliesOf(data);
@@ -230,13 +246,27 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
         }
 
         target.put(textField, RemovalReason.markerFor(source) + " " + text);
+        return true;
+    }
 
-        if (DELETED.equals(target.optString("author", ""))) {
-            String author = source.optString("author", "");
-            if (!author.isEmpty() && !DELETED.equals(author)) {
-                target.put("author", author);
-            }
+    private static boolean isDeletedAuthor(JSONObject node) {
+        return DELETED.equals(node.optString("author", ""));
+    }
+
+    /**
+     * Puts back a name Reddit no longer serves, left plain rather than marked: the text it sits
+     * above is what was removed, and the name is only missing because the account went with it.
+     */
+    private static boolean restoreAuthor(JSONObject target, JSONObject source)
+            throws JSONException {
+        if (!isDeletedAuthor(target)) {
+            return false;
         }
+        String author = source.optString("author", "");
+        if (author.isEmpty() || DELETED.equals(author) || REMOVED.equals(author)) {
+            return false;
+        }
+        target.put("author", author);
         return true;
     }
 }
