@@ -1,3 +1,40 @@
+## [1.3.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.3.0-dev.2...v1.3.0-dev.3) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Fill in a profile Reddit refuses, not only an empty one ([9627839](https://github.com/RashKash103/sync-up/commit/9627839762286c8ab738eab72c9cf15dbfda5d74))
+
+## [1.3.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.3.0-dev.1...v1.3.0-dev.2) (2026-08-28)
+
+### ✨ New Features
+
+* Play a video posted in a comment ([2c53439](https://github.com/RashKash103/sync-up/commit/2c534392a0e1a95a29e48a9b342430b01c8d024f))
+
+## [1.3.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.2.1-dev.3...v1.3.0-dev.1) (2026-08-28)
+
+### ✨ New Features
+
+* Page an archived profile, and mix its overview ([29dbd4a](https://github.com/RashKash103/sync-up/commit/29dbd4abb5055b75b63d2bfe2e04527b255d4ad7))
+* Show a hidden profile from the archive ([627d2a7](https://github.com/RashKash103/sync-up/commit/627d2a7a447c2c03dcc9437ccab0259c31fee2d4))
+
+## [1.2.1-dev.3](https://github.com/RashKash103/sync-up/compare/v1.2.1-dev.2...v1.2.1-dev.3) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Stop calling every missing name a deleted account ([2c98f15](https://github.com/RashKash103/sync-up/commit/2c98f15e0cec7c71d626a03281f8e2c7ed7e2cc8))
+
+## [1.2.1-dev.2](https://github.com/RashKash103/sync-up/compare/v1.2.1-dev.1...v1.2.1-dev.2) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Replace a Redgifs token on any refusal, not only a 401 ([3a725fd](https://github.com/RashKash103/sync-up/commit/3a725fd2515090dbe4651ca81d994772dd6f864e))
+
+## [1.2.1-dev.1](https://github.com/RashKash103/sync-up/compare/v1.2.0...v1.2.1-dev.1) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Ask for a new Redgifs token when the one held is refused ([0e0dd3d](https://github.com/RashKash103/sync-up/commit/0e0dd3da093dcc6db58d52c7a1a0d22639646937))
+
 ## [1.2.0](https://github.com/RashKash103/sync-up/compare/v1.1.0...v1.2.0) (2026-08-28)
 
 ### 🐛 Bug Fixes
