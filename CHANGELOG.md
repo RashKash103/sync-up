@@ -1,3 +1,9 @@
+## [1.3.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.3.0-dev.2...v1.3.0-dev.3) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Fill in a profile Reddit refuses, not only an empty one ([9627839](https://github.com/RashKash103/sync-up/commit/9627839762286c8ab738eab72c9cf15dbfda5d74))
+
 ## [1.3.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.3.0-dev.1...v1.3.0-dev.2) (2026-08-28)
 
 ### ✨ New Features
