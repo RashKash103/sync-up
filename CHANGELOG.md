@@ -1,3 +1,9 @@
+## [1.3.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.3.0-dev.1...v1.3.0-dev.2) (2026-08-28)
+
+### ✨ New Features
+
+* Play a video posted in a comment ([2c53439](https://github.com/RashKash103/sync-up/commit/2c534392a0e1a95a29e48a9b342430b01c8d024f))
+
 ## [1.3.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.2.1-dev.3...v1.3.0-dev.1) (2026-08-28)
 
 ### ✨ New Features
