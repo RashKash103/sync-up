@@ -44,7 +44,12 @@ public abstract class BaseFixRedgifsApiPatch extends PatchedditInterceptor {
             }
             // It's possible that the user agent is being overwritten later down in the interceptor
             // chain, so make sure we grab the new user agent from the request headers.
-            userAgent = response.request().header("User-Agent");
+            int refusedCode = response.code();
+            Logger.printInfo(() -> "Redgifs turned down the token Sync holds: " + refusedCode);
+            String rewritten = response.request().header("User-Agent");
+            if (rewritten != null) {
+                userAgent = rewritten;
+            }
             response.close();
             // Whatever token that request carried was turned down, so any token held here for
             // the same user agent is no more likely to be accepted.
@@ -70,15 +75,16 @@ public abstract class BaseFixRedgifsApiPatch extends PatchedditInterceptor {
             }
 
             Response response = chain.proceed(authorized(request, token, userAgent));
-            if (!isRefusal(response)) {
+            if (!worthAnotherToken(response)) {
                 return response;
             }
-
-            // The token was refused although it has not expired, which is what happens after
-            // moving between networks: Redgifs ties a temporary token to the address it was
-            // issued for. Nothing in the token says so, so the only way to find out is to be
-            // turned down, and the only way out of it used to be restarting the app.
-            Logger.printInfo(() -> "The Redgifs token was refused, asking for another");
+            // A token that has not expired can still be refused, which is what happens after
+            // moving between networks: Redgifs ties one to the address it was issued for.
+            // Nothing in the token says so, so being turned down is the only way to find out,
+            // and restarting the app used to be the only way out of it.
+            int refusedWith = response.code();
+            Logger.printInfo(() -> "Redgifs answered " + refusedWith + " for " + request.url()
+                    + ", asking for another token");
             response.close();
 
             RedgifsTokenManager.RedgifsToken replacement =
@@ -87,7 +93,7 @@ public abstract class BaseFixRedgifsApiPatch extends PatchedditInterceptor {
 
             // A token that has just been issued and is refused straight away is not a token
             // that went stale: Redgifs is turning down the request itself.
-            if (isRefusal(retried)) {
+            if (!retried.isSuccessful()) {
                 Logger.printInfo(() -> "Redgifs refused " + request.url() + " with a new token: "
                         + retried.code());
             }
@@ -107,10 +113,13 @@ public abstract class BaseFixRedgifsApiPatch extends PatchedditInterceptor {
     }
 
     /**
-     * Redgifs turns down a token it will not accept rather than saying it has expired.
+     * Redgifs does not say that a token has stopped being usable, and it has not been
+     * consistent about how it turns one down, so anything short of success is worth one attempt
+     * with a new token. The exception is a gif that is simply not there, which a new token
+     * would not conjure up.
      */
-    private static boolean isRefusal(Response response) {
-        return response.code() == HttpURLConnection.HTTP_UNAUTHORIZED
-                || response.code() == HttpURLConnection.HTTP_FORBIDDEN;
+    private static boolean worthAnotherToken(Response response) {
+        return !response.isSuccessful()
+                && response.code() != HttpURLConnection.HTTP_NOT_FOUND;
     }
 }
