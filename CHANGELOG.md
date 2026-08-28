@@ -1,3 +1,11 @@
+## [1.2.0-dev.23](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.22...v1.2.0-dev.23) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Colour the recovery note, and stop feeding the player a placeholder ([df83bb3](https://github.com/RashKash103/sync-up/commit/df83bb37018b6df51967e90771e4e61c945dfa07))
+* Recover an Imgur image linked in a comment ([6fb6e81](https://github.com/RashKash103/sync-up/commit/6fb6e81d4347dc94f630e14e8dcada69764dc5e8))
+* Stop a busy archive making everything unrecoverable ([40f2be6](https://github.com/RashKash103/sync-up/commit/40f2be6565267346dd502caa2f846a6a60e67a74))
+
 ## [1.2.0-dev.22](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.21...v1.2.0-dev.22) (2026-08-28)
 
 ### ✨ New Features
