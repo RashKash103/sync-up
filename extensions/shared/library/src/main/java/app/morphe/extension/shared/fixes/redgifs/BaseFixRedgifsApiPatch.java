@@ -44,8 +44,6 @@ public abstract class BaseFixRedgifsApiPatch extends PatchedditInterceptor {
             }
             // It's possible that the user agent is being overwritten later down in the interceptor
             // chain, so make sure we grab the new user agent from the request headers.
-            int refusedCode = response.code();
-            Logger.printInfo(() -> "Redgifs turned down the token Sync holds: " + refusedCode);
             String rewritten = response.request().header("User-Agent");
             if (rewritten != null) {
                 userAgent = rewritten;
