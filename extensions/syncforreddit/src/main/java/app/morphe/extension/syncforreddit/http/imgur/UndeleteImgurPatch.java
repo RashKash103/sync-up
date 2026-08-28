@@ -165,12 +165,14 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
 
         String base = url.scheme() + "://" + url.host() + "/" + id;
         List<String> candidates = new ArrayList<>();
-        if (path.toLowerCase(Locale.ROOT).endsWith(".mp4")) {
-            // Being asked for the video itself, so a still would not play.
-            candidates.add(base + ".mp4");
-        } else {
+
+        // The video first, whatever was asked for. A .gifv is the address Sync uses for the
+        // player as well as for the thumbnail, and answering it with a still leaves the player
+        // reporting that nothing can read the stream. A video serves both: Glide pulls a frame
+        // out of it for the thumbnail. The still is only worth having where no video survives.
+        candidates.add(base + ".mp4");
+        if (!path.toLowerCase(Locale.ROOT).endsWith(".mp4")) {
             candidates.add(base + ".jpg");
-            candidates.add(base + ".mp4");
         }
         return candidates;
     }
