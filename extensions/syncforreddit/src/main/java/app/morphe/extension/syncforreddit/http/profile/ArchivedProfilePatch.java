@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -76,7 +77,16 @@ public class ArchivedProfilePatch extends PatchedditInterceptor {
         }
 
         Response response = chain.proceed(request);
-        if (!response.isSuccessful() || response.body() == null) {
+
+        // A profile can be hidden in more than one way and Reddit does not answer them alike:
+        // one comes back as a listing with nothing in it, another is refused outright. Both mean
+        // the same thing here, and an account that is merely hidden goes on writing, so being
+        // refused says nothing about whether there is anything to show.
+        boolean refused = isRefusal(response);
+        if (!refused && !response.isSuccessful()) {
+            return response;
+        }
+        if (response.body() == null) {
             return response;
         }
 
@@ -86,7 +96,7 @@ public class ArchivedProfilePatch extends PatchedditInterceptor {
         response.close();
 
         try {
-            if (!isEmptyListing(original)) {
+            if (!refused && !isEmptyListing(original)) {
                 return rebuilt(response, request, contentType, original);
             }
 
@@ -94,14 +104,19 @@ public class ArchivedProfilePatch extends PatchedditInterceptor {
             JSONArray archived = fetch(tab, before);
             if (archived.length() == 0) {
                 Logger.printInfo(() -> "The archive has no more " + tab.kind + " by " + tab.author);
-                return rebuilt(response, request, contentType, listing(archived, false));
+                // Nothing to put in its place, so a refusal is left as one rather than being
+                // dressed up as an empty profile.
+                return refused
+                        ? rebuilt(response, request, contentType, original)
+                        : rebuilt(response, request, contentType, listing(archived, false));
             }
 
             Logger.printInfo(() -> "Serving " + archived.length() + " archived " + tab.kind
-                    + " by " + tab.author + ", whose profile Reddit lists as empty");
+                    + " by " + tab.author + ", whose profile Reddit "
+                    + (refused ? "will not show" : "lists as empty"));
             // A short page is the end of what the archive holds, so say so rather than offering
             // a cursor that would come back empty.
-            return rebuilt(response, request, contentType,
+            return served(response, request, contentType,
                     listing(archived, archived.length() >= PAGE));
         } catch (JSONException ex) {
             Logger.printException(() -> "Could not read the archived profile of " + tab.author, ex);
@@ -279,6 +294,28 @@ public class ArchivedProfilePatch extends PatchedditInterceptor {
         listing.put("kind", "Listing");
         listing.put("data", data);
         return listing.toString();
+    }
+
+    /**
+     * Reddit refuses a profile it will not show rather than saying it is empty.
+     */
+    private static boolean isRefusal(Response response) {
+        return response.code() == HttpURLConnection.HTTP_NOT_FOUND
+                || response.code() == HttpURLConnection.HTTP_FORBIDDEN;
+    }
+
+    /**
+     * A listing that stands in for what Reddit would not give, which has to arrive as an answer
+     * rather than as the refusal it is replacing.
+     */
+    private static Response served(Response response, Request request, MediaType contentType,
+                                   String body) {
+        return rebuilt(response, request, contentType, body).newBuilder()
+                .code(HttpURLConnection.HTTP_OK)
+                .message("OK")
+                .body(ResponseBody.create(body,
+                        contentType == null ? MediaType.get("application/json") : contentType))
+                .build();
     }
 
     private static Response rebuilt(Response response, Request request, MediaType contentType,
