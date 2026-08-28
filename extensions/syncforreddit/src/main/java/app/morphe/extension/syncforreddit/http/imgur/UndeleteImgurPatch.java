@@ -36,6 +36,9 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
     /** The letters Imgur appends to an id for its sized copies. */
     private static final String SIZE_SUFFIXES = "sbtmlh";
 
+    private static final String[] MEDIA_EXTENSIONS =
+            {".jpg", ".jpeg", ".png", ".gif", ".gifv", ".mp4", ".webp"};
+
     @Override
     public boolean isPatchIncluded() {
         // Overridden by patch.
@@ -106,21 +109,33 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
      * image carrying the words "The image you are requesting does not exist or is no longer
      * available", which arrives as a perfectly ordinary 200 and gets displayed as the picture.
      */
-    private static boolean isMissing(Response response) {
+    private static boolean isMissing(HttpUrl requested, Response response) {
         if (response.code() == HttpURLConnection.HTTP_NOT_FOUND) {
             return true;
         }
         // The request the response came from, which after a redirect is the placeholder.
-        String path = response.request().url().encodedPath();
-        if (path.startsWith("/removed.")) {
+        if (response.request().url().encodedPath().startsWith("/removed.")) {
             return true;
         }
 
-        // A video Imgur no longer holds is answered with a page rather than a redirect, and the
-        // status is a plain 200. Nothing downstream can do anything with it: the player reports
-        // that it recognises no format, and Glide fails to pull a frame out of it.
+        // A video Imgur no longer holds is answered with a redirect to its front page, which is
+        // an ordinary 200 by the time it arrives here. Judging that by where it landed would
+        // look at a path that is not media at all, so the address originally asked for is what
+        // decides. Nothing downstream can do anything with the page: the player reports that it
+        // recognises no format, and Glide fails to pull a frame out of it.
         String contentType = response.header("Content-Type", "");
-        return isVideo(path) && contentType != null && contentType.startsWith("text/");
+        return isMedia(requested.encodedPath())
+                && contentType != null && contentType.startsWith("text/");
+    }
+
+    private static boolean isMedia(String path) {
+        String lower = path.toLowerCase(Locale.ROOT);
+        for (String extension : MEDIA_EXTENSIONS) {
+            if (lower.endsWith(extension)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isVideo(String path) {
@@ -171,7 +186,7 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
         }
 
         Response response = chain.proceed(request);
-        if (!isMissing(response)) {
+        if (!isMissing(url, response)) {
             return response;
         }
 
