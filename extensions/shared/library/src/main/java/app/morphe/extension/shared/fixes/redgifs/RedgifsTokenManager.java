@@ -13,6 +13,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.requests.Requester;
 
 
@@ -58,6 +59,15 @@ public class RedgifsTokenManager {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Accept", "application/json");
         connection.setUseCaches(false);
+
+        // Says whether a token could be had at all, which is what separates a network Redgifs
+        // will not issue one on from a token that was issued and then refused.
+        int code = connection.getResponseCode();
+        if (code != HttpURLConnection.HTTP_OK) {
+            Logger.printInfo(() -> "Redgifs would not issue a token: " + code + " "
+                    + connection.getHeaderField("Content-Type"));
+            throw new IOException("Redgifs answered " + code + " asking for a token");
+        }
 
         JSONObject responseObject = Requester.parseJSONObject(connection);
         return responseObject.getString("token");

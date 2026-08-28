@@ -83,7 +83,15 @@ public abstract class BaseFixRedgifsApiPatch extends PatchedditInterceptor {
 
             RedgifsTokenManager.RedgifsToken replacement =
                     RedgifsTokenManager.refreshToken(userAgent, true);
-            return chain.proceed(authorized(request, replacement, userAgent));
+            Response retried = chain.proceed(authorized(request, replacement, userAgent));
+
+            // A token that has just been issued and is refused straight away is not a token
+            // that went stale: Redgifs is turning down the request itself.
+            if (isRefusal(retried)) {
+                Logger.printInfo(() -> "Redgifs refused " + request.url() + " with a new token: "
+                        + retried.code());
+            }
+            return retried;
         } catch (JSONException ex) {
             Logger.printException(() -> "Could not parse Redgifs response", ex);
             throw new IOException(ex);
