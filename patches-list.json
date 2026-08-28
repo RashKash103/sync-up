@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0-dev.21",
+  "version": "1.2.0-dev.22",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -36,7 +36,7 @@
     },
     {
       "name": "Automatically undelete Reddit content",
-      "description": "Restores the text of removed posts and comments from Project Arctic Shift. Restored text is marked to show why it was taken down. Only text can be recovered, and only where the archive has it.",
+      "description": "Restores the text of removed posts and comments from Project Arctic Shift, and the name of an author whose account has since been deleted. A comment says why it was taken down on the line under its author. Only text can be recovered, and only where the archive has it.",
       "use": false,
       "dependencies": [
         "BytecodePatch",

@@ -1,3 +1,9 @@
+## [1.2.0-dev.22](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.21...v1.2.0-dev.22) (2026-08-28)
+
+### ✨ New Features
+
+* Say why a comment was removed under its author ([5f9a8f0](https://github.com/RashKash103/sync-up/commit/5f9a8f0844c111ceb0e46d6c8526d52414eb3205))
+
 ## [1.2.0-dev.21](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.20...v1.2.0-dev.21) (2026-08-28)
 
 ### 🐛 Bug Fixes

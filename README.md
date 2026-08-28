@@ -35,7 +35,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.2.0-dev.21](https://github.com/RashKash103/sync-up/releases/tag/v1.2.0-dev.21)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;16 patches total
+> **[v1.2.0-dev.22](https://github.com/RashKash103/sync-up/releases/tag/v1.2.0-dev.22)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;16 patches total
 <details open>
 <summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;15 patches</summary>
 <br>
@@ -49,7 +49,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 |----------|----------------|-----------|
 | [Add archive links to menus](#add-archive-links-to-menus) | Adds Wayback Machine and archive.today options to the menu behind a post's overflow button and to the one behind a link, next to "Open in browser". Useful for reading a page that has since been taken down or put behind a paywall. Nothing is requested until one of them is tapped. |  |
 | [Automatically undelete Imgur images](#automatically-undelete-imgur-images) | Loads Imgur images that no longer exist from the Wayback Machine. Imgur removed a large amount of older content, so links in old posts often fail. Only images the archive happens to hold can be recovered. |  |
-| [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift. Restored text is marked to show why it was taken down. Only text can be recovered, and only where the archive has it. |  |
+| [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift, and the name of an author whose account has since been deleted. A comment says why it was taken down on the line under its author. Only text can be recovered, and only where the archive has it. |  |
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
 | [Disable ads](#disable-ads) |  |  |
 | [Fix /s/ links](#fix-s-links) |  |  |
@@ -73,7 +73,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 |----------|----------------|-----------|
 | [Add archive links to menus](#add-archive-links-to-menus) | Adds Wayback Machine and archive.today options to the menu behind a post's overflow button and to the one behind a link, next to "Open in browser". Useful for reading a page that has since been taken down or put behind a paywall. Nothing is requested until one of them is tapped. |  |
 | [Automatically undelete Imgur images](#automatically-undelete-imgur-images) | Loads Imgur images that no longer exist from the Wayback Machine. Imgur removed a large amount of older content, so links in old posts often fail. Only images the archive happens to hold can be recovered. |  |
-| [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift. Restored text is marked to show why it was taken down. Only text can be recovered, and only where the archive has it. |  |
+| [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift, and the name of an author whose account has since been deleted. A comment says why it was taken down on the line under its author. Only text can be recovered, and only where the archive has it. |  |
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
 | [Fix /s/ links](#fix-s-links) |  |  |
 | [Fix Imgur links](#fix-imgur-links) | Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests locally instead. Album contents are read from an archived copy of the album page, which only works for albums the archive captured while Imgur still rendered them. |  |
@@ -96,7 +96,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 |----------|----------------|-----------|
 | [Add archive links to menus](#add-archive-links-to-menus) | Adds Wayback Machine and archive.today options to the menu behind a post's overflow button and to the one behind a link, next to "Open in browser". Useful for reading a page that has since been taken down or put behind a paywall. Nothing is requested until one of them is tapped. |  |
 | [Automatically undelete Imgur images](#automatically-undelete-imgur-images) | Loads Imgur images that no longer exist from the Wayback Machine. Imgur removed a large amount of older content, so links in old posts often fail. Only images the archive happens to hold can be recovered. |  |
-| [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift. Restored text is marked to show why it was taken down. Only text can be recovered, and only where the archive has it. |  |
+| [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift, and the name of an author whose account has since been deleted. A comment says why it was taken down on the line under its author. Only text can be recovered, and only where the archive has it. |  |
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
 | [Fix /s/ links](#fix-s-links) |  |  |
 | [Fix Imgur links](#fix-imgur-links) | Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests locally instead. Album contents are read from an archived copy of the album page, which only works for albums the archive captured while Imgur still rendered them. |  |
