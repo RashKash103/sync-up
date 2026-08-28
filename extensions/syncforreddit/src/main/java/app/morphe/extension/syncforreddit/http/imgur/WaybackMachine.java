@@ -101,13 +101,17 @@ public class WaybackMachine {
         JSONArray rows = new JSONArray(body);
 
         // Row 0 is the column header. Later rows are snapshots, oldest first, and many of them
-        // are the redirects Imgur served on its way to removing something, so the status code
-        // has to be checked rather than simply taking the first.
+        // are the redirects Imgur served on its way to removing something, so the status has to
+        // be checked rather than simply taking the first.
         for (int i = 1; i < rows.length() && snapshots.size() < limit; i++) {
             JSONArray row = rows.optJSONArray(i);
             if (row == null || row.length() < 5) continue;
 
-            if (!"200".equals(row.optString(4, ""))) continue;
+            // A large file is often captured from a ranged request and stored as a 206. It
+            // replays in full regardless, and for video it is frequently the only capture
+            // there is.
+            String status = row.optString(4, "");
+            if (!"200".equals(status) && !"206".equals(status)) continue;
             if (mediaOnly && row.optString(3, "").startsWith("text/")) continue;
 
             String timestamp = row.optString(1, null);
