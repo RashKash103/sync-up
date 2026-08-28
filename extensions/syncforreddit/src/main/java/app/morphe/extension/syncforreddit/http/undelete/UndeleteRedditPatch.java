@@ -90,7 +90,13 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
         java.util.List<String> segments = url.pathSegments();
         for (int i = 0; i < segments.size() - 1; i++) {
             if (segments.get(i).equals("comments")) {
+                // Sync asks for a thread as <id>.json rather than putting the suffix on a
+                // later segment, and the archive knows nothing about an id carrying it.
                 String id = segments.get(i + 1);
+                int suffix = id.indexOf('.');
+                if (suffix >= 0) {
+                    id = id.substring(0, suffix);
+                }
                 return id.isEmpty() ? null : id;
             }
         }
