@@ -243,8 +243,9 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
     }
 
     /**
-     * Copies the archived text back in, marked so it is not mistaken for content Reddit still
-     * serves. Sync has no field for Boost's removal reason markers, so it goes inline.
+     * Copies the archived text back in. A submission carries the marker inline, having no line
+     * of its own to put it on, while a comment's is recorded for the header instead so that what
+     * is shown as the comment is only ever what was written.
      */
     private static boolean merge(JSONObject target, JSONObject source, String textField)
             throws JSONException {
@@ -253,7 +254,12 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
             return false;
         }
 
-        target.put(textField, RemovalReason.markerFor(source) + " " + text);
+        boolean isComment = "body".equals(textField);
+        target.put(textField, isComment ? text : RemovalReason.markerFor(source) + " " + text);
+
+        if (isComment) {
+            RestoredComments.remember(target.optString("id", ""), RemovalReason.describe(source));
+        }
         return true;
     }
 
@@ -275,6 +281,9 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
             return false;
         }
         target.put("author", author);
+        if (target.has("body")) {
+            RestoredComments.remember(target.optString("id", ""), "account deleted");
+        }
         return true;
     }
 }
