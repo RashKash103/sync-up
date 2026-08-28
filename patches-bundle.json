@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-28T02:38:12",
-  "description": "## [1.2.0-dev.25](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.24...v1.2.0-dev.25) (2026-08-28)\n\n### 🐛 Bug Fixes\n\n* Instrument every client Sync hands out, not every place it uses one ([652d445](https://github.com/RashKash103/sync-up/commit/652d445dcbf40c7f8ee95bd6671c626f6ea2f647))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.25/patches-1.2.0-dev.25.mpp",
+  "created_at": "2026-08-28T02:52:59",
+  "description": "## [1.2.0-dev.26](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.25...v1.2.0-dev.26) (2026-08-28)\n\n### ✨ New Features\n\n* Turn the recovery patches on, and drop the debugging traces ([66db805](https://github.com/RashKash103/sync-up/commit/66db805940bd6f67051e8b0f8626aeac23f9b42d))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.26/patches-1.2.0-dev.26.mpp",
   "signature_download_url": "",
-  "version": "1.2.0-dev.25"
+  "version": "1.2.0-dev.26"
 }

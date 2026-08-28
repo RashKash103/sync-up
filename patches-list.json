@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0-dev.25",
+  "version": "1.2.0-dev.26",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -18,9 +18,9 @@
       "options": []
     },
     {
-      "name": "Automatically undelete Imgur images",
-      "description": "Loads Imgur images that no longer exist from the Wayback Machine. Imgur removed a large amount of older content, so links in old posts often fail. Only images the archive happens to hold can be recovered.",
-      "use": false,
+      "name": "Automatically undelete Imgur media",
+      "description": "Loads Imgur images and videos that no longer exist from the Wayback Machine, including the still shown for a video in a feed. Imgur removed a large amount of older content, so links in old posts often fail. Nothing is requested until a link has actually failed, and only what the archive happens to hold can be recovered.",
+      "use": true,
       "dependencies": [
         "BytecodePatch",
         "BytecodePatch"
@@ -37,7 +37,7 @@
     {
       "name": "Automatically undelete Reddit content",
       "description": "Restores the text of removed posts and comments from Project Arctic Shift, and the name of an author whose account has since been deleted. A comment says why it was taken down on the line under its author. Only text can be recovered, and only where the archive has it.",
-      "use": false,
+      "use": true,
       "dependencies": [
         "BytecodePatch",
         "BytecodePatch"

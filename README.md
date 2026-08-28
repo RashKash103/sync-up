@@ -35,7 +35,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.2.0-dev.25](https://github.com/RashKash103/sync-up/releases/tag/v1.2.0-dev.25)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;16 patches total
+> **[v1.2.0-dev.26](https://github.com/RashKash103/sync-up/releases/tag/v1.2.0-dev.26)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;16 patches total
 <details open>
 <summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;15 patches</summary>
 <br>
@@ -48,7 +48,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [Add archive links to menus](#add-archive-links-to-menus) | Adds Wayback Machine and archive.today options to the menu behind a post's overflow button and to the one behind a link, next to "Open in browser". Useful for reading a page that has since been taken down or put behind a paywall. Nothing is requested until one of them is tapped. |  |
-| [Automatically undelete Imgur images](#automatically-undelete-imgur-images) | Loads Imgur images that no longer exist from the Wayback Machine. Imgur removed a large amount of older content, so links in old posts often fail. Only images the archive happens to hold can be recovered. |  |
+| [Automatically undelete Imgur media](#automatically-undelete-imgur-media) | Loads Imgur images and videos that no longer exist from the Wayback Machine, including the still shown for a video in a feed. Imgur removed a large amount of older content, so links in old posts often fail. Nothing is requested until a link has actually failed, and only what the archive happens to hold can be recovered. |  |
 | [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift, and the name of an author whose account has since been deleted. A comment says why it was taken down on the line under its author. Only text can be recovered, and only where the archive has it. |  |
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
 | [Disable ads](#disable-ads) |  |  |
@@ -72,7 +72,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [Add archive links to menus](#add-archive-links-to-menus) | Adds Wayback Machine and archive.today options to the menu behind a post's overflow button and to the one behind a link, next to "Open in browser". Useful for reading a page that has since been taken down or put behind a paywall. Nothing is requested until one of them is tapped. |  |
-| [Automatically undelete Imgur images](#automatically-undelete-imgur-images) | Loads Imgur images that no longer exist from the Wayback Machine. Imgur removed a large amount of older content, so links in old posts often fail. Only images the archive happens to hold can be recovered. |  |
+| [Automatically undelete Imgur media](#automatically-undelete-imgur-media) | Loads Imgur images and videos that no longer exist from the Wayback Machine, including the still shown for a video in a feed. Imgur removed a large amount of older content, so links in old posts often fail. Nothing is requested until a link has actually failed, and only what the archive happens to hold can be recovered. |  |
 | [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift, and the name of an author whose account has since been deleted. A comment says why it was taken down on the line under its author. Only text can be recovered, and only where the archive has it. |  |
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
 | [Fix /s/ links](#fix-s-links) |  |  |
@@ -95,7 +95,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [Add archive links to menus](#add-archive-links-to-menus) | Adds Wayback Machine and archive.today options to the menu behind a post's overflow button and to the one behind a link, next to "Open in browser". Useful for reading a page that has since been taken down or put behind a paywall. Nothing is requested until one of them is tapped. |  |
-| [Automatically undelete Imgur images](#automatically-undelete-imgur-images) | Loads Imgur images that no longer exist from the Wayback Machine. Imgur removed a large amount of older content, so links in old posts often fail. Only images the archive happens to hold can be recovered. |  |
+| [Automatically undelete Imgur media](#automatically-undelete-imgur-media) | Loads Imgur images and videos that no longer exist from the Wayback Machine, including the still shown for a video in a feed. Imgur removed a large amount of older content, so links in old posts often fail. Nothing is requested until a link has actually failed, and only what the archive happens to hold can be recovered. |  |
 | [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift, and the name of an author whose account has since been deleted. A comment says why it was taken down on the line under its author. Only text can be recovered, and only where the archive has it. |  |
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
 | [Fix /s/ links](#fix-s-links) |  |  |

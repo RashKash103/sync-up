@@ -1,3 +1,9 @@
+## [1.2.0-dev.26](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.25...v1.2.0-dev.26) (2026-08-28)
+
+### ✨ New Features
+
+* Turn the recovery patches on, and drop the debugging traces ([66db805](https://github.com/RashKash103/sync-up/commit/66db805940bd6f67051e8b0f8626aeac23f9b42d))
+
 ## [1.2.0-dev.25](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.24...v1.2.0-dev.25) (2026-08-28)
 
 ### 🐛 Bug Fixes
