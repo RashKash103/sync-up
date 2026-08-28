@@ -1,3 +1,9 @@
+## [1.2.1-dev.2](https://github.com/RashKash103/sync-up/compare/v1.2.1-dev.1...v1.2.1-dev.2) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Replace a Redgifs token on any refusal, not only a 401 ([3a725fd](https://github.com/RashKash103/sync-up/commit/3a725fd2515090dbe4651ca81d994772dd6f864e))
+
 ## [1.2.1-dev.1](https://github.com/RashKash103/sync-up/compare/v1.2.0...v1.2.1-dev.1) (2026-08-28)
 
 ### 🐛 Bug Fixes
