@@ -69,10 +69,10 @@ public final class RestoredComments {
             }
             String note = noteFor(comment.U());
             if (note != null) {
-                // Appended the way Sync colours the rest of this line, so the note reads as one
-                // of its parts rather than as something written into the comment.
-                header.c("• " + note + " ",
-                        new Object[]{new ForegroundColorSpan(NOTE_COLOUR)});
+                // The separator is appended plainly and only the wording is coloured, so the
+                // line keeps the same bullets between its parts as it has everywhere else.
+                header.b("• ");
+                header.c(note + " ", new Object[]{new ForegroundColorSpan(NOTE_COLOUR)});
             }
         } catch (Throwable ex) {
             // A comment losing its note is a far better outcome than a thread that will not draw.
