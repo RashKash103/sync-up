@@ -103,7 +103,7 @@ public class ArchivedProfilePatch extends PatchedditInterceptor {
             long before = startOf(request.url().queryParameter("after"));
             JSONArray archived = fetch(tab, before);
             if (archived.length() == 0) {
-                Logger.printInfo(() -> "The archive has no more " + tab.kind + " by " + tab.author);
+                Logger.printDebug(() -> "The archive has no more " + tab.kind + " by " + tab.author);
                 // Nothing to put in its place, so a refusal is left as one rather than being
                 // dressed up as an empty profile.
                 return refused

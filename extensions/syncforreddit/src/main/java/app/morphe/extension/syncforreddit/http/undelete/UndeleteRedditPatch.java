@@ -149,13 +149,14 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
         if (!removedComments.isEmpty()) {
             int wanted = removedComments.size();
             Map<String, JSONObject> archived = ArcticShift.getCommentTree(submissionId);
-            Logger.printInfo(() -> "Thread " + submissionId + ": " + wanted
-                    + " comments to restore, " + archived.size() + " archived");
 
             if (!archived.isEmpty()) {
                 removedComments.retainAll(archived.keySet());
-                Logger.printInfo(() -> "Thread " + submissionId + ": the archive has "
-                        + removedComments.size() + " of them");
+                int found = removedComments.size();
+                if (found < wanted) {
+                    Logger.printInfo(() -> "Thread " + submissionId + ": the archive has "
+                            + found + " of the " + wanted + " taken down");
+                }
                 changed |= restoreComments(comments, archived);
             }
         }

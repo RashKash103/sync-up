@@ -90,7 +90,7 @@ public class WaybackMachine {
 
     private static List<String> lookUp(String contentUrl, int limit, boolean mediaOnly)
             throws IOException, JSONException {
-        Logger.printInfo(() -> "Wayback Machine: " + contentUrl);
+        Logger.printDebug(() -> "Wayback Machine: " + contentUrl);
 
         List<String> snapshots = new ArrayList<>();
         String body = ArchiveRequests.get(TIMEMAP_URL + contentUrl, "application/json");
