@@ -12,4 +12,9 @@ public class c {
     public void b(CharSequence text) {
         throw new UnsupportedOperationException("Stub");
     }
+
+    /** Appends text carrying spans, which is how Sync colours the parts of a header. */
+    public void c(String text, Object[] spans) {
+        throw new UnsupportedOperationException("Stub");
+    }
 }

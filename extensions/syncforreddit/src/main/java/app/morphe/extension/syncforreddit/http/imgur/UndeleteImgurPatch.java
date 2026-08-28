@@ -22,8 +22,10 @@ import java.util.Locale;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.requests.PatchedditInterceptor;
 import okhttp3.HttpUrl;
+import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * Serves Imgur images the site no longer has from the Wayback Machine. Imgur purged a large
@@ -211,9 +213,17 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
                         break;
                     }
                 }
-                return snapshot == null
-                        ? missing(contentUrl, response)
-                        : serve(chain, request, contentUrl, snapshot, response);
+                if (snapshot != null) {
+                    return serve(chain, request, contentUrl, snapshot, response);
+                }
+
+                // Imgur answers a removed video with a placeholder image, and the player keeps
+                // whatever it is handed: cached, it fails identically on every later attempt,
+                // including ones made after the archive is reachable again. Saying the video is
+                // gone fails the same way now and leaves nothing behind.
+                Logger.printInfo(() -> "No archived copy of " + contentUrl);
+                response.close();
+                return gone(request);
             }
 
             snapshot = WaybackMachine.findSnapshot(contentUrl, true);
@@ -251,6 +261,19 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
         return snapshot == null
                 ? missing(contentUrl, response)
                 : serve(chain, request, contentUrl, snapshot, response);
+    }
+
+    /**
+     * Deliberately not a 404, which Sync takes as a dead link worth telling the user about.
+     */
+    private static Response gone(Request request) {
+        return new Response.Builder()
+                .message("Gone")
+                .code(HttpURLConnection.HTTP_GONE)
+                .protocol(Protocol.HTTP_1_1)
+                .request(request)
+                .body(ResponseBody.create("", null))
+                .build();
     }
 
     private static Response missing(String contentUrl, Response response) {

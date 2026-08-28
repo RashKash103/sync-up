@@ -1,5 +1,7 @@
 package app.morphe.extension.syncforreddit.http.undelete;
 
+import android.text.style.ForegroundColorSpan;
+
 import androidx.annotation.Nullable;
 
 import java.util.LinkedHashMap;
@@ -17,6 +19,12 @@ import app.morphe.extension.shared.Logger;
  * @noinspection unused
  */
 public final class RestoredComments {
+    /**
+     * A red dark enough to read against a light background and light enough against a dark one,
+     * since Sync themes the line the note sits on and the note has to hold up on either.
+     */
+    private static final int NOTE_COLOUR = 0xFFD1373A;
+
     /** Bounded: a thread's worth of notes is all that is ever needed at once. */
     private static final int CACHE_SIZE = 512;
 
@@ -61,7 +69,10 @@ public final class RestoredComments {
             }
             String note = noteFor(comment.U());
             if (note != null) {
-                header.b("• " + note + " ");
+                // Appended the way Sync colours the rest of this line, so the note reads as one
+                // of its parts rather than as something written into the comment.
+                header.c("• " + note + " ",
+                        new Object[]{new ForegroundColorSpan(NOTE_COLOUR)});
             }
         } catch (Throwable ex) {
             // A comment losing its note is a far better outcome than a thread that will not draw.
