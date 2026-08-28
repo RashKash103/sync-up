@@ -74,9 +74,13 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
     protected List<Interceptor> getInterceptors() {
         List<Interceptor> interceptors = new ArrayList<>();
         interceptors.add(new UndeleteRedditPatch());
-        interceptors.add(new UndeleteImgurPatch());
+        // Ahead of the undelete: both of these answer by reissuing the request against an
+        // ordinary Imgur address, and a request reissued from here carries on down the chain
+        // rather than starting again at the top. An image linked in a comment goes through the
+        // proxy, which is why one has never been recovered.
         interceptors.add(new FixImgurProxyPatch());
         interceptors.add(new RecoverThumbnailsPatch());
+        interceptors.add(new UndeleteImgurPatch());
         interceptors.add(RedirectGfycatPatch.get());
         return interceptors;
     }
