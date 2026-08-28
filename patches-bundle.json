@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-28T02:12:52",
-  "description": "## [1.2.0-dev.23](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.22...v1.2.0-dev.23) (2026-08-28)\n\n### 🐛 Bug Fixes\n\n* Colour the recovery note, and stop feeding the player a placeholder ([df83bb3](https://github.com/RashKash103/sync-up/commit/df83bb37018b6df51967e90771e4e61c945dfa07))\n* Recover an Imgur image linked in a comment ([6fb6e81](https://github.com/RashKash103/sync-up/commit/6fb6e81d4347dc94f630e14e8dcada69764dc5e8))\n* Stop a busy archive making everything unrecoverable ([40f2be6](https://github.com/RashKash103/sync-up/commit/40f2be6565267346dd502caa2f846a6a60e67a74))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.23/patches-1.2.0-dev.23.mpp",
+  "created_at": "2026-08-28T02:25:22",
+  "description": "## [1.2.0-dev.24](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.23...v1.2.0-dev.24) (2026-08-28)\n\n### 🐛 Bug Fixes\n\n* Colour only the wording of the recovery note ([df57543](https://github.com/RashKash103/sync-up/commit/df5754341ec00f98fc3302f4fc7eb1de47023f1d))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.2.0-dev.24/patches-1.2.0-dev.24.mpp",
   "signature_download_url": "",
-  "version": "1.2.0-dev.23"
+  "version": "1.2.0-dev.24"
 }

@@ -1,3 +1,9 @@
+## [1.2.0-dev.24](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.23...v1.2.0-dev.24) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Colour only the wording of the recovery note ([df57543](https://github.com/RashKash103/sync-up/commit/df5754341ec00f98fc3302f4fc7eb1de47023f1d))
+
 ## [1.2.0-dev.23](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.22...v1.2.0-dev.23) (2026-08-28)
 
 ### 🐛 Bug Fixes
