@@ -60,15 +60,29 @@ final class ImgurAlbum {
         }
 
         List<JSONObject> images = new ArrayList<>();
+        IOException failure = null;
+
         for (String snapshot : WaybackMachine.findSnapshots(ALBUM_URL + albumId, SNAPSHOTS_TO_TRY)) {
-            String html = ArchiveRequests.get(snapshot, "text/html");
-            if (html == null) continue;
+            String html;
+            try {
+                html = ArchiveRequests.get(snapshot, "text/html");
+            } catch (IOException ex) {
+                // One capture being unreachable says nothing about the next.
+                failure = ex;
+                continue;
+            }
 
             images = parse(html);
             if (!images.isEmpty()) {
                 Logger.printInfo(() -> "Recovered album " + albumId + " from " + snapshot);
                 break;
             }
+        }
+
+        // Only an answer is worth remembering. Recording a failure as an album with nothing in
+        // it would leave it unrecoverable for as long as the app runs.
+        if (images.isEmpty() && failure != null) {
+            throw failure;
         }
 
         cache.put(albumId, images);

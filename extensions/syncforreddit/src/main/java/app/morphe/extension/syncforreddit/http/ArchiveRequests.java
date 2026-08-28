@@ -1,6 +1,5 @@
 package app.morphe.extension.syncforreddit.http;
 
-import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -34,9 +33,14 @@ public final class ArchiveRequests {
     private ArchiveRequests() {}
 
     /**
-     * @return The response body, or null if the request did not come back with a 200.
+     * Distinguishes an archive that answered from one that could not be reached, which callers
+     * cache the result of: a lookup that failed must not be remembered as one that came back
+     * empty, or a single slow moment leaves everything unrecoverable until the app restarts.
+     *
+     * @return The response body.
+     * @throws IOException If the archive could not be asked, including when it turns the request
+     *                     away for asking too often.
      */
-    @Nullable
     public static String get(String url, String accept) throws IOException {
         try {
             inFlight.acquire();
@@ -55,16 +59,16 @@ public final class ArchiveRequests {
             connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
             connection.setReadTimeout(READ_TIMEOUT_MS);
 
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            int code = connection.getResponseCode();
+            if (code != HttpURLConnection.HTTP_OK) {
                 connection.disconnect();
-                return null;
+                Logger.printInfo(() -> "The archive answered " + code + " for " + url);
+                throw new IOException("The archive answered " + code);
             }
             return Requester.parseStringAndDisconnect(connection);
         } catch (IOException ex) {
-            // A slow or unhappy archive is an ordinary outcome here, not a failure worth
-            // taking the caller down over.
-            Logger.printDebug(() -> "Archive request failed: " + url + " (" + ex.getMessage() + ")");
-            return null;
+            Logger.printInfo(() -> "Could not reach the archive for " + url + ": " + ex);
+            throw ex;
         } finally {
             inFlight.release();
         }
