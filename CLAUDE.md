@@ -30,11 +30,19 @@ patches/src/main/kotlin/app/morphe/patches/
                                  dependency-only patch (it has no name, so it is not
                                  user-selectable)
       syncforreddit/             The Sync for Reddit patches themselves
+        http/                    Interceptor based patches; InterceptHttpRequests installs the
+                                 hook the others depend on, and has no name so it is not
+                                 user-selectable
+        ui/                      Patches that change Sync's own views
 patches/src/main/resources/branding-license/   License texts bundled into the .mpp
 extensions/shared/library/       Java injected into every patched app (shared base classes)
 extensions/shared/               Wrapper project that packages the library as an extension
 extensions/syncforreddit/        Sync-specific injected Java
-extensions/syncforreddit/stub/   Compile-only stubs of app classes the extension references
+  http/                          The interceptors, one per patch, each gated on its own
+                                 isPatchIncluded so an unselected patch passes requests through
+  ui/                            Code that manipulates Sync's views at runtime
+extensions/syncforreddit/stub/   Compile-only stubs of app classes the extension references,
+                                 declaring only the members actually used
 test/test_all_apks.py            Rebuild the bundle and patch APKs dropped into test/
 .github/scripts/                 README patch list generator, run by the release
 ```
@@ -59,27 +67,150 @@ do not need to be listed in `settings.gradle.kts`.
 | Build the bundle | `./gradlew buildAndroid` → `patches/build/libs/patches-*.mpp` |
 | Regenerate the patch list | `./gradlew generatePatchesList` → `patches-list.json` |
 | Patch real APKs | `uv run test/test_all_apks.py` (APKs go in `test/`) |
+| Apply patches by hand | See [Verifying changes](#️-verifying-changes) — the only way to catch smali errors |
+| Read the target APK | `uv run --with androguard==4.1.4 python ...` — see [Inspecting the APK](#inspecting-the-apk) |
 | Refresh the README patch list | `uv run .github/scripts/generate_patches_readme.py RashKash103/sync-up dev patches-list.json README.md` |
 
-Building needs **JDK 21** and a GitHub PAT with `read:packages`, exported as `GITHUB_ACTOR` /
-`GITHUB_TOKEN` or set as `gpr.user` / `gpr.key` in `~/.gradle/gradle.properties`; the Morphe
-plugin and libraries come from GitHub Packages.
+Building needs **JDK 21**, an **Android SDK** with platforms 34 and 36, and a GitHub PAT with
+`read:packages`, exported as `GITHUB_ACTOR` / `GITHUB_TOKEN` or set as `gpr.user` / `gpr.key`
+in `~/.gradle/gradle.properties`; the Morphe plugin and libraries come from GitHub Packages.
 
 Use `uv run` for Python, not bare `python3`.
 
-## ⚠️ Build has never been verified
+## ⚠️ Verifying changes
 
-The initial import was assembled without ever running Gradle — the machine it was written on
-had only JDK 11 and no `read:packages` token. **Nothing here has been compiled.** The first CI
-run is the first real verification. Expect to fix things there rather than assuming the tree
-is sound.
+**The build passing does not mean a patch works.** There are three separate layers, and each
+catches a different class of error. Skipping the later ones is how broken patches ship.
 
-Most likely first failures, in order:
+| Layer | Catches | Misses |
+| --- | --- | --- |
+| `./gradlew buildAndroid` (and CI) | Kotlin and extension Java compile errors | Everything below |
+| Running the patcher against a real APK | Smali syntax, unresolved fingerprints, register errors | Runtime behaviour |
+| Installing on a device | Whether it actually works | — |
 
-1. The Morphe Gradle plugin pin `1.3.2-dev.1` in `settings.gradle.kts` is a dev prerelease
-   inherited from Patcheddit. If it no longer resolves, bump it to the current stable release
-   (`1.3.4` at the time of writing, which is what the official template uses).
-2. A stale reference to something only the dropped clients used.
+The middle layer is the one that is easy to forget and the one that hurts. **The smali inside
+those Kotlin string literals is not assembled until a patch executes against an APK**, so a
+malformed instruction compiles perfectly and fails only at patch time. A patch that has only
+been built has not been tested in any meaningful sense.
+
+### Local toolchain
+
+None of this is in the repository; recreate it in a scratch directory as needed. It is worth
+the setup time, since it turns a CI round trip into a few seconds.
+
+1. **JDK 21** — Gradle needs it, and morphe-desktop is compiled for class file version 65.
+   The system JDK may be older.
+   `curl -L "https://api.adoptium.net/v3/binary/latest/21/ga/linux/x64/jdk/hotspot/normal/eclipse" | tar xz`
+2. **Android SDK** — the extension modules are `com.android.library` projects and need
+   platforms 34 and 36. Install `commandlinetools-linux`, accept the licences, then
+   `sdkmanager "platforms;android-36" "platforms;android-34" "build-tools;34.0.0"`.
+   Point `ANDROID_HOME` at it.
+3. **A GitHub token with `read:packages`** — the Morphe plugin and libraries come from GitHub
+   Packages. Export as `GITHUB_ACTOR` / `GITHUB_TOKEN`. Without the scope the plugin will not
+   resolve and the build fails before it starts.
+4. **morphe-desktop** — the patcher, for actually applying patches. Grab the `-all.jar` from
+   the latest release of `MorpheApp/morphe-desktop`.
+5. **A Sync APK** — the supported build, `v23.06.30-13:39`. One is at
+   `~/Downloads/sync-revanced/` on this machine.
+
+Building and patching, with all of the above exported:
+
+```sh
+./gradlew buildAndroid                       # -> patches/build/libs/patches-*.mpp
+java -jar morphe-desktop.jar patch \
+  -p patches/build/libs/patches-*.mpp \
+  -O client-id=AAAAAAAAAAAAAAAAAAAAAA -e "Spoof client" \
+  -e "<any patch that is off by default>" \
+  --unsigned -o out.apk <the Sync APK>
+```
+
+`Spoof client` validates its `client-id` against `^[\w-]{22}$`, so any 22 character string
+gets past it. The result is not a usable app, but patch application is what is being tested.
+Grep the output for `Applied:` and `FAILED`.
+
+### Inspecting the APK
+
+Fingerprints have to be written against real bytecode, never guessed. `androguard` via
+`uv run --with androguard==4.1.4` reads the DEX directly; disable its logging first with
+`from loguru import logger; logger.remove()` or it floods stdout.
+
+Two properties of Sync's build make this tractable:
+
+- **Source file names are retained.** Classes are obfuscated (`La8/a;`), but `classDef.sourceFile`
+  still says `OkHttpHelper.java`. Several existing fingerprints match on it, and it is usually
+  the most stable thing available.
+- **Field names often survive where method names do not.** `MaterialRow`'s setters are `d`, `k`
+  and so on, but they assign `mTitle` and `mIcon`, which is how the right ones were identified.
+  When a method is ambiguous, look at the fields it touches.
+
+### Compile checking extension Java without Gradle
+
+For a fast loop on extension code alone, compile it against the real okhttp and `android.jar`
+with the Eclipse compiler (`ecj`, a single jar that runs on any JRE), stubbing the Morphe
+shared library from this repository's own sources. This catches things like lambda capture of
+a non-effectively-final local, or a subclass reaching a protected member through a superclass
+typed reference, both of which have happened here.
+
+### Smali gotchas
+
+Errors found the hard way, all of which compiled cleanly and failed at patch or run time:
+
+- **Field references need a colon**: `->fieldName:Ltype;`. Androguard prints them with a space,
+  so copying its output verbatim produces `missing COLON` at patch time.
+- **Check whether a type is an interface before using `invoke-interface`.** `Lxa/d;` looks like
+  one but is a `public abstract` class, so it takes `invoke-virtual`. The wrong choice patches
+  successfully and fails verification at runtime, which looks like an unrelated bug.
+- **Check the register count** before using `v0` in injected code. `get_registers_size()` minus
+  the parameters is what is free.
+- **A parameter register is not still the parameter later in the method.** Sync's compiler
+  reuses them as scratch locals: in `PostMoreBottomSheetFragment.o2`, `p1` holds the view that
+  was passed in for exactly two instructions before it is overwritten. Injecting at the end and
+  reading `p1` silently handed the extension the wrong object, and because it was still a
+  `View` subclass nothing complained. Disassemble the *patched* APK and read the registers at
+  the injection site rather than trusting `p1` to mean what it says.
+- **Do not add a `new-instance`** to a method another patch fingerprints by counting them. The
+  Redgifs fingerprint counts `NEW_INSTANCE == 1` in the method it hooks.
+
+## How Sync is put together
+
+Findings from reading the APK, recorded so they do not have to be rediscovered.
+
+**Networking.** Sync bundles a *modified* Volley whose `BasicNetwork.performRequest` builds
+okhttp3 requests directly rather than using `HttpURLConnection`. It obtains its client from
+`OkHttpHelper` (`La8/a;`), so a single interceptor there sees every Reddit API request. This is
+what `interceptHttpRequests` hooks, anchored on `BasicNetwork` because Volley is not obfuscated,
+unlike the four near identical client builders in `OkHttpHelper`.
+
+**Images do not go through the Volley client.** Sync registers its own Glide loader in
+`YourAppGlideModule` and hands it `OkHttpHelper.a()`, a *different* client again. The Glide
+OkHttp integration is declared in the manifest and its `OkHttpUrlLoader$Factory` builds a
+client of its own, but Sync's registration supersedes it, so hooking that one alone does
+nothing. Anything touching images has to hook the client passed in `YourAppGlideModule`.
+That class keeps its name, since Glide's generated code refers to it.
+
+There are at least three distinct OkHttp clients in play: Volley's, Glide's, and the several
+`OkHttpHelper` builds for other purposes. Before assuming an interceptor will see a request,
+find out which client actually issues it.
+
+**Requests are Volley `Request` subclasses**, one per endpoint, named for what they do
+(`OAuthCommentsRequest`, `GrabRedgifRequest`, `ImgurGalleryRequest`). They parse with
+`org.json`, and Sync reads raw markdown: `body` and `selftext`, never `body_html`. It has no
+`removed_by_category` field at all.
+
+**Thread URLs are `/r/<sub>/comments/<id>/_/...json`** against `oauth.reddit.com`. Patcheddit's
+Boost patches match `^https?://\w+\.reddit\.com/comments/`, which never fires on Sync.
+
+**Menus are layouts, not lists.** The post overflow sheet is
+`res/layout/dialog_bottom_post_more.xml`, a `LinearLayout` of `MaterialRow` views dispatched by
+`view.getId()` in `onItemClicked`. Adding an entry the way Boost does is not possible; rows are
+built and inserted at runtime instead, which avoids introducing an id resource.
+
+**Dead endpoints Sync still calls.** Worth knowing before diagnosing a media bug:
+
+- `api.gfycat.com` and `gfycat.com` — DNS no longer resolves at all.
+- `api.redgifs.com/info` — 404, removed. Sync calls it first when opening a RedGifs link.
+- `ap.syncforreddit.com` — Sync's own proxy, still up but answers 401. Feed autoplay routes
+  RedGifs and gfycat through it when the `enhancedAutoPlay` setting is on.
 
 ## Version pinning
 
@@ -99,6 +230,17 @@ The patch logic is a faithful port. Where this repository intentionally differs:
 
 - Only Sync for Reddit is targeted. All other client patches, the Sync for Lemmy target, and
   the shared code only those used, are dropped.
+- Patches with no Patcheddit equivalent, written for problems specific to Sync: the RedGifs
+  `/info` emulation and the Gfycat to RedGifs redirect. Both came out of endpoints Sync depends
+  on that no longer exist.
+- The Boost patches that were worth porting are reworked rather than copied, because Sync
+  differs at every hook point: no JRAW, a different thread URL shape, raw markdown instead of
+  the `_html` fields, Glide on its own client, and a layout driven menu. `org.json` is used
+  rather than Jackson, and caches are in memory rather than Room, so the bundle takes on no new
+  dependencies.
+- Boost's *Fix audio in downloads* is not ported: Sync has its own MPD parser fix. Its
+  */r/all* patch is not ported either; it addresses a Boost specific bug, and there is no
+  evidence Sync has it.
 - Identity: project name, `rootProject.name`, the bundle `about` block, and Gradle group
   (`app.syncup`) are this project's. Required by the upstream Section 7 name restrictions.
 - The `Spoof client` option help text says "Sync Up documentation" rather than the upstream
@@ -149,6 +291,14 @@ Inherited from upstream, deliberately left alone in the initial import:
   no remaining patch uses.
 - The `sync/ads/DisableAdsPatch.kt` builder plus its `syncforreddit/ads` wrapper is now an
   indirection with a single caller, since the Lemmy target is gone.
-- `.github/scripts/generate_patches_readme.py` counts a patch once per compatible package, so
-  the "N patches total" line reads 26 for the 10 patches in this bundle. That counting comes
-  from the upstream template.
+
+Current, from this project's own patches:
+
+- Tapping an archive row in the post menu opens the browser but does not dismiss the sheet.
+  Dismissing needs a reference to the fragment and an androidx.fragment dependency the
+  extension does not currently have.
+- The undelete patches call Arctic Shift and the Wayback Machine, both free community
+  services. Results are cached and only fetched when a thread actually contains removed
+  content. Keep it that way; do not add speculative prefetching.
+- Restored text is marked with an emoji prefix rather than a separate field, because Sync has
+  no equivalent of the model field Boost renders its markers in.
