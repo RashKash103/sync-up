@@ -103,6 +103,25 @@ public class ArcticShift {
     }
 
     /**
+     * When something was written, for an entry named in a page cursor that is no longer held in
+     * memory, such as after the app has been restarted mid scroll.
+     *
+     * @return The moment it was written, or zero if the archive does not have it.
+     */
+    public static long writtenAt(String kind, String id) throws IOException, JSONException {
+        JSONObject response = get(BASE_URL + kind + "/ids?ids=" + id);
+        if (response == null) {
+            return 0;
+        }
+        JSONArray data = response.optJSONArray("data");
+        if (data == null || data.length() == 0) {
+            return 0;
+        }
+        JSONObject entry = data.optJSONObject(0);
+        return entry == null ? 0 : entry.optLong("created_utc", 0);
+    }
+
+    /**
      * Several submissions at once, for filling in what a comment says about the post it is on.
      *
      * @param ids Submission ids without their type prefix.
@@ -138,14 +157,18 @@ public class ArcticShift {
     /**
      * What an author wrote, newest first, for a profile Reddit will not list.
      *
-     * @param kind  Either posts or comments, which the archive keeps apart.
-     * @param limit How many to ask for.
+     * @param kind   Either posts or comments, which the archive keeps apart.
+     * @param limit  How many to ask for.
+     * @param before Only what was written before this moment, or zero to start from the newest.
      * @return The archived entries, empty when the archive has nothing for them.
      */
-    public static JSONArray searchByAuthor(String kind, String author, int limit)
+    public static JSONArray searchByAuthor(String kind, String author, int limit, long before)
             throws IOException, JSONException {
+        // Newest first, and "before" is older than that moment, which is how the archive pages:
+        // the time the last entry served was written carries on from where it left off.
+        String olderThan = before > 0 ? "&before=" + before : "";
         JSONObject response = get(BASE_URL + kind + "/search?author=" + Uri.encode(author)
-                + "&limit=" + limit + "&sort=desc");
+                + "&limit=" + limit + "&sort=desc" + olderThan);
         if (response == null) {
             return new JSONArray();
         }

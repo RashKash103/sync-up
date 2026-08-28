@@ -8,6 +8,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -38,11 +41,24 @@ import okhttp3.ResponseBody;
  * @noinspection unused
  */
 public class ArchivedProfilePatch extends PatchedditInterceptor {
+    /** A page, matching what Reddit serves for a profile. */
+    private static final int PAGE = 25;
+
     /**
-     * One screenful and then some. Sync asks for a page at a time and follows "after" to get the
-     * next, which the archive has no equivalent of, so what is filled in is what is served.
+     * Where each page served leaves off. Reddit pages by naming the last entry of a page and
+     * being handed that name back; the archive pages by the moment something was written. This
+     * is what joins the two, so that following the cursor Sync was given asks the archive for
+     * what comes after it. Bounded, and a miss is looked up rather than being an end of list.
      */
-    private static final int LIMIT = 100;
+    private static final int CURSORS_HELD = 256;
+
+    private static final Map<String, Long> cursors =
+            new LinkedHashMap<String, Long>(CURSORS_HELD, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Long> eldest) {
+                    return size() > CURSORS_HELD;
+                }
+            };
 
     @Override
     public boolean isPatchIncluded() {
@@ -74,19 +90,19 @@ public class ArchivedProfilePatch extends PatchedditInterceptor {
                 return rebuilt(response, request, contentType, original);
             }
 
-            JSONArray archived = ArcticShift.searchByAuthor(tab.kind, tab.author, LIMIT);
+            long before = startOf(request.url().queryParameter("after"));
+            JSONArray archived = fetch(tab, before);
             if (archived.length() == 0) {
-                Logger.printInfo(() -> "The archive has no " + tab.kind + " by " + tab.author);
-                return rebuilt(response, request, contentType, original);
-            }
-
-            if (tab.kind.equals("comments")) {
-                describeParents(archived);
+                Logger.printInfo(() -> "The archive has no more " + tab.kind + " by " + tab.author);
+                return rebuilt(response, request, contentType, listing(archived, false));
             }
 
             Logger.printInfo(() -> "Serving " + archived.length() + " archived " + tab.kind
                     + " by " + tab.author + ", whose profile Reddit lists as empty");
-            return rebuilt(response, request, contentType, listing(archived));
+            // A short page is the end of what the archive holds, so say so rather than offering
+            // a cursor that would come back empty.
+            return rebuilt(response, request, contentType,
+                    listing(archived, archived.length() >= PAGE));
         } catch (JSONException ex) {
             Logger.printException(() -> "Could not read the archived profile of " + tab.author, ex);
             return rebuilt(response, request, contentType, original);
@@ -94,6 +110,82 @@ public class ArchivedProfilePatch extends PatchedditInterceptor {
             // The archive being unreachable leaves the profile as Reddit gave it.
             Logger.printInfo(() -> "Could not reach the archive for " + tab.author + ": " + ex);
             return rebuilt(response, request, contentType, original);
+        }
+    }
+
+    /**
+     * @param before Where the previous page left off, or zero for the newest.
+     */
+    private static JSONArray fetch(Tab tab, long before) throws IOException, JSONException {
+        if (!tab.kind.equals("overview")) {
+            JSONArray entries = ArcticShift.searchByAuthor(tab.kind, tab.author, PAGE, before);
+            if (tab.kind.equals("comments")) {
+                describeParents(entries);
+            }
+            return entries;
+        }
+
+        // An overview is both, in the order they were written. Each side is asked for a whole
+        // page from the same moment and the two are merged, since which of them the next entry
+        // comes from is not known until both have been seen.
+        JSONArray posts = ArcticShift.searchByAuthor("posts", tab.author, PAGE, before);
+        JSONArray comments = ArcticShift.searchByAuthor("comments", tab.author, PAGE, before);
+        describeParents(comments);
+        return newestFirst(posts, comments);
+    }
+
+    /**
+     * Merges the two into one page, newest first, and keeps only a page of it. What is dropped
+     * is older than everything kept, so the next page picks it up again from the cursor.
+     */
+    private static JSONArray newestFirst(JSONArray posts, JSONArray comments) {
+        List<JSONObject> all = new ArrayList<>();
+        for (JSONArray side : new JSONArray[]{posts, comments}) {
+            for (int i = 0; i < side.length(); i++) {
+                JSONObject entry = side.optJSONObject(i);
+                if (entry != null) {
+                    all.add(entry);
+                }
+            }
+        }
+
+        Collections.sort(all, (left, right) ->
+                Long.compare(right.optLong("created_utc", 0), left.optLong("created_utc", 0)));
+
+        JSONArray merged = new JSONArray();
+        for (int i = 0; i < Math.min(all.size(), PAGE); i++) {
+            merged.put(all.get(i));
+        }
+        return merged;
+    }
+
+    /**
+     * @return The moment the entry a cursor names was written, or zero to start from the newest.
+     */
+    private static long startOf(@Nullable String after) {
+        if (after == null || after.isEmpty()) {
+            return 0;
+        }
+
+        synchronized (cursors) {
+            Long held = cursors.get(after);
+            if (held != null) {
+                return held;
+            }
+        }
+
+        // Not held any more, which happens when a scroll resumes after a restart. The entry the
+        // cursor names says when it was written, so ask about that one rather than starting over.
+        try {
+            int underscore = after.indexOf('_');
+            if (underscore <= 0) {
+                return 0;
+            }
+            String kind = after.startsWith("t1_") ? "comments" : "posts";
+            return ArcticShift.writtenAt(kind, after.substring(underscore + 1));
+        } catch (IOException | JSONException ex) {
+            Logger.printInfo(() -> "Could not place the cursor " + after + ": " + ex);
+            return 0;
         }
     }
 
@@ -148,10 +240,9 @@ public class ArchivedProfilePatch extends PatchedditInterceptor {
 
     /**
      * Wraps what the archive holds in the shape Reddit would have sent. Each entry already
-     * carries its full name, which is where its kind comes from, and "after" is left empty
-     * because there is no page beyond the one served.
+     * carries its full name, which is where its kind comes from and what a cursor is made of.
      */
-    private static String listing(JSONArray archived) throws JSONException {
+    private static String listing(JSONArray archived, boolean more) throws JSONException {
         JSONArray children = new JSONArray();
         for (int i = 0; i < archived.length(); i++) {
             JSONObject entry = archived.optJSONObject(i);
@@ -167,9 +258,20 @@ public class ArchivedProfilePatch extends PatchedditInterceptor {
             children.put(child);
         }
 
+        String cursor = null;
+        if (more && children.length() > 0) {
+            JSONObject last = children.getJSONObject(children.length() - 1).getJSONObject("data");
+            cursor = last.optString("name", "");
+            if (!cursor.isEmpty()) {
+                synchronized (cursors) {
+                    cursors.put(cursor, last.optLong("created_utc", 0));
+                }
+            }
+        }
+
         JSONObject data = new JSONObject();
         data.put("children", children);
-        data.put("after", JSONObject.NULL);
+        data.put("after", cursor == null || cursor.isEmpty() ? JSONObject.NULL : cursor);
         data.put("before", JSONObject.NULL);
         data.put("dist", children.length());
 
@@ -227,13 +329,15 @@ public class ArchivedProfilePatch extends PatchedditInterceptor {
         if (author.isEmpty()) {
             return null;
         }
-        // Only the two the archive keeps apart. An overview mixes them, and serving one of the
-        // two in its place would look like the other had been lost.
         if (what.equals("submitted")) {
             return new Tab(author, "posts");
         }
         if (what.equals("comments")) {
             return new Tab(author, "comments");
+        }
+        // The archive keeps the two apart, so an overview is made by merging them here.
+        if (what.equals("overview") || what.isEmpty()) {
+            return new Tab(author, "overview");
         }
         return null;
     }
