@@ -191,13 +191,6 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
 
         Response response = chain.proceed(request);
 
-        // Video is the one thing still not coming back, and its request has never appeared in a
-        // log, so say that it arrived at all before deciding anything about it.
-        if (isVideo(url.encodedPath())) {
-            Logger.printInfo(() -> "Video request " + url + " answered "
-                    + response.code() + " " + response.header("Content-Type", "?"));
-        }
-
         if (!isMissing(url, response)) {
             return response;
         }

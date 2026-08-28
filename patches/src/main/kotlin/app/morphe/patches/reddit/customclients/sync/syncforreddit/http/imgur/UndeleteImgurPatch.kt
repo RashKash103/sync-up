@@ -12,11 +12,13 @@ private const val EXTENSION_CLASS_DESCRIPTOR =
 
 @Suppress("unused")
 val undeleteImgurPatch = bytecodePatch(
-    name = "Automatically undelete Imgur images",
-    description = "Loads Imgur images that no longer exist from the Wayback Machine. Imgur " +
-            "removed a large amount of older content, so links in old posts often fail. " +
-            "Only images the archive happens to hold can be recovered.",
-    default = false
+    name = "Automatically undelete Imgur media",
+    description = "Loads Imgur images and videos that no longer exist from the Wayback " +
+            "Machine, including the still shown for a video in a feed. Imgur removed a large " +
+            "amount of older content, so links in old posts often fail. Nothing is requested " +
+            "until a link has actually failed, and only what the archive happens to hold can " +
+            "be recovered.",
+    default = true
 ) {
     dependsOn(sharedExtensionPatch, interceptHttpRequests)
 

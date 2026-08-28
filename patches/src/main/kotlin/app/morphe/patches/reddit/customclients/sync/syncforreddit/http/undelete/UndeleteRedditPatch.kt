@@ -30,7 +30,7 @@ val undeleteRedditPatch = bytecodePatch(
             "the name of an author whose account has since been deleted. A comment says why " +
             "it was taken down on the line under its author. Only text can be recovered, and " +
             "only where the archive has it.",
-    default = false
+    default = true
 ) {
     dependsOn(sharedExtensionPatch, interceptHttpRequests)
 

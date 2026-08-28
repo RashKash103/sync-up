@@ -68,7 +68,6 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
         }
 
         OkHttpClient derived = builder.build();
-        Logger.printInfo(() -> "Instrumented a client, " + instrumented.size() / 2 + " so far");
         instrumented.put(client, derived);
         // The derived client is handed back to callers, so it can come back in as the source.
         instrumented.put(derived, derived);
@@ -78,7 +77,6 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
     @Override
     protected List<Interceptor> getInterceptors() {
         List<Interceptor> interceptors = new ArrayList<>();
-        interceptors.add(MediaRequestLog.INSTANCE);
         interceptors.add(new UndeleteRedditPatch());
         // Ahead of the undelete: both of these answer by reissuing the request against an
         // ordinary Imgur address, and a request reissued from here carries on down the chain
