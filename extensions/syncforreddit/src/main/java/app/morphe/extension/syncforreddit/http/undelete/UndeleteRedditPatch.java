@@ -72,7 +72,9 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
             restored = null;
         } catch (IOException ex) {
             // Arctic Shift being unreachable must not take the thread down with it.
-            Logger.printException(() -> "Arctic Shift request failed", ex);
+            // Expected from time to time: these are free community services, and one being
+            // slow or briefly unreachable is not a fault worth putting in front of the user.
+            Logger.printInfo(() -> "Arctic Shift request failed: " + ex);
             restored = null;
         }
 

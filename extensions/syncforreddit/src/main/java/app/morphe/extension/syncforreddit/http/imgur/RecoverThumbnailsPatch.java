@@ -131,7 +131,7 @@ public class RecoverThumbnailsPatch extends PatchedditInterceptor {
             return response;
         } catch (IOException ex) {
             // The archive being unreachable should leave the original 404 in place.
-            Logger.printException(() -> "Archive request failed for " + link, ex);
+            Logger.printInfo(() -> "Archive request failed for " + link + ": " + ex);
             return response;
         }
     }

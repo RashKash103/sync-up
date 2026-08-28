@@ -236,7 +236,7 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
             return response;
         } catch (IOException ex) {
             // The Wayback Machine being unreachable should leave the original 404 in place.
-            Logger.printException(() -> "Wayback Machine request failed", ex);
+            Logger.printInfo(() -> "Wayback Machine request failed: " + ex);
             return response;
         }
 
