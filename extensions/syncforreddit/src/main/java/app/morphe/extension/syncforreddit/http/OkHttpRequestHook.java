@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import app.morphe.extension.shared.requests.BaseOkHttpRequestHook;
+import app.morphe.extension.shared.Logger;
 import app.morphe.extension.syncforreddit.RedirectGfycatPatch;
 import app.morphe.extension.syncforreddit.http.imgur.FixImgurProxyPatch;
 import app.morphe.extension.syncforreddit.http.imgur.RecoverThumbnailsPatch;
@@ -62,6 +63,7 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
         }
 
         OkHttpClient derived = builder.build();
+        Logger.printInfo(() -> "Instrumented a client, " + instrumented.size() / 2 + " so far");
         instrumented.put(client, derived);
         // The derived client is handed back to callers, so it can come back in as the source.
         instrumented.put(derived, derived);
