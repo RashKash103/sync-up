@@ -1,3 +1,9 @@
+## [1.2.1-dev.1](https://github.com/RashKash103/sync-up/compare/v1.2.0...v1.2.1-dev.1) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Ask for a new Redgifs token when the one held is refused ([0e0dd3d](https://github.com/RashKash103/sync-up/commit/0e0dd3da093dcc6db58d52c7a1a0d22639646937))
+
 ## [1.2.0](https://github.com/RashKash103/sync-up/compare/v1.1.0...v1.2.0) (2026-08-28)
 
 ### 🐛 Bug Fixes
