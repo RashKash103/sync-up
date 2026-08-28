@@ -63,8 +63,34 @@ public class RedgifsTokenManager {
         return responseObject.getString("token");
     }
 
+    /**
+     * Drops the token held for a user agent so that the next request fetches a new one.
+     *
+     * <p>A temporary token is tied to the address it was issued for, so moving between networks
+     * invalidates it long before it expires. Nothing in the token says so: it goes on looking
+     * perfectly valid, and every request made with it is refused, which is why the only way out
+     * of this used to be restarting the app.
+     */
+    public static void invalidateToken(String userAgent) {
+        synchronized (tokenMap) {
+            tokenMap.remove(userAgent);
+        }
+    }
+
     public static RedgifsToken refreshToken(String userAgent) throws IOException, JSONException {
+        return refreshToken(userAgent, false);
+    }
+
+    /**
+     * @param force Fetch a new token even if the one held has not expired, for when it has been
+     *              refused and so is known to be no good whatever its expiry says.
+     */
+    public static RedgifsToken refreshToken(String userAgent, boolean force)
+            throws IOException, JSONException {
         synchronized(tokenMap) {
+            if (force) {
+                tokenMap.remove(userAgent);
+            }
             // Reference: https://github.com/JeffreyCA/Apollo-ImprovedCustomApi/pull/67
             RedgifsToken token = tokenMap.get(userAgent);
             if (token != null && token.isValid()) {

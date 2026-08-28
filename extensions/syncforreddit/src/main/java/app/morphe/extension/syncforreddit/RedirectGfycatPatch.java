@@ -227,14 +227,17 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
     @Nullable
     private static MediaUrls fetchFromRedgifs(String id) throws IOException, JSONException {
         String userAgent = getUserAgent();
-        RedgifsTokenManager.RedgifsToken token = RedgifsTokenManager.refreshToken(userAgent);
+        HttpURLConnection connection = ask(id, userAgent, false);
 
-        HttpURLConnection connection = (HttpURLConnection) new URL(REDGIFS_GIF_ENDPOINT + id).openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("User-Agent", userAgent);
-        connection.setRequestProperty("Authorization", "Bearer " + token.getAccessToken());
-        connection.setRequestProperty("Accept", "application/json");
-        connection.setUseCaches(false);
+        // A temporary token is tied to the address it was issued for, so moving between
+        // networks leaves one that is refused while still looking perfectly valid. Asking again
+        // with a new one costs a request, and only on the reply that says the old one is no
+        // longer any good.
+        if (isRefusal(connection.getResponseCode())) {
+            connection.disconnect();
+            Logger.printInfo(() -> "The Redgifs token was refused, asking for another");
+            connection = ask(id, userAgent, true);
+        }
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             connection.disconnect();
@@ -254,6 +257,26 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
         }
         return new MediaUrls(highQuality, lowQuality,
                 optionalString(urls, "poster"), optionalString(urls, "thumbnail"));
+    }
+
+    private static HttpURLConnection ask(String id, String userAgent, boolean withNewToken)
+            throws IOException, JSONException {
+        RedgifsTokenManager.RedgifsToken token =
+                RedgifsTokenManager.refreshToken(userAgent, withNewToken);
+
+        HttpURLConnection connection =
+                (HttpURLConnection) new URL(REDGIFS_GIF_ENDPOINT + id).openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("User-Agent", userAgent);
+        connection.setRequestProperty("Authorization", "Bearer " + token.getAccessToken());
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setUseCaches(false);
+        return connection;
+    }
+
+    private static boolean isRefusal(int code) {
+        return code == HttpURLConnection.HTTP_UNAUTHORIZED
+                || code == HttpURLConnection.HTTP_FORBIDDEN;
     }
 
     /**
