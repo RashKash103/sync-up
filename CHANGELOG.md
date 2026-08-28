@@ -1,3 +1,9 @@
+## [1.2.0-dev.19](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.18...v1.2.0-dev.19) (2026-08-28)
+
+### 🐛 Bug Fixes
+
+* Put back a name where only the account was deleted ([8acd4f3](https://github.com/RashKash103/sync-up/commit/8acd4f3b0a60d421d2cfd38b323810d0a940bb81))
+
 ## [1.2.0-dev.18](https://github.com/RashKash103/sync-up/compare/v1.2.0-dev.17...v1.2.0-dev.18) (2026-08-28)
 
 ### 🐛 Bug Fixes
