@@ -16,6 +16,9 @@ import org.json.JSONObject;
  * rather than as part of what the author wrote.
  */
 final class RemovalReason {
+    private static final String DELETED = "[deleted]";
+    private static final String REMOVED = "[removed]";
+
     private static final String BY_AUTHOR = "🗑";      // wastebasket
     private static final String BY_MODERATOR = "🧹";   // broom
     private static final String BY_ADMIN = "🚓";       // police car
@@ -30,15 +33,24 @@ final class RemovalReason {
     private static final String BY_ANTI_SPAM_TEXT = "caught by the spam filter";
     private static final String BY_ANTI_EVIL_TEXT = "removed by anti evil operations";
     private static final String COPYRIGHT_TEXT = "removed over copyright";
+    private static final String REMOVED_TEXT = "removed";
     private static final String UNKNOWN_TEXT = "recovered from the archive";
 
     private RemovalReason() {}
 
     /**
      * Reddit does not always say who removed something, and Arctic Shift only has what Reddit
-     * exposed at the time, so the unattributed wording is the common case rather than an error.
+     * exposed at the time, so an unattributed category is the common case rather than an error.
+     * What Reddit leaves in place of the text says more than it looks: an author deleting their
+     * own comment leaves "[deleted]", while anyone else removing it leaves "[removed]".
+     *
+     * @param placeholder What Reddit served in place of the text that was taken away.
      */
-    static String describe(JSONObject archived) {
+    static String describe(JSONObject archived, String placeholder) {
+        if (DELETED.equals(placeholder)) {
+            return BY_AUTHOR_TEXT;
+        }
+
         String category = archived.optString("removed_by_category", "");
 
         switch (category) {
@@ -60,7 +72,8 @@ final class RemovalReason {
             case "content_takedown":
                 return COPYRIGHT_TEXT;
             default:
-                return UNKNOWN_TEXT;
+                // Removed by someone other than the author, and Reddit did not say who.
+                return REMOVED.equals(placeholder) ? REMOVED_TEXT : UNKNOWN_TEXT;
         }
     }
 

@@ -217,12 +217,25 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
 
             JSONObject source = archived.get(data.optString("id", ""));
             if (source != null) {
-                if (isRemoved(data, "body")) {
-                    changed |= merge(data, source, "body");
-                }
+                // Read before the text is put back, since that is what replaces it.
+                String placeholder = data.optString("body", "");
+                boolean textRestored = isRemoved(data, "body") && merge(data, source, "body");
                 // Restored on its own as well, since a comment can keep its text and lose only
                 // the name above it.
-                changed |= restoreAuthor(data, source);
+                boolean nameRestored = restoreAuthor(data, source);
+
+                // What happened to the text is the better description of the two. A comment its
+                // author deleted loses its name along with it, so saying only that the name came
+                // back would describe a deleted account, which is a different thing and usually
+                // not what happened.
+                if (textRestored) {
+                    RestoredComments.remember(data.optString("id", ""),
+                            RemovalReason.describe(source, placeholder));
+                } else if (nameRestored) {
+                    RestoredComments.remember(data.optString("id", ""), "account deleted");
+                }
+
+                changed |= textRestored || nameRestored;
             }
 
             JSONArray replies = repliesOf(data);
@@ -256,10 +269,6 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
 
         boolean isComment = "body".equals(textField);
         target.put(textField, isComment ? text : RemovalReason.markerFor(source) + " " + text);
-
-        if (isComment) {
-            RestoredComments.remember(target.optString("id", ""), RemovalReason.describe(source));
-        }
         return true;
     }
 
@@ -281,9 +290,6 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
             return false;
         }
         target.put("author", author);
-        if (target.has("body")) {
-            RestoredComments.remember(target.optString("id", ""), "account deleted");
-        }
         return true;
     }
 }
