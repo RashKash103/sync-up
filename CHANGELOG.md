@@ -1,3 +1,9 @@
+## [1.4.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.3.0...v1.4.0-dev.1) (2026-08-28)
+
+### ✨ New Features
+
+* Draw a video posted in a comment in the comment ([9fd2209](https://github.com/RashKash103/sync-up/commit/9fd2209941af655a47f3049bae73d4085af8ad0b))
+
 ## [1.3.0](https://github.com/RashKash103/sync-up/compare/v1.2.0...v1.3.0) (2026-08-28)
 
 ### 🐛 Bug Fixes
