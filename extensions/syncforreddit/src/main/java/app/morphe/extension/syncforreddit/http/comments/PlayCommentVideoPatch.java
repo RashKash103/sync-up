@@ -114,7 +114,7 @@ public class PlayCommentVideoPatch extends PatchedditInterceptor {
         }
         player.appendTail(rewritten);
 
-        Logger.printInfo(() -> "Pointed a comment's video at where it is kept");
+        Logger.printDebug(() -> "Pointed a comment's video at where it is kept");
         return rebuilt(response, request, contentType, rewritten.toString());
     }
 
@@ -146,7 +146,9 @@ public class PlayCommentVideoPatch extends PatchedditInterceptor {
             String id = segments.get(0);
             return id.isEmpty() ? null : id;
         } catch (Exception ex) {
-            Logger.printException(() -> "Could not read the video id from " + url, ex);
+            // Sync resolves an address for every video it shows, so this is no place to put
+            // anything in front of the reader: leave it to work the id out for itself.
+            Logger.printInfo(() -> "Could not read the video id from " + url + ": " + ex);
             return null;
         }
     }
