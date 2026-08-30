@@ -36,6 +36,7 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
     // Volley and Glide each have a client of their own. A single slot would rebuild the
     // derived client on every call as the two sites took turns.
     private static final Map<OkHttpClient, OkHttpClient> instrumented = new IdentityHashMap<>();
+    private static final Map<OkHttpClient, OkHttpClient> drawing = new IdentityHashMap<>();
 
     private OkHttpRequestHook() {}
 
@@ -49,6 +50,37 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
      * Derives a client carrying the interceptors. Called with the client Volley makes every
      * call with, so the result is cached rather than rebuilt per request.
      */
+    /**
+     * The header naming a request as one made to draw a picture. Some addresses are asked for by
+     * both the part of Sync that plays something and the part that draws it, and what suits one
+     * is of no use to the other, so the client Sync draws through says so.
+     */
+    public static final String IMAGE_REQUEST = "X-Sync-Up-Image";
+
+    /**
+     * As {@link #install}, for the client Sync hands whatever draws its pictures.
+     */
+    public static synchronized OkHttpClient installForImages(OkHttpClient client) {
+        if (client == null) {
+            return null;
+        }
+
+        OkHttpClient instrumentedClient = install(client);
+        OkHttpClient existing = drawing.get(instrumentedClient);
+        if (existing != null) {
+            return existing;
+        }
+
+        OkHttpClient derived = instrumentedClient.newBuilder()
+                .addInterceptor(chain -> chain.proceed(chain.request().newBuilder()
+                        .header(IMAGE_REQUEST, "1")
+                        .build()))
+                .build();
+        drawing.put(instrumentedClient, derived);
+        drawing.put(derived, derived);
+        return derived;
+    }
+
     public static synchronized OkHttpClient install(OkHttpClient client) {
         if (client == null) {
             // Sync hands out its clients through getters that read a field, and a field can be

@@ -19,6 +19,10 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 internal const val OKHTTP_EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/http/OkHttpRequestHook;"
 
+/** For the clients Sync draws its pictures through, whose requests are marked as such. */
+private const val INSTALL_IMAGE_CLIENT_METHOD =
+    "installForImages(Lokhttp3/OkHttpClient;)Lokhttp3/OkHttpClient;"
+
 private const val INSTALL_CLIENT_METHOD =
     "install(Lokhttp3/OkHttpClient;)Lokhttp3/OkHttpClient;"
 
@@ -103,7 +107,7 @@ val interceptHttpRequests = bytecodePatch(
             addInstructions(
                 index + 2,
                 """
-                invoke-static       { v$clientRegister }, $OKHTTP_EXTENSION_CLASS_DESCRIPTOR->$INSTALL_CLIENT_METHOD
+                invoke-static       { v$clientRegister }, $OKHTTP_EXTENSION_CLASS_DESCRIPTOR->$INSTALL_IMAGE_CLIENT_METHOD
                 move-result-object  v$clientRegister
                 """
             )
@@ -124,7 +128,7 @@ val interceptHttpRequests = bytecodePatch(
             addInstructions(
                 index + 1,
                 """
-                invoke-static       { v$clientRegister }, $OKHTTP_EXTENSION_CLASS_DESCRIPTOR->$INSTALL_CLIENT_METHOD
+                invoke-static       { v$clientRegister }, $OKHTTP_EXTENSION_CLASS_DESCRIPTOR->$INSTALL_IMAGE_CLIENT_METHOD
                 move-result-object  v$clientRegister
                 """
             )

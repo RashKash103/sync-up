@@ -18,6 +18,7 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.fixes.redgifs.RedgifsTokenManager;
 import app.morphe.extension.shared.requests.PatchedditInterceptor;
 import app.morphe.extension.shared.requests.Requester;
+import app.morphe.extension.syncforreddit.http.OkHttpRequestHook;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
@@ -102,6 +103,21 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
             if (media == null) {
                 Logger.printDebug(() -> "No RedGifs mirror for Gfycat id " + id);
                 return gone(request);
+            }
+
+            // Sync's own scraper reads a Gfycat page for the video in it, and whatever draws
+            // pictures asks for the very same address wanting a picture. Answering both with the
+            // page leaves one of them with something it cannot use.
+            if (isPageRequest && request.header(OkHttpRequestHook.IMAGE_REQUEST) != null) {
+                String still = media.poster != null ? media.poster : media.thumbnail;
+                if (still == null) {
+                    return gone(request);
+                }
+                Logger.printInfo(() -> "Drawing Gfycat id " + id + " from its RedGifs still");
+                return chain.proceed(request.newBuilder()
+                        .url(still)
+                        .header("User-Agent", getUserAgent())
+                        .build());
             }
 
             if (!isApiRequest && !isPageRequest) {
