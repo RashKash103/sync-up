@@ -1,3 +1,9 @@
+## [1.5.0-dev.15](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.14...v1.5.0-dev.15) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Point a comment's video at the video wherever the comment is shown ([e608ff0](https://github.com/RashKash103/sync-up/commit/e608ff09c16625dcc75d7790877ada4ef3b99711))
+
 ## [1.5.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.13...v1.5.0-dev.14) (2026-08-30)
 
 ### ✨ New Features
