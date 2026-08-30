@@ -21,3 +21,12 @@ internal val markdownLinkFingerprint = Fingerprint(
     returnType = "Ljava/lang/String;",
     strings = listOf("█", "]("),
 )
+
+/**
+ * Turns a body into what Sync draws: the rewrites, then markdown, then the tidying afterwards.
+ */
+internal val bodyProcessorFingerprint = Fingerprint(
+    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;"),
+    returnType = "Ljava/lang/String;",
+    strings = listOf("ESCAPED_SPOILER", "BODY: "),
+)
