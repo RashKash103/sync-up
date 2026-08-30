@@ -118,13 +118,53 @@ public final class MarkdownTracePatch {
      */
     public static void drawingFrom(Object view, Object builder) {
         try {
-            if (following > 0 || unprompted > 0) {
-                Logger.printInfo(() -> "drew from:    " + where(builder)
-                        + view.getClass().getName());
+            String held = contents(builder);
+            if (!held.contains("://") && following <= 0) {
+                return;
+            }
+            Logger.printInfo(() -> "drew from:    " + where(builder)
+                    + view.getClass().getName() + " holding " + held);
+            if (held.contains("://")) {
+                Logger.printInfo(() -> "drew by:      " + calledFrom());
             }
         } catch (Exception ex) {
             Logger.printInfo(() -> "Could not report the builder: " + ex);
         }
+    }
+
+    /**
+     * What the builder itself says it is holding, read off its own fields rather than inferred
+     * from what was done to it: the text so far, and how many spans are still standing over it.
+     */
+    private static String contents(Object builder) {
+        StringBuilder held = new StringBuilder();
+        for (java.lang.reflect.Field field : builder.getClass().getDeclaredFields()) {
+            try {
+                field.setAccessible(true);
+                Object value = field.get(builder);
+                if (value instanceof CharSequence) {
+                    CharSequence text = (CharSequence) value;
+                    held.append(text.length()).append(" characters (")
+                            .append(shorten(text.toString())).append(") ");
+                } else if (value instanceof java.util.Collection) {
+                    held.append(((java.util.Collection<?>) value).size()).append(" spans ");
+                }
+            } catch (Throwable ignored) {
+                // A field that will not be read tells us nothing; the others still do.
+            }
+        }
+        return held.toString();
+    }
+
+    /** The frames that led here, which is how the path that drew a view is identified. */
+    private static String calledFrom() {
+        StackTraceElement[] frames = new Throwable().getStackTrace();
+        StringBuilder path = new StringBuilder();
+        for (int index = 2; index < frames.length && index < 12; index++) {
+            path.append(index == 2 ? "" : " <- ").append(frames[index].getClassName())
+                    .append('.').append(frames[index].getMethodName());
+        }
+        return path.toString();
     }
 
     /** Identifies the builder being written to or read, and the thread doing it. */
