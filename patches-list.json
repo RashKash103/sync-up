@@ -1,5 +1,5 @@
 {
-  "version": "1.5.0-dev.10",
+  "version": "1.5.0-dev.11",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -74,6 +74,20 @@
         "com.laurencedawson.reddit_sync": [
           "v23.06.30-13:39"
         ]
+      },
+      "options": []
+    },
+    {
+      "name": "Draw the text of a post the way it was written",
+      "description": "Draws the body shown under a post in Sync's Slide layout, both in a feed and above the comments, from the marked up text rather than from a flat copy of it, so that quotes, emphasis and above all links appear in it. Without this an address written in a post is drawn as ordinary words: the same colour as the text around it, and nothing happens when it is tapped. Sync draws the body this way itself whenever its own selftext preview setting is off, and draws it this way in its other layouts regardless.",
+      "use": true,
+      "dependencies": [],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
       },
       "options": []
     },
