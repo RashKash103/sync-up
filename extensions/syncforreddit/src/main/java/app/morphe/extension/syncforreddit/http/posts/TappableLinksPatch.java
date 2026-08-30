@@ -64,7 +64,11 @@ public class TappableLinksPatch extends PatchedditInterceptor {
         }
 
         MediaType contentType = response.body().contentType();
-        if (contentType == null || !"json".equals(contentType.subtype())) {
+        if (contentType != null && !"text".equals(contentType.type())
+                && !contentType.subtype().contains("json")) {
+            // Anything but a picture may carry a post in it, and what a response calls itself is
+            // not to be relied on: the interceptor that puts removed text back asks nothing
+            // about the kind and works on every listing this one was passing over.
             return response;
         }
 

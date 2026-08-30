@@ -51,7 +51,8 @@ public class PlayCommentVideoPatch extends PatchedditInterceptor {
      * is stored under.
      */
     private static final Pattern PLAYER_LINK = Pattern.compile(
-            "https?://(?:www\\.)?reddit\\.com/link/[A-Za-z0-9]+/video/([A-Za-z0-9]+)/player");
+            "https?:\\\\?/\\\\?/(?:www\\.)?reddit\\.com\\\\?/link\\\\?/[A-Za-z0-9]+"
+                    + "\\\\?/video\\\\?/([A-Za-z0-9]+)\\\\?/player");
 
     private static final String VIDEO_HOST = "https://v.redd.it/";
 
@@ -96,7 +97,7 @@ public class PlayCommentVideoPatch extends PatchedditInterceptor {
         }
 
         MediaType contentType = response.body().contentType();
-        if (contentType == null || !"json".equals(contentType.subtype())) {
+        if (!worthReading(contentType)) {
             return response;
         }
 
@@ -118,8 +119,23 @@ public class PlayCommentVideoPatch extends PatchedditInterceptor {
         }
         player.appendTail(rewritten);
 
-        Logger.printDebug(() -> "Pointed a comment's video at where it is kept");
+        Logger.printInfo(() -> "Pointed a comment's video in " + url.encodedPath()
+                + " at where it is kept");
         return rebuilt(response, request, contentType, rewritten.toString());
+    }
+
+    /**
+     * Whether a response is worth looking through for a link.
+     *
+     * <p>Anything Reddit answers with that is not a picture or a video may carry one, and what
+     * it calls itself is not to be relied on: the interceptor that puts removed text back asks
+     * nothing about the kind and works on every listing, while this one asked for the kind to be
+     * stated as JSON and passed over responses that were not labelled that way.
+     */
+    private static boolean worthReading(@Nullable MediaType contentType) {
+        return contentType == null
+                || "text".equals(contentType.type())
+                || contentType.subtype().contains("json");
     }
 
     /**
