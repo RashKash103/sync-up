@@ -37,6 +37,13 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
     private static final Map<OkHttpClient, OkHttpClient> instrumented = new IdentityHashMap<>();
     private static final Map<OkHttpClient, OkHttpClient> drawing = new IdentityHashMap<>();
 
+    /**
+     * What each instrumented client was made from. Sync hands its clients out through getters
+     * that are themselves hooked, so by the time one reaches the drawing side it has been
+     * instrumented already, and adding the mark to that would put it on last again.
+     */
+    private static final Map<OkHttpClient, OkHttpClient> madeFrom = new IdentityHashMap<>();
+
     private OkHttpRequestHook() {}
 
     /**
@@ -83,15 +90,20 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
         }
 
         // The mark has to go on before anything reads it, and an interceptor added to a client
-        // that already has them runs after all of them, so this is built up from the plain
-        // client rather than from the instrumented one.
-        OkHttpClient.Builder builder = client.newBuilder();
+        // that already has them runs after all of them, so this is built from the plain client.
+        OkHttpClient plain = madeFrom.get(client);
+        if (plain == null) {
+            plain = client;
+        }
+
+        OkHttpClient.Builder builder = plain.newBuilder();
         builder.addInterceptor(chain -> chain.proceed(chain.request().newBuilder()
                 .header(IMAGE_REQUEST, "1")
                 .build()));
         addInterceptors(builder);
 
         OkHttpClient derived = builder.build();
+        drawing.put(plain, derived);
         drawing.put(client, derived);
         drawing.put(derived, derived);
         // Whatever else asks about this one has it accounted for.
@@ -120,6 +132,7 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
         instrumented.put(client, derived);
         // The derived client is handed back to callers, so it can come back in as the source.
         instrumented.put(derived, derived);
+        madeFrom.put(derived, client);
         return derived;
     }
 
