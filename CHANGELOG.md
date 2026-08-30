@@ -1,3 +1,9 @@
+## [1.5.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.8...v1.5.0-dev.9) (2026-08-30)
+
+### ✨ New Features
+
+* Say what a view is holding even when no address is in it ([753dae9](https://github.com/RashKash103/sync-up/commit/753dae93e1dc34fbefc543bb9126f5e6e0435a92))
+
 ## [1.5.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.7...v1.5.0-dev.8) (2026-08-30)
 
 ### ✨ New Features
