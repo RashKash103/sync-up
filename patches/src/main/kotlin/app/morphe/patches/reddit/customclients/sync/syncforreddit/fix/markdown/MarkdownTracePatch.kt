@@ -9,6 +9,7 @@ import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.shar
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
@@ -20,12 +21,17 @@ private const val TRACE_IN_METHOD = "traceIn(Ljava/lang/String;)V"
 private const val TRACE_OUT_METHOD =
     "traceOut(Ljava/lang/String;)Ljava/lang/String;"
 
-private const val APPENDED_METHOD = "appended(Ljava/lang/CharSequence;)V"
+private const val APPENDED_METHOD =
+    "appended(Ljava/lang/Object;Ljava/lang/CharSequence;)V"
 
 private const val APPENDED_WITH_METHOD =
-    "appendedWith(Ljava/lang/String;[Ljava/lang/Object;)V"
+    "appendedWith(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)V"
 
-private const val SPAN_APPLIED_METHOD = "spanApplied(Ljava/lang/Object;II)V"
+private const val SPAN_APPLIED_METHOD =
+    "spanApplied(Ljava/lang/Object;Ljava/lang/Object;II)V"
+
+private const val DRAWING_FROM_METHOD =
+    "drawingFrom(Ljava/lang/Object;Ljava/lang/Object;)V"
 
 private const val DRAWN_INTO_METHOD =
     "drawnInto(Ljava/lang/Object;Ljava/lang/CharSequence;)V"
@@ -74,17 +80,17 @@ val markdownTracePatch = bytecodePatch(
         // the report is the three ways a piece of text reaches the screen.
         appendPlainFingerprint.method.addInstructions(
             0,
-            "invoke-static { p1 }, $EXTENSION_CLASS_DESCRIPTOR->$APPENDED_METHOD"
+            "invoke-static { p0, p1 }, $EXTENSION_CLASS_DESCRIPTOR->$APPENDED_METHOD"
         )
 
         appendSpannedFingerprint.method.addInstructions(
             0,
-            "invoke-static { p1, p2 }, $EXTENSION_CLASS_DESCRIPTOR->$APPENDED_WITH_METHOD"
+            "invoke-static { p0, p1, p2 }, $EXTENSION_CLASS_DESCRIPTOR->$APPENDED_WITH_METHOD"
         )
 
         applySpanFingerprint.method.addInstructions(
             0,
-            "invoke-static { p1, p2, p3 }, $EXTENSION_CLASS_DESCRIPTOR->$SPAN_APPLIED_METHOD"
+            "invoke-static { p0, p1, p2, p3 }, $EXTENSION_CLASS_DESCRIPTOR->$SPAN_APPLIED_METHOD"
         )
 
         // Reported where the built text is taken off the builder rather than at the end of the
@@ -95,10 +101,17 @@ val markdownTracePatch = bytecodePatch(
                 val reference = getReference<MethodReference>()
                 reference?.name == "d" && reference.returnType == "Ljava/lang/CharSequence;"
             }
+            val builder = getInstruction<FiveRegisterInstruction>(built).registerC
             val text = getInstruction<OneRegisterInstruction>(built + 1).registerA
             addInstructions(
                 built + 2,
                 "invoke-static { p0, v$text }, $EXTENSION_CLASS_DESCRIPTOR->$DRAWN_INTO_METHOD"
+            )
+
+            // Before the text is taken, while the register still holds the builder it came off.
+            addInstructions(
+                built,
+                "invoke-static { p0, v$builder }, $EXTENSION_CLASS_DESCRIPTOR->$DRAWING_FROM_METHOD"
             )
         }
     }

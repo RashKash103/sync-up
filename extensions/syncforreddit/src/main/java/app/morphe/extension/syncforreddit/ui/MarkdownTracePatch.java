@@ -57,11 +57,12 @@ public final class MarkdownTracePatch {
     private static int following;
 
     /** Reports a piece of text appended without spans of its own. */
-    public static void appended(CharSequence text) {
+    public static void appended(Object builder, CharSequence text) {
         try {
             if (text != null && text.toString().contains("://")) {
                 following = FOLLOWING;
-                Logger.printInfo(() -> "drew plain:   " + shorten(text.toString()));
+                Logger.printInfo(() -> "drew plain:   " + where(builder)
+                        + shorten(text.toString()));
             }
         } catch (Exception ex) {
             Logger.printInfo(() -> "Could not report the drawing: " + ex);
@@ -69,11 +70,12 @@ public final class MarkdownTracePatch {
     }
 
     /** Reports a piece of text appended carrying spans, and what those spans are. */
-    public static void appendedWith(String text, Object[] spans) {
+    public static void appendedWith(Object builder, String text, Object[] spans) {
         try {
             if (text != null && text.contains("://")) {
                 following = FOLLOWING;
-                Logger.printInfo(() -> "drew spanned: " + shorten(text) + " " + names(spans));
+                Logger.printInfo(() -> "drew spanned: " + where(builder) + shorten(text)
+                        + " " + names(spans));
             }
         } catch (Exception ex) {
             Logger.printInfo(() -> "Could not report the drawing: " + ex);
@@ -84,11 +86,12 @@ public final class MarkdownTracePatch {
      * Reports a span laid over text already appended, which is how Sync makes the words of a
      * link tappable: the address is written out first and covered afterwards.
      */
-    public static void spanApplied(Object span, int start, int end) {
+    public static void spanApplied(Object builder, Object span, int start, int end) {
         try {
             if (following > 0) {
                 following--;
-                Logger.printInfo(() -> "drew span:    " + name(span) + " over " + start + ".." + end);
+                Logger.printInfo(() -> "drew span:    " + where(builder) + name(span)
+                        + " over " + start + ".." + end);
             }
         } catch (Exception ex) {
             Logger.printInfo(() -> "Could not report the drawing: " + ex);
@@ -107,6 +110,29 @@ public final class MarkdownTracePatch {
      * link colour and adds nothing else, so a view that draws them plainly is either not the
      * kind that carries links or has been given the same colour as its text.
      */
+    /**
+     * Reports which builder a view is about to read, before it reads it. A builder keeps the
+     * spans laid over its text until it is asked for that text, so if the spans went into one
+     * builder and the view read another, the two are simply not the same object and everything
+     * else about the drawing is beside the point.
+     */
+    public static void drawingFrom(Object view, Object builder) {
+        try {
+            if (following > 0 || unprompted > 0) {
+                Logger.printInfo(() -> "drew from:    " + where(builder)
+                        + view.getClass().getName());
+            }
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not report the builder: " + ex);
+        }
+    }
+
+    /** Identifies the builder being written to or read, and the thread doing it. */
+    private static String where(Object builder) {
+        return "#" + Integer.toHexString(System.identityHashCode(builder))
+                + " on " + Thread.currentThread().getName() + ": ";
+    }
+
     public static void drawnInto(Object view, CharSequence drawn) {
         try {
             if (!(view instanceof TextView)) {
