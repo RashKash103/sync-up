@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.5.0-dev.3](https://github.com/RashKash103/sync-up/releases/tag/v1.5.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;18 patches total
+> **[v1.5.0-dev.4](https://github.com/RashKash103/sync-up/releases/tag/v1.5.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;19 patches total
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;17 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;18 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -57,6 +57,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix Redgifs API](#fix-redgifs-api) |  |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
+| [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load because of what someone wrote in it. Sync rewrites code blocks and links before drawing them, and puts the text it matched back in as a replacement, where a dollar sign does not stand for itself: text such as "${SYS_USER}" is read as naming part of the pattern, and finding no such part the whole thread is abandoned with "Error loading page". Taken as the characters it is written with, as Sync already does when rewriting a comment's code, the thread loads. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Restores the thumbnail beside a post whose Reddit preview has been purged, which is why an old Imgur album shows a blank tile even though opening it works. The linked image is fetched from the Wayback Machine only once its preview has actually failed. |  |
 | [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Answers Gfycat requests from RedGifs, which hosts much of the content that moved there before Gfycat shut down. Gfycat's domains no longer resolve, so without this every Gfycat link fails to load. |  |
@@ -68,7 +69,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;17 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -82,6 +83,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix Redgifs API](#fix-redgifs-api) |  |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
+| [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load because of what someone wrote in it. Sync rewrites code blocks and links before drawing them, and puts the text it matched back in as a replacement, where a dollar sign does not stand for itself: text such as "${SYS_USER}" is read as naming part of the pattern, and finding no such part the whole thread is abandoned with "Error loading page". Taken as the characters it is written with, as Sync already does when rewriting a comment's code, the thread loads. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Restores the thumbnail beside a post whose Reddit preview has been purged, which is why an old Imgur album shows a blank tile even though opening it works. The linked image is fetched from the Wayback Machine only once its preview has actually failed. |  |
 | [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Answers Gfycat requests from RedGifs, which hosts much of the content that moved there before Gfycat shut down. Gfycat's domains no longer resolve, so without this every Gfycat link fails to load. |  |
@@ -93,7 +95,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;17 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -107,6 +109,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix Redgifs API](#fix-redgifs-api) |  |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
+| [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load because of what someone wrote in it. Sync rewrites code blocks and links before drawing them, and puts the text it matched back in as a replacement, where a dollar sign does not stand for itself: text such as "${SYS_USER}" is read as naming part of the pattern, and finding no such part the whole thread is abandoned with "Error loading page". Taken as the characters it is written with, as Sync already does when rewriting a comment's code, the thread loads. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Restores the thumbnail beside a post whose Reddit preview has been purged, which is why an old Imgur album shows a blank tile even though opening it works. The linked image is fetched from the Wayback Machine only once its preview has actually failed. |  |
 | [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Answers Gfycat requests from RedGifs, which hosts much of the content that moved there before Gfycat shut down. Gfycat's domains no longer resolve, so without this every Gfycat link fails to load. |  |

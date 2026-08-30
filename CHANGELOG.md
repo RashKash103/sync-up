@@ -1,3 +1,9 @@
+## [1.5.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.3...v1.5.0-dev.4) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Load a thread whose text contains a dollar sign ([08f5793](https://github.com/RashKash103/sync-up/commit/08f57930b1f76b2e964a56ab025710a801d9704e))
+
 ## [1.5.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.2...v1.5.0-dev.3) (2026-08-30)
 
 ### 🐛 Bug Fixes

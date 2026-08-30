@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-30T17:13:21",
-  "description": "## [1.5.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.2...v1.5.0-dev.3) (2026-08-30)\n\n### 🐛 Bug Fixes\n\n* Mark a drawing request before anything reads the mark, and drop the link rewriting ([87322cd](https://github.com/RashKash103/sync-up/commit/87322cd3ba52223e7dadafe770041e60dee876de))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.5.0-dev.3/patches-1.5.0-dev.3.mpp",
+  "created_at": "2026-08-30T17:50:16",
+  "description": "## [1.5.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.3...v1.5.0-dev.4) (2026-08-30)\n\n### 🐛 Bug Fixes\n\n* Load a thread whose text contains a dollar sign ([08f5793](https://github.com/RashKash103/sync-up/commit/08f57930b1f76b2e964a56ab025710a801d9704e))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.5.0-dev.4/patches-1.5.0-dev.4.mpp",
   "signature_download_url": "",
-  "version": "1.5.0-dev.3"
+  "version": "1.5.0-dev.4"
 }
