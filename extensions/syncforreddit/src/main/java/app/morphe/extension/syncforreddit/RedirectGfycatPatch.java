@@ -141,6 +141,36 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
     }
 
     /**
+     * A still of what a Gfycat or RedGifs link points at, for standing in where a thumbnail of it
+     * has gone. Both are answered from RedGifs, which is where the one that survived them both
+     * keeps its pictures.
+     *
+     * @return The address of a still, or null where RedGifs has no such gif.
+     */
+    @Nullable
+    public static String posterFor(String link) throws IOException, JSONException {
+        String lower = link.toLowerCase(Locale.ROOT);
+        if (!lower.contains("gfycat.com") && !lower.contains("redgifs.com")) {
+            return null;
+        }
+
+        HttpUrl url = HttpUrl.parse(link);
+        if (url == null) {
+            return null;
+        }
+        String id = normalizeId(lastPathSegment(url));
+        if (id.isEmpty()) {
+            return null;
+        }
+
+        MediaUrls media = lookup(id);
+        if (media == null) {
+            return null;
+        }
+        return media.poster != null ? media.poster : media.thumbnail;
+    }
+
+    /**
      * Strips the extension and the size suffixes Gfycat links carry, then lowercases, since
      * Gfycat ids are CamelCase and RedGifs only resolves the lowercase form.
      */

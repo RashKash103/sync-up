@@ -10,7 +10,7 @@ import java.util.Map;
 import app.morphe.extension.shared.Logger;
 
 /**
- * Remembers what was put back into a comment so that the line under its author can say so.
+ * Remembers what was put back, so that the line under an author can say so.
  *
  * <p>Sync builds that line by appending to a shared builder, and the patch calls in at the one
  * point both of its branches meet, just after the flair. Everything the note needs is reached
@@ -18,7 +18,7 @@ import app.morphe.extension.shared.Logger;
  *
  * @noinspection unused
  */
-public final class RestoredComments {
+public final class RestoredNotes {
     /**
      * A red dark enough to read against a light background and light enough against a dark one,
      * since Sync themes the line the note sits on and the note has to hold up on either.
@@ -36,7 +36,7 @@ public final class RestoredComments {
                 }
             };
 
-    private RestoredComments() {}
+    private RestoredNotes() {}
 
     static void remember(String id, String note) {
         if (id == null || id.isEmpty() || note == null || note.isEmpty()) {
@@ -58,8 +58,8 @@ public final class RestoredComments {
     }
 
     /**
-     * Adds the note to the line under a comment's author, right after the separating space Sync
-     * leaves following the flair and before the score and age it goes on to add. Sync's own
+     * Adds the note to the line under an author, right after the separating space Sync leaves
+     * following the flair and before the score and age it goes on to add. Sync's own
      * "(last edited …)" is written further along the same line and is left as it is.
      */
     public static void appendNote(oc.c header, xa.d comment) {
@@ -75,8 +75,16 @@ public final class RestoredComments {
                 header.c(note + " ", new Object[]{new ForegroundColorSpan(NOTE_COLOUR)});
             }
         } catch (Throwable ex) {
-            // A comment losing its note is a far better outcome than a thread that will not draw.
+            // Losing a note is a far better outcome than a thread that will not draw.
             Logger.printException(() -> "Could not add the recovery note", ex);
         }
+    }
+
+    /**
+     * The same for a post, whose header is built by a method taking what Sync's own flair helper
+     * takes, so this is called in its shape rather than needing anything moved about for it.
+     */
+    public static void appendPostNote(oc.c header, Object unusedView, xa.d post) {
+        appendNote(header, post);
     }
 }

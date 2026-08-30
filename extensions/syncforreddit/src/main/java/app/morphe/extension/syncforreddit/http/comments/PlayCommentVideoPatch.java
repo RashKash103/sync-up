@@ -40,7 +40,11 @@ import okhttp3.ResponseBody;
  * @noinspection unused
  */
 public class PlayCommentVideoPatch extends PatchedditInterceptor {
-    private static final int TIMEOUT_MS = 10_000;
+    /**
+     * Short: a thread is waiting on this, and a video whose manifest is slow is better shown as
+     * a working link than held up behind it.
+     */
+    private static final int TIMEOUT_MS = 4_000;
 
     /**
      * The player page Reddit writes into a comment, whose last part but one is the id the video

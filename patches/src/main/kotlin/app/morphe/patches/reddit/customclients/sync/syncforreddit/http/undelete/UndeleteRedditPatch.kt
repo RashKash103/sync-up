@@ -12,16 +12,20 @@ import app.morphe.util.indexOfFirstInstructionOrThrow
 import app.morphe.util.returnEarly
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/http/undelete/UndeleteRedditPatch;"
 
 private const val NOTES_CLASS_DESCRIPTOR =
-    "Lapp/morphe/extension/syncforreddit/http/undelete/RestoredComments;"
+    "Lapp/morphe/extension/syncforreddit/http/undelete/RestoredNotes;"
 
 private const val APPEND_NOTE_METHOD =
     "appendNote($HEADER_BUILDER_CLASS$POST_MODEL)V"
+
+private const val APPEND_POST_NOTE_METHOD =
+    "appendPostNote($HEADER_BUILDER_CLASS" + "Ljava/lang/Object;$POST_MODEL)V"
 
 @Suppress("unused")
 val undeleteRedditPatch = bytecodePatch(
@@ -59,6 +63,25 @@ val undeleteRedditPatch = bytecodePatch(
                 flairIndex + 2,
                 "invoke-static { v${flairCall.registerC}, v${flairCall.registerE} }, " +
                         "$NOTES_CLASS_DESCRIPTOR->$APPEND_NOTE_METHOD"
+            )
+        }
+
+        // The same for a post. Its header keeps the post in a register too high to name in an
+        // ordinary call, so the note goes in the way the flair beside it does, over the range
+        // the flair itself is given.
+        postHeaderFingerprint.method.apply {
+            val flairIndex = indexOfFirstInstructionOrThrow {
+                opcode == Opcode.INVOKE_STATIC_RANGE &&
+                        getReference<MethodReference>()?.parameterTypes?.toList() ==
+                        listOf(HEADER_BUILDER_CLASS, "Landroid/widget/TextView;", POST_MODEL)
+            }
+            val flairCall = getInstruction<RegisterRangeInstruction>(flairIndex)
+            val first = flairCall.startRegister
+
+            addInstructions(
+                flairIndex + 2,
+                "invoke-static/range { v$first .. v${first + 2} }, " +
+                        "$NOTES_CLASS_DESCRIPTOR->$APPEND_POST_NOTE_METHOD"
             )
         }
     }

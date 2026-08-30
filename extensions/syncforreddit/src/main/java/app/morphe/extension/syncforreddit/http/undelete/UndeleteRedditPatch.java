@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.requests.PatchedditInterceptor;
@@ -28,16 +29,26 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 /**
- * Restores the text of removed posts and comments from Project Arctic Shift.
+ * Restores what Reddit has taken down, from Project Arctic Shift.
  *
  * <p>Sync requests a thread as {@code /r/<sub>/comments/<id>/...json}, so unlike Boost the
  * path does not begin with {@code /comments/}. Sync also reads raw markdown rather than the
- * rendered {@code _html} fields, and has no field for Boost's removal reason markers, so the
- * marker is prefixed to the restored text instead.
+ * rendered {@code _html} fields.
+ *
+ * <p>Nothing is written into what is restored: what happened to it is said on the line under
+ * its author instead, so that what is shown as the text is only ever the text.
  */
 public class UndeleteRedditPatch extends PatchedditInterceptor {
     private static final String REMOVED = "[removed]";
     private static final String DELETED = "[deleted]";
+
+    /**
+     * Reddit does not have one way of saying it took something away. Beside the two bare words
+     * it also writes out who did it, as "[ Removed by Reddit ]" and the like, and a title it
+     * has taken down reads that way rather than being blank.
+     */
+    private static final Pattern TAKEN_DOWN = Pattern.compile(
+            "\\[\\s*(removed|deleted)\\s*(by\\s+[^\\]]+)?\\]", Pattern.CASE_INSENSITIVE);
 
     @Override
     public boolean isPatchIncluded() {
@@ -51,7 +62,11 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
         Request request = chain.request();
         HttpUrl url = request.url();
 
-        if (!url.host().endsWith("reddit.com") || !url.encodedPath().contains("/comments/")) {
+        // A thread, and the further comments Sync asks for when a "view more" is tapped, which
+        // it fetches from an endpoint of its own with a shape of its own.
+        boolean thread = url.encodedPath().contains("/comments/");
+        boolean more = url.encodedPath().contains("/api/morechildren");
+        if (!url.host().endsWith("reddit.com") || (!thread && !more)) {
             return chain.proceed(request);
         }
 
@@ -66,7 +81,9 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
 
         String restored;
         try {
-            restored = restore(original, submissionIdFrom(url));
+            restored = more
+                    ? restoreMore(original, submissionIdFrom(url, request))
+                    : restore(original, submissionIdFrom(url, request));
         } catch (JSONException ex) {
             Logger.printException(() -> "Could not restore removed content", ex);
             restored = null;
@@ -75,6 +92,10 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
             // Expected from time to time: these are free community services, and one being
             // slow or briefly unreachable is not a fault worth putting in front of the user.
             Logger.printInfo(() -> "Arctic Shift request failed: " + ex);
+            restored = null;
+        } catch (Throwable ex) {
+            // Whatever went wrong, the thread is worth more than what could have been put back.
+            Logger.printException(() -> "Could not restore removed content", ex);
             restored = null;
         }
 
@@ -88,7 +109,14 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
      * segment.
      */
     @Nullable
-    private static String submissionIdFrom(HttpUrl url) {
+    private static String submissionIdFrom(HttpUrl url, Request request) {
+        // Fetching more comments names the thread in the request rather than the path.
+        String asked = url.queryParameter("link_id");
+        if (asked != null && !asked.isEmpty()) {
+            int prefix = asked.indexOf('_');
+            return prefix < 0 ? asked : asked.substring(prefix + 1);
+        }
+
         java.util.List<String> segments = url.pathSegments();
         for (int i = 0; i < segments.size() - 1; i++) {
             if (segments.get(i).equals("comments")) {
@@ -124,7 +152,8 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
         JSONArray comments = childrenOf(listings.optJSONObject(1));
 
         boolean submissionRemoved = submission != null
-                && (isRemoved(submission, "selftext") || isDeletedAuthor(submission));
+                && (isRemoved(submission, "selftext") || isRemoved(submission, "title")
+                    || isDeletedAuthor(submission));
         Set<String> removedComments = new HashSet<>();
         if (comments != null) {
             collectRemoved(comments, removedComments);
@@ -139,10 +168,31 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
         if (submissionRemoved) {
             JSONObject archived = ArcticShift.getSubmission(submissionId);
             if (archived != null) {
-                if (isRemoved(submission, "selftext")) {
-                    changed |= merge(submission, archived, "selftext");
+                // A title is taken down with the rest of a post, and a post with nothing else to
+                // it is only its title.
+                String placeholder = isRemoved(submission, "title")
+                        ? submission.optString("title", "")
+                        : submission.optString("selftext", "");
+
+                boolean textRestored = isRemoved(submission, "title")
+                        && merge(submission, archived, "title");
+                textRestored |= isRemoved(submission, "selftext")
+                        && merge(submission, archived, "selftext");
+                boolean nameRestored = restoreAuthor(submission, archived);
+
+                if (textRestored) {
+                    RestoredNotes.remember(submission.optString("id", ""),
+                            RemovalReason.describe(archived, placeholder));
+                } else if (nameRestored) {
+                    RestoredNotes.remember(submission.optString("id", ""), "account deleted");
                 }
-                changed |= restoreAuthor(submission, archived);
+                changed |= textRestored || nameRestored;
+            }
+
+            // The name is gone from the archive as well, which is what a deleted account leaves
+            // everywhere. Saying so is still worth more than a post by nobody.
+            if (submission != null && isDeletedAuthor(submission)) {
+                RestoredNotes.remember(submission.optString("id", ""), "account deleted");
             }
         }
 
@@ -164,6 +214,45 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
         return changed ? listings.toString() : null;
     }
 
+    /**
+     * The further comments behind a "view more", which Reddit answers with the comments
+     * themselves rather than a thread: one flat run of them, under the request's own envelope.
+     * They are otherwise shaped alike, so what puts a thread's comments back does for these.
+     *
+     * @return The rewritten body, or null when nothing needed restoring.
+     */
+    @Nullable
+    private static String restoreMore(String body, @Nullable String submissionId)
+            throws JSONException, IOException {
+        if (submissionId == null) {
+            return null;
+        }
+
+        JSONObject root = new JSONObject(body);
+        JSONObject envelope = root.optJSONObject("json");
+        JSONObject data = envelope == null ? null : envelope.optJSONObject("data");
+        JSONArray things = data == null ? null : data.optJSONArray("things");
+        if (things == null) {
+            return null;
+        }
+
+        Set<String> removedComments = new HashSet<>();
+        collectRemoved(things, removedComments);
+        if (removedComments.isEmpty()) {
+            return null;
+        }
+
+        Map<String, JSONObject> archived = ArcticShift.getCommentTree(submissionId);
+        if (archived.isEmpty()) {
+            return null;
+        }
+
+        removedComments.retainAll(archived.keySet());
+        int found = removedComments.size();
+        Logger.printInfo(() -> "Restoring " + found + " of the comments behind a view more");
+        return restoreComments(things, archived) ? root.toString() : null;
+    }
+
     @Nullable
     private static JSONObject firstChildData(@Nullable JSONObject listing) {
         JSONArray children = childrenOf(listing);
@@ -182,8 +271,8 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
     }
 
     private static boolean isRemoved(JSONObject node, String field) {
-        String value = node.optString(field, "");
-        return REMOVED.equals(value) || DELETED.equals(value);
+        String value = node.optString(field, "").trim();
+        return !value.isEmpty() && TAKEN_DOWN.matcher(value).matches();
     }
 
     private static void collectRemoved(JSONArray children, Set<String> into) {
@@ -230,13 +319,17 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
                 // back would describe a deleted account, which is a different thing and usually
                 // not what happened.
                 if (textRestored) {
-                    RestoredComments.remember(data.optString("id", ""),
+                    RestoredNotes.remember(data.optString("id", ""),
                             RemovalReason.describe(source, placeholder));
-                } else if (nameRestored) {
-                    RestoredComments.remember(data.optString("id", ""), "account deleted");
+                } else if (nameRestored || isDeletedAuthor(data)) {
+                    // Whether or not the name could be put back: a deleted account takes it off
+                    // everything it wrote, and saying so beats a comment by nobody.
+                    RestoredNotes.remember(data.optString("id", ""), "account deleted");
                 }
 
                 changed |= textRestored || nameRestored;
+            } else if (isDeletedAuthor(data)) {
+                RestoredNotes.remember(data.optString("id", ""), "account deleted");
             }
 
             JSONArray replies = repliesOf(data);
@@ -264,12 +357,11 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
     private static boolean merge(JSONObject target, JSONObject source, String textField)
             throws JSONException {
         String text = source.optString(textField, "");
-        if (text.isEmpty() || REMOVED.equals(text) || DELETED.equals(text)) {
+        if (text.isEmpty() || isRemoved(source, textField)) {
             return false;
         }
 
-        boolean isComment = "body".equals(textField);
-        target.put(textField, isComment ? text : RemovalReason.markerFor(source) + " " + text);
+        target.put(textField, text);
         return true;
     }
 
