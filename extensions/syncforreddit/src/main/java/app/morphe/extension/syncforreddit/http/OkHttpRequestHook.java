@@ -10,7 +10,6 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.syncforreddit.RedirectGfycatPatch;
 import app.morphe.extension.syncforreddit.http.comments.PlayCommentVideoPatch;
 import app.morphe.extension.syncforreddit.http.imgur.FixImgurProxyPatch;
-import app.morphe.extension.syncforreddit.http.posts.TappableLinksPatch;
 import app.morphe.extension.syncforreddit.http.profile.ArchivedProfilePatch;
 import app.morphe.extension.syncforreddit.http.imgur.RecoverThumbnailsPatch;
 import app.morphe.extension.syncforreddit.http.imgur.UndeleteImgurPatch;
@@ -40,6 +39,19 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
 
     private OkHttpRequestHook() {}
 
+    /**
+     * Adds what the hook listens with, in the order it listens in.
+     */
+    private static void addInterceptors(OkHttpClient.Builder builder) {
+        init();
+        for (Interceptor interceptor : HOOK.getInterceptors()) {
+            builder.addInterceptor(interceptor);
+        }
+        for (Interceptor interceptor : HOOK.getNetworkInterceptors()) {
+            builder.addNetworkInterceptor(interceptor);
+        }
+    }
+
     public static void init() {
         if (INSTANCE == null) {
             INSTANCE = HOOK;
@@ -65,19 +77,26 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
             return null;
         }
 
-        OkHttpClient instrumentedClient = install(client);
-        OkHttpClient existing = drawing.get(instrumentedClient);
+        OkHttpClient existing = drawing.get(client);
         if (existing != null) {
             return existing;
         }
 
-        OkHttpClient derived = instrumentedClient.newBuilder()
-                .addInterceptor(chain -> chain.proceed(chain.request().newBuilder()
-                        .header(IMAGE_REQUEST, "1")
-                        .build()))
-                .build();
-        drawing.put(instrumentedClient, derived);
+        // The mark has to go on before anything reads it, and an interceptor added to a client
+        // that already has them runs after all of them, so this is built up from the plain
+        // client rather than from the instrumented one.
+        OkHttpClient.Builder builder = client.newBuilder();
+        builder.addInterceptor(chain -> chain.proceed(chain.request().newBuilder()
+                .header(IMAGE_REQUEST, "1")
+                .build()));
+        addInterceptors(builder);
+
+        OkHttpClient derived = builder.build();
+        drawing.put(client, derived);
         drawing.put(derived, derived);
+        // Whatever else asks about this one has it accounted for.
+        instrumented.put(client, derived);
+        instrumented.put(derived, derived);
         return derived;
     }
 
@@ -95,12 +114,7 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
         }
 
         OkHttpClient.Builder builder = client.newBuilder();
-        for (Interceptor interceptor : HOOK.getInterceptors()) {
-            builder.addInterceptor(interceptor);
-        }
-        for (Interceptor interceptor : HOOK.getNetworkInterceptors()) {
-            builder.addNetworkInterceptor(interceptor);
-        }
+        addInterceptors(builder);
 
         OkHttpClient derived = builder.build();
         instrumented.put(client, derived);
@@ -114,7 +128,6 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
         List<Interceptor> interceptors = new ArrayList<>();
         interceptors.add(new UndeleteRedditPatch());
         interceptors.add(new PlayCommentVideoPatch());
-        interceptors.add(new TappableLinksPatch());
         interceptors.add(new ArchivedProfilePatch());
         // Ahead of the undelete: both of these answer by reissuing the request against an
         // ordinary Imgur address, and a request reissued from here carries on down the chain
