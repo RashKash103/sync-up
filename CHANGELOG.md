@@ -1,3 +1,11 @@
+## [1.5.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.1...v1.5.0-dev.2) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Draw a Gfycat post from its still rather than its page ([988d442](https://github.com/RashKash103/sync-up/commit/988d4423060b8619862751b12f20bc8f24ab5099))
+* One separator before the note, not two ([ade5993](https://github.com/RashKash103/sync-up/commit/ade5993af392f10f3c81d5952f4e1591fdbdf003))
+* Stop naming a library the app keeps under another name ([3673c85](https://github.com/RashKash103/sync-up/commit/3673c858bb00668f82f90b5530229566fe2c4717))
+
 ## [1.5.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.4.0...v1.5.0-dev.1) (2026-08-30)
 
 ### 🐛 Bug Fixes
