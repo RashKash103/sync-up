@@ -63,16 +63,28 @@ public final class RestoredNotes {
      * "(last edited …)" is written further along the same line and is left as it is.
      */
     public static void appendNote(oc.c header, xa.d comment) {
+        append(header, comment, true);
+    }
+
+    /**
+     * @param leadingBullet Whether a separator is wanted before the note. What Sync leaves ahead
+     *                      of it differs: a comment's line has a space there and a post's has a
+     *                      separator already, and a second one beside it reads as a gap.
+     */
+    private static void append(oc.c header, xa.d content, boolean leadingBullet) {
         try {
-            if (header == null || comment == null) {
+            if (header == null || content == null) {
                 return;
             }
-            String note = noteFor(comment.U());
+            String note = noteFor(content.U());
             if (note != null) {
-                // The separator is appended plainly and only the wording is coloured, so the
-                // line keeps the same bullets between its parts as it has everywhere else.
-                header.b("• ");
-                header.c(note + " ", new Object[]{new ForegroundColorSpan(NOTE_COLOUR)});
+                // Only the wording is coloured, so the line keeps the same separators between
+                // its parts as it has everywhere else.
+                if (leadingBullet) {
+                    header.b("• ");
+                }
+                header.c(note, new Object[]{new ForegroundColorSpan(NOTE_COLOUR)});
+                header.b(leadingBullet ? " " : " • ");
             }
         } catch (Throwable ex) {
             // Losing a note is a far better outcome than a thread that will not draw.
@@ -85,6 +97,6 @@ public final class RestoredNotes {
      * takes, so this is called in its shape rather than needing anything moved about for it.
      */
     public static void appendPostNote(oc.c header, Object unusedView, xa.d post) {
-        appendNote(header, post);
+        append(header, post, false);
     }
 }
