@@ -1,3 +1,9 @@
+## [1.5.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.6...v1.5.0-dev.7) (2026-08-30)
+
+### ✨ New Features
+
+* Report what the drawing does with a link, not just the markdown ([1f69d21](https://github.com/RashKash103/sync-up/commit/1f69d215cf6d88c813ed2d5e400ce6b4135a40ce))
+
 ## [1.5.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.5...v1.5.0-dev.6) (2026-08-30)
 
 ### ✨ New Features
