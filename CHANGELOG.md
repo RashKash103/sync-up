@@ -1,3 +1,9 @@
+## [1.5.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.12...v1.5.0-dev.13) (2026-08-30)
+
+### ✨ New Features
+
+* Ask the builder what it holds, and who is asking ([a3e2a94](https://github.com/RashKash103/sync-up/commit/a3e2a9448d0386ea5a0e32b6bdc3e8199bd8c8df))
+
 ## [1.5.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.11...v1.5.0-dev.12) (2026-08-30)
 
 ### 🐛 Bug Fixes
