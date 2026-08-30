@@ -1,5 +1,5 @@
 {
-  "version": "1.5.0-dev.13",
+  "version": "1.5.0-dev.14",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -152,6 +152,22 @@
     {
       "name": "Fix video downloads",
       "description": "Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Keep the links in the text of a post",
+      "description": "Keeps what Sync works out about the body shown under a post instead of dropping it. Sync draws that body in full and then throws the working away, leaving bare characters, so an address written in a post is drawn in the same colour as the words around it and nothing happens when it is tapped. Images are still dropped, so a feed loads no more than it did.",
       "use": true,
       "dependencies": [
         "BytecodePatch"

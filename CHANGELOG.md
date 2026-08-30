@@ -1,3 +1,9 @@
+## [1.5.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.13...v1.5.0-dev.14) (2026-08-30)
+
+### ✨ New Features
+
+* Keep the links in the text of a post ([8373202](https://github.com/RashKash103/sync-up/commit/83732022a84fe57f40af5528a4607e96adaeccd0))
+
 ## [1.5.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.12...v1.5.0-dev.13) (2026-08-30)
 
 ### ✨ New Features
