@@ -30,10 +30,8 @@ private val imgurRequestSourceFiles = setOf(
 @Suppress("unused")
 val fixImgurProxyPatch = bytecodePatch(
     name = "Fix Imgur links",
-    description = "Sync resolves Imgur links through a proxy of its own that no longer exists, " +
-            "so they fail to load. Answers those requests locally instead. Album contents are " +
-            "read from an archived copy of the album page, which only works for albums the " +
-            "archive captured while Imgur still rendered them.",
+    description = "Resolves Imgur links in the app instead of through Sync's proxy, which no longer " +
+            "exists.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch, interceptHttpRequests)

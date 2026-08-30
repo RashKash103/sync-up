@@ -1,3 +1,100 @@
+## [1.5.0-dev.15](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.14...v1.5.0-dev.15) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Point a comment's video at the video wherever the comment is shown ([e608ff0](https://github.com/RashKash103/sync-up/commit/e608ff09c16625dcc75d7790877ada4ef3b99711))
+
+## [1.5.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.13...v1.5.0-dev.14) (2026-08-30)
+
+### ✨ New Features
+
+* Keep the links in the text of a post ([8373202](https://github.com/RashKash103/sync-up/commit/83732022a84fe57f40af5528a4607e96adaeccd0))
+
+## [1.5.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.12...v1.5.0-dev.13) (2026-08-30)
+
+### ✨ New Features
+
+* Ask the builder what it holds, and who is asking ([a3e2a94](https://github.com/RashKash103/sync-up/commit/a3e2a9448d0386ea5a0e32b6bdc3e8199bd8c8df))
+
+## [1.5.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.11...v1.5.0-dev.12) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Take back the selftext drawing change and measure instead of infer ([b81f8a8](https://github.com/RashKash103/sync-up/commit/b81f8a8a57f28f1cbd775d8b7c26c6b89f57bd94))
+
+## [1.5.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.10...v1.5.0-dev.11) (2026-08-30)
+
+### ✨ New Features
+
+* Draw the text of a post the way it was written ([20c0b97](https://github.com/RashKash103/sync-up/commit/20c0b97ab49696bc62acc8838c83c2b47f19c3d8))
+
+## [1.5.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.9...v1.5.0-dev.10) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Report the view on the path both kinds of view take ([f7024ec](https://github.com/RashKash103/sync-up/commit/f7024ecca240e74d62fb0bb49ced4f9589957136))
+
+## [1.5.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.8...v1.5.0-dev.9) (2026-08-30)
+
+### ✨ New Features
+
+* Say what a view is holding even when no address is in it ([753dae9](https://github.com/RashKash103/sync-up/commit/753dae93e1dc34fbefc543bb9126f5e6e0435a92))
+
+## [1.5.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.7...v1.5.0-dev.8) (2026-08-30)
+
+### ✨ New Features
+
+* Report the view a body is finally handed to ([1a8aa7b](https://github.com/RashKash103/sync-up/commit/1a8aa7befdd7d6253502a5abb60caa833dfe9133))
+
+## [1.5.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.6...v1.5.0-dev.7) (2026-08-30)
+
+### ✨ New Features
+
+* Report what the drawing does with a link, not just the markdown ([1f69d21](https://github.com/RashKash103/sync-up/commit/1f69d215cf6d88c813ed2d5e400ce6b4135a40ce))
+
+## [1.5.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.5...v1.5.0-dev.6) (2026-08-30)
+
+### ✨ New Features
+
+* Add a way to see what Sync makes of a body ([6cbff9f](https://github.com/RashKash103/sync-up/commit/6cbff9f5272ee46ac8b4d1160b7f1eaa11a3b47e))
+
+## [1.5.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.4...v1.5.0-dev.5) (2026-08-30)
+
+### ✨ New Features
+
+* Write an address in a post as a link ([6bef2e6](https://github.com/RashKash103/sync-up/commit/6bef2e6a11bed2251877f083ab7e96eb43df4216))
+
+## [1.5.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.3...v1.5.0-dev.4) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Load a thread whose text contains a dollar sign ([08f5793](https://github.com/RashKash103/sync-up/commit/08f57930b1f76b2e964a56ab025710a801d9704e))
+
+## [1.5.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.2...v1.5.0-dev.3) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Mark a drawing request before anything reads the mark, and drop the link rewriting ([87322cd](https://github.com/RashKash103/sync-up/commit/87322cd3ba52223e7dadafe770041e60dee876de))
+
+## [1.5.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.1...v1.5.0-dev.2) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Draw a Gfycat post from its still rather than its page ([988d442](https://github.com/RashKash103/sync-up/commit/988d4423060b8619862751b12f20bc8f24ab5099))
+* One separator before the note, not two ([ade5993](https://github.com/RashKash103/sync-up/commit/ade5993af392f10f3c81d5952f4e1591fdbdf003))
+* Stop naming a library the app keeps under another name ([3673c85](https://github.com/RashKash103/sync-up/commit/3673c858bb00668f82f90b5530229566fe2c4717))
+
+## [1.5.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.4.0...v1.5.0-dev.1) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Find the thread a "view more" belongs to ([8b5e88f](https://github.com/RashKash103/sync-up/commit/8b5e88fc4e66d45631900cba69a5d00c147808d2))
+
+### ✨ New Features
+
+* Put a taken down post back in a feed as well ([3041f88](https://github.com/RashKash103/sync-up/commit/3041f880d91d17b767d76eb428a70ab09ee861e0))
+* Say what happened to a post, and put its title back ([83af89e](https://github.com/RashKash103/sync-up/commit/83af89ebeb5b7c6ce09af2330b9e7b3cfbdb16dd))
+
 ## [1.4.0](https://github.com/RashKash103/sync-up/compare/v1.3.0...v1.4.0) (2026-08-28)
 
 ### ✨ New Features

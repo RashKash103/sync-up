@@ -18,13 +18,7 @@ private const val VIDEO_ID_METHOD = "redditVideoId(Ljava/lang/String;)Ljava/lang
 @Suppress("unused")
 val playCommentVideoPatch = bytecodePatch(
     name = "Show videos posted in comments",
-    description = "Draws a video posted in a comment in the comment, and plays it when tapped. " +
-            "Reddit writes one into the comment as a link to a player page on its own site, " +
-            "which Sync can only hand to a browser, where it opens on an address naming no " +
-            "subreddit and is answered with a banned notice. Pointed at the video itself, Sync " +
-            "draws it beside the comment the way it does any other media, and plays the whole " +
-            "video in its own player. Sync's own \"Inline image previews\" setting governs " +
-            "whether it is drawn.",
+    description = "Draws a video posted in a comment in the comment, and plays it when tapped.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch, interceptHttpRequests)

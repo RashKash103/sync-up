@@ -12,7 +12,7 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 @Suppress("unused")
 val useUserEndpointPatch = bytecodePatch(
     name = "Use /user/ endpoint",
-    description = "Replaces the deprecated endpoint for viewing user profiles /u with /user, that used to fix a bug.",
+    description = "Replaces the deprecated /u profile endpoint with /user.",
     default = true,
 ) {
     compatibleWith(*SyncForRedditCompatible)

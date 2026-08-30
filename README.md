@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.4.0](https://github.com/RashKash103/sync-up/releases/tag/v1.4.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;18 patches total
+> **[v1.5.0-dev.15](https://github.com/RashKash103/sync-up/releases/tag/v1.5.0-dev.15)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;22 patches total
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;17 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;21 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -57,9 +57,13 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix Redgifs API](#fix-redgifs-api) |  |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
+| [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps what Sync works out about the body shown under a post instead of dropping it. Sync draws that body in full and then throws the working away, leaving bare characters, so an address written in a post is drawn in the same colour as the words around it and nothing happens when it is tapped. Images are still dropped, so a feed loads no more than it did. |  |
+| [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load because of what someone wrote in it. Sync rewrites code blocks and links before drawing them, and puts the text it matched back in as a replacement, where a dollar sign does not stand for itself: text such as "${SYS_USER}" is read as naming part of the pattern, and finding no such part the whole thread is abandoned with "Error loading page". Taken as the characters it is written with, as Sync already does when rewriting a comment's code, the thread loads. |  |
+| [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Writes an address in a post's own body as a link. Sync draws a link where one is written as a link, and turns a bare address into one only where it recognises it, which is Reddit's own addresses, Imgur's and a couple besides, so a post whose body is an address to anywhere else has nothing to tap. An address already written as a link is left exactly as it is. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Restores the thumbnail beside a post whose Reddit preview has been purged, which is why an old Imgur album shows a blank tile even though opening it works. The linked image is fetched from the Wayback Machine only once its preview has actually failed. |  |
 | [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Answers Gfycat requests from RedGifs, which hosts much of the content that moved there before Gfycat shut down. Gfycat's domains no longer resolve, so without this every Gfycat link fails to load. |  |
+| [Report what Sync makes of a body](#report-what-sync-makes-of-a-body) | Writes to the log what a post or comment body looked like before Sync drew it, what it turned into, and what the words of an address were finally given to make them tappable. For working out why an address written in one is drawn as a link and the same address written in the other is not. Of no use unless a log is being read, and noisy while it is. |  |
 | [Show a hidden profile from the archive](#show-a-hidden-profile-from-the-archive) | Fills in a profile Reddit answers with nothing. An account can hide what it has written from its own profile, which Sync shows as a user with no posts, while Project Arctic Shift still serves what it recorded when those posts and comments were public. Only a profile that comes back empty is filled in, and only its posts and comments tabs. |  |
 | [Show videos posted in comments](#show-videos-posted-in-comments) | Draws a video posted in a comment in the comment, and plays it when tapped. Reddit writes one into the comment as a link to a player page on its own site, which Sync can only hand to a browser, where it opens on an address naming no subreddit and is answered with a banned notice. Pointed at the video itself, Sync draws it beside the comment the way it does any other media, and plays the whole video in its own player. Sync's own "Inline image previews" setting governs whether it is drawn. |  |
 | [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent |
@@ -68,7 +72,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;20 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -82,9 +86,13 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix Redgifs API](#fix-redgifs-api) |  |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
+| [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps what Sync works out about the body shown under a post instead of dropping it. Sync draws that body in full and then throws the working away, leaving bare characters, so an address written in a post is drawn in the same colour as the words around it and nothing happens when it is tapped. Images are still dropped, so a feed loads no more than it did. |  |
+| [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load because of what someone wrote in it. Sync rewrites code blocks and links before drawing them, and puts the text it matched back in as a replacement, where a dollar sign does not stand for itself: text such as "${SYS_USER}" is read as naming part of the pattern, and finding no such part the whole thread is abandoned with "Error loading page". Taken as the characters it is written with, as Sync already does when rewriting a comment's code, the thread loads. |  |
+| [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Writes an address in a post's own body as a link. Sync draws a link where one is written as a link, and turns a bare address into one only where it recognises it, which is Reddit's own addresses, Imgur's and a couple besides, so a post whose body is an address to anywhere else has nothing to tap. An address already written as a link is left exactly as it is. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Restores the thumbnail beside a post whose Reddit preview has been purged, which is why an old Imgur album shows a blank tile even though opening it works. The linked image is fetched from the Wayback Machine only once its preview has actually failed. |  |
 | [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Answers Gfycat requests from RedGifs, which hosts much of the content that moved there before Gfycat shut down. Gfycat's domains no longer resolve, so without this every Gfycat link fails to load. |  |
+| [Report what Sync makes of a body](#report-what-sync-makes-of-a-body) | Writes to the log what a post or comment body looked like before Sync drew it, what it turned into, and what the words of an address were finally given to make them tappable. For working out why an address written in one is drawn as a link and the same address written in the other is not. Of no use unless a log is being read, and noisy while it is. |  |
 | [Show a hidden profile from the archive](#show-a-hidden-profile-from-the-archive) | Fills in a profile Reddit answers with nothing. An account can hide what it has written from its own profile, which Sync shows as a user with no posts, while Project Arctic Shift still serves what it recorded when those posts and comments were public. Only a profile that comes back empty is filled in, and only its posts and comments tabs. |  |
 | [Show videos posted in comments](#show-videos-posted-in-comments) | Draws a video posted in a comment in the comment, and plays it when tapped. Reddit writes one into the comment as a link to a player page on its own site, which Sync can only hand to a browser, where it opens on an address naming no subreddit and is answered with a banned notice. Pointed at the video itself, Sync draws it beside the comment the way it does any other media, and plays the whole video in its own player. Sync's own "Inline image previews" setting governs whether it is drawn. |  |
 | [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent |
@@ -93,7 +101,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;20 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -107,9 +115,13 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix Redgifs API](#fix-redgifs-api) |  |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
+| [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps what Sync works out about the body shown under a post instead of dropping it. Sync draws that body in full and then throws the working away, leaving bare characters, so an address written in a post is drawn in the same colour as the words around it and nothing happens when it is tapped. Images are still dropped, so a feed loads no more than it did. |  |
+| [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load because of what someone wrote in it. Sync rewrites code blocks and links before drawing them, and puts the text it matched back in as a replacement, where a dollar sign does not stand for itself: text such as "${SYS_USER}" is read as naming part of the pattern, and finding no such part the whole thread is abandoned with "Error loading page". Taken as the characters it is written with, as Sync already does when rewriting a comment's code, the thread loads. |  |
+| [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Writes an address in a post's own body as a link. Sync draws a link where one is written as a link, and turns a bare address into one only where it recognises it, which is Reddit's own addresses, Imgur's and a couple besides, so a post whose body is an address to anywhere else has nothing to tap. An address already written as a link is left exactly as it is. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Restores the thumbnail beside a post whose Reddit preview has been purged, which is why an old Imgur album shows a blank tile even though opening it works. The linked image is fetched from the Wayback Machine only once its preview has actually failed. |  |
 | [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Answers Gfycat requests from RedGifs, which hosts much of the content that moved there before Gfycat shut down. Gfycat's domains no longer resolve, so without this every Gfycat link fails to load. |  |
+| [Report what Sync makes of a body](#report-what-sync-makes-of-a-body) | Writes to the log what a post or comment body looked like before Sync drew it, what it turned into, and what the words of an address were finally given to make them tappable. For working out why an address written in one is drawn as a link and the same address written in the other is not. Of no use unless a log is being read, and noisy while it is. |  |
 | [Show a hidden profile from the archive](#show-a-hidden-profile-from-the-archive) | Fills in a profile Reddit answers with nothing. An account can hide what it has written from its own profile, which Sync shows as a user with no posts, while Project Arctic Shift still serves what it recorded when those posts and comments were public. Only a profile that comes back empty is filled in, and only its posts and comments tabs. |  |
 | [Show videos posted in comments](#show-videos-posted-in-comments) | Draws a video posted in a comment in the comment, and plays it when tapped. Reddit writes one into the comment as a link to a player page on its own site, which Sync can only hand to a browser, where it opens on an address naming no subreddit and is answered with a banned notice. Pointed at the video itself, Sync draws it beside the comment the way it does any other media, and plays the whole video in its own player. Sync's own "Inline image previews" setting governs whether it is drawn. |  |
 | [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent |
@@ -128,6 +140,88 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <!-- PATCHES_END -->
+
+### What the patches do
+
+The list above is generated from the bundle and carries the short description shown in
+Morphe Manager. This section covers the same patches in more detail: what each one
+changes, and where it stops.
+
+Patches that reach out to an archive only do so when the app has already come up empty,
+and never speculatively. Nothing is prefetched, and nothing is sent anywhere except the
+service being asked.
+
+#### Getting the app working again
+
+- **Spoof client** — Replaces Sync's revoked OAuth credentials with your own client ID,
+  redirect URI and user agent. Nothing else works without this. See
+  [Getting started](#-getting-started).
+- **Fix /s/ links** — Reddit's shortened `/s/` share links resolve to a real thread rather
+  than failing.
+- **Use /user/ endpoint** — Profiles are fetched from `/user/`; the `/u/` form Sync used is
+  no longer served.
+- **Modify login WebView** — Routes the login page through the extension so that signing in
+  completes.
+- **Disable ads**, **Disable Sync for Lemmy bottom sheet** — Removes the ads shown between
+  posts, and the prompt to sign up to Sync for Lemmy at startup.
+
+#### Media that no longer loads
+
+- **Fix Redgifs API** — RedGifs refuses Sync's requests as they stand; this makes them
+  acceptable again.
+- **Redirect Gfycat links to RedGifs** — Gfycat shut down and its domains no longer resolve.
+  Much of its content moved to RedGifs, and Gfycat links are answered from there. Content
+  that did not move stays broken.
+- **Fix Imgur links** — Sync resolves Imgur links through a proxy of its own that no longer
+  exists. Those requests are answered in the app instead. Album contents come from an
+  archived copy of the album page, so only albums the archive captured while Imgur still
+  rendered them can be listed.
+- **Automatically undelete Imgur media** — Imgur removed a large amount of older content.
+  Images and videos that no longer exist are loaded from the Wayback Machine, including the
+  still shown for a video in a feed. Only what the archive happens to hold is recoverable.
+- **Fix post thumbnails** — Corrects the thumbnail URLs Sync builds.
+- **Recover post thumbnails from the archive** — Reddit purges the preview it generated for
+  older posts, leaving a blank tile even where opening the post still works. The linked
+  image is fetched from the Wayback Machine, and only once the preview has actually failed.
+- **Fix video downloads** — Corrects Sync's MPD parser, which saved only the audio track.
+- **Show videos posted in comments** — Reddit writes a video posted in a comment as a link
+  to a player page on its own site, which opens in a browser and is answered with a banned
+  notice. The link is pointed at the video itself, so it is drawn beside the comment like
+  any other media and plays in Sync's own player. Whether it is drawn is governed by Sync's
+  own *Inline image previews* setting.
+
+#### Text that is missing or inert
+
+- **Automatically undelete Reddit content** — Restores the text of removed posts and
+  comments from Project Arctic Shift, and the name of an author whose account has since
+  been deleted. A note under the author says why the content was taken down. Only text is
+  recoverable, only where the archive holds it, and media in a removed post stays gone.
+- **Show a hidden profile from the archive** — An account can hide its own posts and
+  comments from its profile, which Sync shows as a user with nothing to their name. Project
+  Arctic Shift still serves what it recorded while those posts were public. Only a profile
+  that comes back empty is filled in, and only its posts, comments and overview tabs.
+- **Keep the links in the text of a post** — Sync renders the body shown under a post in
+  full and then discards the result, drawing bare characters. Keeping it means quotes,
+  emphasis and links appear. Images are still discarded, so a feed loads no more than it
+  did. A link in a post body in a feed becomes tappable, so tapping directly on one opens
+  the link rather than the post.
+- **Make an address in a post tappable** — Sync turns a bare address into a link only where
+  it recognises the host, which is Reddit, Imgur and a couple besides. Any address in a
+  post body is written as a link instead. An address already written as a link is left
+  alone.
+- **Load threads whose text contains a dollar sign** — Sync rewrites code blocks and links
+  before drawing them and puts the matched text back as a replacement, where a dollar sign
+  does not stand for itself. Text such as `${SYS_USER}` aborted the whole thread with
+  "Error loading page".
+- **Add archive links to menus** — Adds Wayback Machine and archive.today options to the
+  menu behind a post's overflow button and to the one behind a link, next to *Open in
+  browser*, for reading a page since taken down or put behind a paywall. Nothing is
+  requested until one is tapped.
+
+#### Other
+
+- **Enable Android debugging** — Inherited from upstream, off by default, and applies to any
+  app rather than to Sync alone. It slows the app down and is only useful when debugging it.
 
 ## 🚀 Getting started
 

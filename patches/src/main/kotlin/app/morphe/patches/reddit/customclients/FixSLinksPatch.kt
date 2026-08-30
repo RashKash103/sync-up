@@ -12,6 +12,7 @@ fun fixSLinksPatch(
     block: BytecodePatchBuilder.() -> Unit = {},
 ) = bytecodePatch(
     name = "Fix /s/ links",
+    description = "Opens Reddit's shortened /s/ share links in the app.",
     default = true
 ) {
     dependsOn(extensionPatch)

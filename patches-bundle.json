@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-28T18:19:39",
-  "description": "## [1.4.0](https://github.com/RashKash103/sync-up/compare/v1.3.0...v1.4.0) (2026-08-28)\n\n### ✨ New Features\n\n* Draw a video posted in a comment in the comment ([9fd2209](https://github.com/RashKash103/sync-up/commit/9fd2209941af655a47f3049bae73d4085af8ad0b))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.4.0/patches-1.4.0.mpp",
+  "created_at": "2026-08-30T21:10:24",
+  "description": "## [1.5.0-dev.15](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.14...v1.5.0-dev.15) (2026-08-30)\n\n### 🐛 Bug Fixes\n\n* Point a comment's video at the video wherever the comment is shown ([e608ff0](https://github.com/RashKash103/sync-up/commit/e608ff09c16625dcc75d7790877ada4ef3b99711))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.5.0-dev.15/patches-1.5.0-dev.15.mpp",
   "signature_download_url": "",
-  "version": "1.4.0"
+  "version": "1.5.0-dev.15"
 }

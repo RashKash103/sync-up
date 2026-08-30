@@ -18,6 +18,7 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.fixes.redgifs.RedgifsTokenManager;
 import app.morphe.extension.shared.requests.PatchedditInterceptor;
 import app.morphe.extension.shared.requests.Requester;
+import app.morphe.extension.syncforreddit.http.OkHttpRequestHook;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
@@ -104,6 +105,21 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
                 return gone(request);
             }
 
+            // Sync's own scraper reads a Gfycat page for the video in it, and whatever draws
+            // pictures asks for the very same address wanting a picture. Answering both with the
+            // page leaves one of them with something it cannot use.
+            if (isPageRequest && request.header(OkHttpRequestHook.IMAGE_REQUEST) != null) {
+                String still = media.poster != null ? media.poster : media.thumbnail;
+                if (still == null) {
+                    return gone(request);
+                }
+                Logger.printInfo(() -> "Drawing Gfycat id " + id + " from its RedGifs still");
+                return chain.proceed(request.newBuilder()
+                        .url(still)
+                        .header("User-Agent", getUserAgent())
+                        .build());
+            }
+
             if (!isApiRequest && !isPageRequest) {
                 // A request to one of Gfycat's media subdomains, which is how every thumbnail in
                 // a feed is loaded. Reissuing it against the mirror is what makes those load,
@@ -138,6 +154,36 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
             }
         }
         return "";
+    }
+
+    /**
+     * A still of what a Gfycat or RedGifs link points at, for standing in where a thumbnail of it
+     * has gone. Both are answered from RedGifs, which is where the one that survived them both
+     * keeps its pictures.
+     *
+     * @return The address of a still, or null where RedGifs has no such gif.
+     */
+    @Nullable
+    public static String posterFor(String link) throws IOException, JSONException {
+        String lower = link.toLowerCase(Locale.ROOT);
+        if (!lower.contains("gfycat.com") && !lower.contains("redgifs.com")) {
+            return null;
+        }
+
+        HttpUrl url = HttpUrl.parse(link);
+        if (url == null) {
+            return null;
+        }
+        String id = normalizeId(lastPathSegment(url));
+        if (id.isEmpty()) {
+            return null;
+        }
+
+        MediaUrls media = lookup(id);
+        if (media == null) {
+            return null;
+        }
+        return media.poster != null ? media.poster : media.thumbnail;
     }
 
     /**

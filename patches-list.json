@@ -1,5 +1,5 @@
 {
-  "version": "1.4.0",
+  "version": "1.5.0-dev.15",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -166,6 +166,53 @@
       "options": []
     },
     {
+      "name": "Keep the links in the text of a post",
+      "description": "Keeps what Sync works out about the body shown under a post instead of dropping it. Sync draws that body in full and then throws the working away, leaving bare characters, so an address written in a post is drawn in the same colour as the words around it and nothing happens when it is tapped. Images are still dropped, so a feed loads no more than it did.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Load threads whose text contains a dollar sign",
+      "description": "Stops a thread failing to load because of what someone wrote in it. Sync rewrites code blocks and links before drawing them, and puts the text it matched back in as a replacement, where a dollar sign does not stand for itself: text such as \"${SYS_USER}\" is read as naming part of the pattern, and finding no such part the whole thread is abandoned with \"Error loading page\". Taken as the characters it is written with, as Sync already does when rewriting a comment's code, the thread loads.",
+      "use": true,
+      "dependencies": [],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Make an address in a post tappable",
+      "description": "Writes an address in a post's own body as a link. Sync draws a link where one is written as a link, and turns a bare address into one only where it recognises it, which is Reddit's own addresses, Imgur's and a couple besides, so a post whose body is an address to anywhere else has nothing to tap. An address already written as a link is left exactly as it is.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
       "name": "Modify login WebView",
       "description": "Modify the WebView used for logging into reddit to prevent login issues",
       "use": true,
@@ -204,6 +251,22 @@
       "use": true,
       "dependencies": [
         "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Report what Sync makes of a body",
+      "description": "Writes to the log what a post or comment body looked like before Sync drew it, what it turned into, and what the words of an address were finally given to make them tappable. For working out why an address written in one is drawn as a link and the same address written in the other is not. Of no use unless a log is being read, and noisy while it is.",
+      "use": false,
+      "dependencies": [
         "BytecodePatch"
       ],
       "compatiblePackages": {

@@ -15,6 +15,7 @@ import java.util.Map;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.requests.PatchedditInterceptor;
+import app.morphe.extension.syncforreddit.RedirectGfycatPatch;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -142,6 +143,12 @@ public class RecoverThumbnailsPatch extends PatchedditInterceptor {
      */
     @Nullable
     private static String imageFor(String link) throws IOException, JSONException {
+        // Gfycat is gone and RedGifs keeps what survived it, including the stills.
+        String poster = RedirectGfycatPatch.posterFor(link);
+        if (poster != null) {
+            return poster;
+        }
+
         String albumId = albumIdOf(link);
         if (albumId != null) {
             List<JSONObject> images = ImgurAlbum.imagesOf(albumId);

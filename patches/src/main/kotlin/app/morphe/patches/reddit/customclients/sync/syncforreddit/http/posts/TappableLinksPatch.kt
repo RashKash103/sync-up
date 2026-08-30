@@ -1,4 +1,4 @@
-package app.morphe.patches.reddit.customclients.sync.syncforreddit.http.imgur
+package app.morphe.patches.reddit.customclients.sync.syncforreddit.http.posts
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.patch.bytecodePatch
@@ -8,12 +8,12 @@ import app.morphe.patches.reddit.customclients.sync.syncforreddit.http.intercept
 import app.morphe.util.returnEarly
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
-    "Lapp/morphe/extension/syncforreddit/http/imgur/UndeleteImgurPatch;"
+    "Lapp/morphe/extension/syncforreddit/http/posts/TappableLinksPatch;"
 
 @Suppress("unused")
-val undeleteImgurPatch = bytecodePatch(
-    name = "Automatically undelete Imgur media",
-    description = "Loads Imgur images and videos that no longer exist from the Wayback Machine.",
+val tappableLinksPatch = bytecodePatch(
+    name = "Make an address in a post tappable",
+    description = "Draws a bare address in a post's body as a link.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch, interceptHttpRequests)

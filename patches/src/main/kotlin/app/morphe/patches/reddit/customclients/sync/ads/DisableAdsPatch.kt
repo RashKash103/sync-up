@@ -6,6 +6,7 @@ import app.morphe.util.returnEarly
 
 fun disableAdsPatch(block: BytecodePatchBuilder.() -> Unit = {}) = bytecodePatch(
     name = "Disable ads",
+    description = "Removes the ads shown between posts.",
     default = true
 ) {
     execute {
