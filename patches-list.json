@@ -1,5 +1,5 @@
 {
-  "version": "1.4.0",
+  "version": "1.5.0-dev.1",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -154,6 +154,23 @@
       "description": "Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved.",
       "use": true,
       "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Make plain links in a post tappable",
+      "description": "Writes an address in a post's own body as a link. Sync turns certain addresses into links itself, and the ones it knows are Reddit's own, Imgur's and a couple besides, so a post whose body is a link to anywhere else is a post with nothing to tap. An address already written as a link is left alone.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
         "BytecodePatch"
       ],
       "compatiblePackages": {

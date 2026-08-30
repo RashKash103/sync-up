@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-28T18:19:39",
-  "description": "## [1.4.0](https://github.com/RashKash103/sync-up/compare/v1.3.0...v1.4.0) (2026-08-28)\n\n### ✨ New Features\n\n* Draw a video posted in a comment in the comment ([9fd2209](https://github.com/RashKash103/sync-up/commit/9fd2209941af655a47f3049bae73d4085af8ad0b))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.4.0/patches-1.4.0.mpp",
+  "created_at": "2026-08-30T16:39:36",
+  "description": "## [1.5.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.4.0...v1.5.0-dev.1) (2026-08-30)\n\n### 🐛 Bug Fixes\n\n* Find the thread a \"view more\" belongs to ([8b5e88f](https://github.com/RashKash103/sync-up/commit/8b5e88fc4e66d45631900cba69a5d00c147808d2))\n\n### ✨ New Features\n\n* Put a taken down post back in a feed as well ([3041f88](https://github.com/RashKash103/sync-up/commit/3041f880d91d17b767d76eb428a70ab09ee861e0))\n* Say what happened to a post, and put its title back ([83af89e](https://github.com/RashKash103/sync-up/commit/83af89ebeb5b7c6ce09af2330b9e7b3cfbdb16dd))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.5.0-dev.1/patches-1.5.0-dev.1.mpp",
   "signature_download_url": "",
-  "version": "1.4.0"
+  "version": "1.5.0-dev.1"
 }

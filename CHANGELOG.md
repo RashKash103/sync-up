@@ -1,3 +1,14 @@
+## [1.5.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.4.0...v1.5.0-dev.1) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Find the thread a "view more" belongs to ([8b5e88f](https://github.com/RashKash103/sync-up/commit/8b5e88fc4e66d45631900cba69a5d00c147808d2))
+
+### ✨ New Features
+
+* Put a taken down post back in a feed as well ([3041f88](https://github.com/RashKash103/sync-up/commit/3041f880d91d17b767d76eb428a70ab09ee861e0))
+* Say what happened to a post, and put its title back ([83af89e](https://github.com/RashKash103/sync-up/commit/83af89ebeb5b7c6ce09af2330b9e7b3cfbdb16dd))
+
 ## [1.4.0](https://github.com/RashKash103/sync-up/compare/v1.3.0...v1.4.0) (2026-08-28)
 
 ### ✨ New Features
