@@ -1,5 +1,6 @@
 package app.morphe.patches.reddit.customclients.sync.syncforreddit.fix.markdown
 
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
@@ -23,6 +24,8 @@ private const val APPENDED_WITH_METHOD =
     "appendedWith(Ljava/lang/String;[Ljava/lang/Object;)V"
 
 private const val SPAN_APPLIED_METHOD = "spanApplied(Ljava/lang/Object;II)V"
+
+private const val DRAWN_INTO_METHOD = "drawnInto(Ljava/lang/Object;)V"
 
 @Suppress("unused")
 val markdownTracePatch = bytecodePatch(
@@ -80,5 +83,14 @@ val markdownTracePatch = bytecodePatch(
             0,
             "invoke-static { p1, p2, p3 }, $EXTENSION_CLASS_DESCRIPTOR->$SPAN_APPLIED_METHOD"
         )
+
+        // Reported once the view has the text rather than on the way in, so that what the view
+        // ended up holding can be read back off it.
+        handToViewFingerprint.method.apply {
+            addInstruction(
+                instructions.count() - 1,
+                "invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->$DRAWN_INTO_METHOD"
+            )
+        }
     }
 }

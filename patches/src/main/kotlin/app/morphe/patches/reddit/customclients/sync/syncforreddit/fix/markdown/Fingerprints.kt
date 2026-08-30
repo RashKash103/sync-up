@@ -57,3 +57,13 @@ internal val applySpanFingerprint = Fingerprint(
     returnType = "V",
     custom = { _, classDef -> classDef.type == SPAN_BUILDER_CLASS },
 )
+
+/**
+ * Hands the built text to the view that is to draw it, either directly or through a measurement
+ * worked out ahead of time. The last place a link can go missing.
+ */
+internal val handToViewFingerprint = Fingerprint(
+    parameters = emptyList(),
+    returnType = "V",
+    strings = listOf("Using text future ", "Using legacy setText(): "),
+)

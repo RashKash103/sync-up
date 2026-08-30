@@ -1,5 +1,8 @@
 package app.morphe.extension.syncforreddit.ui;
 
+import android.text.Spanned;
+import android.widget.TextView;
+
 import app.morphe.extension.shared.Logger;
 
 /**
@@ -89,6 +92,34 @@ public final class MarkdownTracePatch {
             }
         } catch (Exception ex) {
             Logger.printInfo(() -> "Could not report the drawing: " + ex);
+        }
+    }
+
+    /**
+     * Reports the view a piece of text was handed to once it has it, which is the last place a
+     * link can be lost: the span that makes the words tappable paints them in the view's own
+     * link colour and adds nothing else, so a view that draws them plainly is either not the
+     * kind that carries links or has been given the same colour as its text.
+     */
+    public static void drawnInto(Object view) {
+        try {
+            if (following <= 0 || !(view instanceof TextView)) {
+                return;
+            }
+            TextView text = (TextView) view;
+            CharSequence drawn = text.getText();
+            int spans = drawn instanceof Spanned
+                    ? ((Spanned) drawn).getSpans(0, drawn.length(), Object.class).length
+                    : -1;
+            Logger.printInfo(() -> "drew into:    " + view.getClass().getName()
+                    + ", holding " + name(drawn) + " of " + (drawn == null ? 0 : drawn.length())
+                    + " with " + spans + " spans"
+                    + ", link colour " + Integer.toHexString(text.getLinkTextColors() == null
+                            ? 0 : text.getLinkTextColors().getDefaultColor())
+                    + ", text colour " + Integer.toHexString(text.getCurrentTextColor())
+                    + ", movement " + name(text.getMovementMethod()));
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not report the view: " + ex);
         }
     }
 
