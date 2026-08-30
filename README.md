@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.5.0-dev.11](https://github.com/RashKash103/sync-up/releases/tag/v1.5.0-dev.11)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;22 patches total
+> **[v1.5.0-dev.12](https://github.com/RashKash103/sync-up/releases/tag/v1.5.0-dev.12)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;21 patches total
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;21 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;20 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -52,7 +52,6 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift, and the name of an author whose account has since been deleted. A comment says why it was taken down on the line under its author. Only text can be recovered, and only where the archive has it. |  |
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
 | [Disable ads](#disable-ads) |  |  |
-| [Draw the text of a post the way it was written](#draw-the-text-of-a-post-the-way-it-was-written) | Draws the body shown under a post in Sync's Slide layout, both in a feed and above the comments, from the marked up text rather than from a flat copy of it, so that quotes, emphasis and above all links appear in it. Without this an address written in a post is drawn as ordinary words: the same colour as the text around it, and nothing happens when it is tapped. Sync draws the body this way itself whenever its own selftext preview setting is off, and draws it this way in its other layouts regardless. |  |
 | [Fix /s/ links](#fix-s-links) |  |  |
 | [Fix Imgur links](#fix-imgur-links) | Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests locally instead. Album contents are read from an archived copy of the album page, which only works for albums the archive captured while Imgur still rendered them. |  |
 | [Fix Redgifs API](#fix-redgifs-api) |  |  |
@@ -72,7 +71,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;20 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;19 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -81,7 +80,6 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Automatically undelete Imgur media](#automatically-undelete-imgur-media) | Loads Imgur images and videos that no longer exist from the Wayback Machine, including the still shown for a video in a feed. Imgur removed a large amount of older content, so links in old posts often fail. Nothing is requested until a link has actually failed, and only what the archive happens to hold can be recovered. |  |
 | [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift, and the name of an author whose account has since been deleted. A comment says why it was taken down on the line under its author. Only text can be recovered, and only where the archive has it. |  |
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
-| [Draw the text of a post the way it was written](#draw-the-text-of-a-post-the-way-it-was-written) | Draws the body shown under a post in Sync's Slide layout, both in a feed and above the comments, from the marked up text rather than from a flat copy of it, so that quotes, emphasis and above all links appear in it. Without this an address written in a post is drawn as ordinary words: the same colour as the text around it, and nothing happens when it is tapped. Sync draws the body this way itself whenever its own selftext preview setting is off, and draws it this way in its other layouts regardless. |  |
 | [Fix /s/ links](#fix-s-links) |  |  |
 | [Fix Imgur links](#fix-imgur-links) | Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests locally instead. Album contents are read from an archived copy of the album page, which only works for albums the archive captured while Imgur still rendered them. |  |
 | [Fix Redgifs API](#fix-redgifs-api) |  |  |
@@ -101,7 +99,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;20 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;19 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -110,7 +108,6 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Automatically undelete Imgur media](#automatically-undelete-imgur-media) | Loads Imgur images and videos that no longer exist from the Wayback Machine, including the still shown for a video in a feed. Imgur removed a large amount of older content, so links in old posts often fail. Nothing is requested until a link has actually failed, and only what the archive happens to hold can be recovered. |  |
 | [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments from Project Arctic Shift, and the name of an author whose account has since been deleted. A comment says why it was taken down on the line under its author. Only text can be recovered, and only where the archive has it. |  |
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
-| [Draw the text of a post the way it was written](#draw-the-text-of-a-post-the-way-it-was-written) | Draws the body shown under a post in Sync's Slide layout, both in a feed and above the comments, from the marked up text rather than from a flat copy of it, so that quotes, emphasis and above all links appear in it. Without this an address written in a post is drawn as ordinary words: the same colour as the text around it, and nothing happens when it is tapped. Sync draws the body this way itself whenever its own selftext preview setting is off, and draws it this way in its other layouts regardless. |  |
 | [Fix /s/ links](#fix-s-links) |  |  |
 | [Fix Imgur links](#fix-imgur-links) | Sync resolves Imgur links through a proxy of its own that no longer exists, so they fail to load. Answers those requests locally instead. Album contents are read from an archived copy of the album page, which only works for albums the archive captured while Imgur still rendered them. |  |
 | [Fix Redgifs API](#fix-redgifs-api) |  |  |

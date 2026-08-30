@@ -1,3 +1,9 @@
+## [1.5.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.11...v1.5.0-dev.12) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Take back the selftext drawing change and measure instead of infer ([b81f8a8](https://github.com/RashKash103/sync-up/commit/b81f8a8a57f28f1cbd775d8b7c26c6b89f57bd94))
+
 ## [1.5.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.10...v1.5.0-dev.11) (2026-08-30)
 
 ### ✨ New Features
