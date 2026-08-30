@@ -69,7 +69,10 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
         // it fetches from an endpoint of its own with a shape of its own.
         boolean thread = url.encodedPath().contains("/comments/");
         boolean more = url.encodedPath().contains("/api/morechildren");
-        if (!url.host().endsWith("reddit.com") || (!thread && !more)) {
+        // A feed shows a post's title and author before anything is opened, and a post taken
+        // down reads as Reddit's wording there too.
+        boolean listing = !thread && !more && url.host().equals("oauth.reddit.com");
+        if (!url.host().endsWith("reddit.com") || (!thread && !more && !listing)) {
             return chain.proceed(request);
         }
 
@@ -84,9 +87,13 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
 
         String restored;
         try {
-            restored = more
-                    ? restoreMore(original, submissionIdFrom(url, request))
-                    : restore(original, submissionIdFrom(url, request));
+            if (more) {
+                restored = restoreMore(original, submissionIdFrom(url, request));
+            } else if (listing) {
+                restored = restoreListing(original);
+            } else {
+                restored = restore(original, submissionIdFrom(url, request));
+            }
         } catch (JSONException ex) {
             Logger.printException(() -> "Could not restore removed content", ex);
             restored = null;
@@ -246,6 +253,80 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
         }
 
         return changed ? listings.toString() : null;
+    }
+
+    /**
+     * A feed, which is posts without their comments. Each one taken down is asked after together
+     * rather than one at a time, and a feed with nothing taken down asks nothing at all.
+     *
+     * @return The rewritten body, or null when nothing needed restoring.
+     */
+    @Nullable
+    private static String restoreListing(String body) throws JSONException, IOException {
+        if (body.isEmpty() || body.charAt(0) != '{') {
+            return null;
+        }
+
+        JSONObject root = new JSONObject(body);
+        JSONArray children = childrenOf(root);
+        if (children == null || children.length() == 0) {
+            return null;
+        }
+
+        Set<String> ids = new HashSet<>();
+        for (int i = 0; i < children.length(); i++) {
+            JSONObject data = postOf(children.optJSONObject(i));
+            if (data == null) continue;
+
+            if (isRemoved(data, "title") || isRemoved(data, "selftext") || isDeletedAuthor(data)) {
+                String id = data.optString("id", "");
+                if (!id.isEmpty()) {
+                    ids.add(id);
+                }
+            }
+        }
+        if (ids.isEmpty()) {
+            return null;
+        }
+
+        Map<String, JSONObject> archived = ArcticShift.getSubmissions(ids);
+        boolean changed = false;
+
+        for (int i = 0; i < children.length(); i++) {
+            JSONObject data = postOf(children.optJSONObject(i));
+            if (data == null) continue;
+
+            String placeholder = isRemoved(data, "title")
+                    ? data.optString("title", "")
+                    : data.optString("selftext", "");
+
+            JSONObject source = archived.get(data.optString("id", ""));
+            boolean textRestored = false;
+            boolean nameRestored = false;
+            if (source != null) {
+                textRestored = isRemoved(data, "title") && merge(data, source, "title");
+                textRestored |= isRemoved(data, "selftext") && merge(data, source, "selftext");
+                nameRestored = restoreAuthor(data, source);
+            }
+
+            if (textRestored) {
+                RestoredNotes.remember(data.optString("id", ""),
+                        RemovalReason.describe(source, placeholder));
+            } else if (nameRestored || isDeletedAuthor(data)) {
+                RestoredNotes.remember(data.optString("id", ""), "account deleted");
+            }
+            changed |= textRestored || nameRestored;
+        }
+
+        return changed ? root.toString() : null;
+    }
+
+    /**
+     * @return The post a listing entry carries, or null for an entry that is not one.
+     */
+    @Nullable
+    private static JSONObject postOf(@Nullable JSONObject child) {
+        return child == null ? null : child.optJSONObject("data");
     }
 
     /**
