@@ -17,13 +17,21 @@ private const val TRACE_IN_METHOD = "traceIn(Ljava/lang/String;)V"
 private const val TRACE_OUT_METHOD =
     "traceOut(Ljava/lang/String;)Ljava/lang/String;"
 
+private const val APPENDED_METHOD = "appended(Ljava/lang/CharSequence;)V"
+
+private const val APPENDED_WITH_METHOD =
+    "appendedWith(Ljava/lang/String;[Ljava/lang/Object;)V"
+
+private const val SPAN_APPLIED_METHOD = "spanApplied(Ljava/lang/Object;II)V"
+
 @Suppress("unused")
 val markdownTracePatch = bytecodePatch(
     name = "Report what Sync makes of a body",
     description = "Writes to the log what a post or comment body looked like before Sync drew " +
-            "it and what it turned into. For working out why an address written in one is drawn " +
-            "as a link and the same address written in the other is not. Of no use unless a log " +
-            "is being read, and noisy while it is.",
+            "it, what it turned into, and what the words of an address were finally given to " +
+            "make them tappable. For working out why an address written in one is drawn as a " +
+            "link and the same address written in the other is not. Of no use unless a log is " +
+            "being read, and noisy while it is.",
     default = false
 ) {
     dependsOn(sharedExtensionPatch)
@@ -55,5 +63,22 @@ val markdownTracePatch = bytecodePatch(
                 "invoke-static { v$text }, $EXTENSION_CLASS_DESCRIPTOR->$TRACE_IN_METHOD"
             )
         }
+
+        // What the markdown produced only matters if the drawing keeps it, so the other half of
+        // the report is the three ways a piece of text reaches the screen.
+        appendPlainFingerprint.method.addInstructions(
+            0,
+            "invoke-static { p1 }, $EXTENSION_CLASS_DESCRIPTOR->$APPENDED_METHOD"
+        )
+
+        appendSpannedFingerprint.method.addInstructions(
+            0,
+            "invoke-static { p1, p2 }, $EXTENSION_CLASS_DESCRIPTOR->$APPENDED_WITH_METHOD"
+        )
+
+        applySpanFingerprint.method.addInstructions(
+            0,
+            "invoke-static { p1, p2, p3 }, $EXTENSION_CLASS_DESCRIPTOR->$SPAN_APPLIED_METHOD"
+        )
     }
 }
