@@ -1,3 +1,9 @@
+## [1.5.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.2...v1.5.0-dev.3) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Mark a drawing request before anything reads the mark, and drop the link rewriting ([87322cd](https://github.com/RashKash103/sync-up/commit/87322cd3ba52223e7dadafe770041e60dee876de))
+
 ## [1.5.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.1...v1.5.0-dev.2) (2026-08-30)
 
 ### 🐛 Bug Fixes
