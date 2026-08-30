@@ -10,6 +10,7 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.syncforreddit.RedirectGfycatPatch;
 import app.morphe.extension.syncforreddit.http.comments.PlayCommentVideoPatch;
 import app.morphe.extension.syncforreddit.http.imgur.FixImgurProxyPatch;
+import app.morphe.extension.syncforreddit.http.posts.TappableLinksPatch;
 import app.morphe.extension.syncforreddit.http.profile.ArchivedProfilePatch;
 import app.morphe.extension.syncforreddit.http.imgur.RecoverThumbnailsPatch;
 import app.morphe.extension.syncforreddit.http.imgur.UndeleteImgurPatch;
@@ -141,6 +142,7 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
         List<Interceptor> interceptors = new ArrayList<>();
         interceptors.add(new UndeleteRedditPatch());
         interceptors.add(new PlayCommentVideoPatch());
+        interceptors.add(new TappableLinksPatch());
         interceptors.add(new ArchivedProfilePatch());
         // Ahead of the undelete: both of these answer by reissuing the request against an
         // ordinary Imgur address, and a request reissued from here carries on down the chain
