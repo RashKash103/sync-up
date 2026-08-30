@@ -141,6 +141,88 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 
 <!-- PATCHES_END -->
 
+### What the patches do
+
+The list above is generated from the bundle and carries the short description shown in
+Morphe Manager. This section covers the same patches in more detail: what each one
+changes, and where it stops.
+
+Patches that reach out to an archive only do so when the app has already come up empty,
+and never speculatively. Nothing is prefetched, and nothing is sent anywhere except the
+service being asked.
+
+#### Getting the app working again
+
+- **Spoof client** — Replaces Sync's revoked OAuth credentials with your own client ID,
+  redirect URI and user agent. Nothing else works without this. See
+  [Getting started](#-getting-started).
+- **Fix /s/ links** — Reddit's shortened `/s/` share links resolve to a real thread rather
+  than failing.
+- **Use /user/ endpoint** — Profiles are fetched from `/user/`; the `/u/` form Sync used is
+  no longer served.
+- **Modify login WebView** — Routes the login page through the extension so that signing in
+  completes.
+- **Disable ads**, **Disable Sync for Lemmy bottom sheet** — Removes the ads shown between
+  posts, and the prompt to sign up to Sync for Lemmy at startup.
+
+#### Media that no longer loads
+
+- **Fix Redgifs API** — RedGifs refuses Sync's requests as they stand; this makes them
+  acceptable again.
+- **Redirect Gfycat links to RedGifs** — Gfycat shut down and its domains no longer resolve.
+  Much of its content moved to RedGifs, and Gfycat links are answered from there. Content
+  that did not move stays broken.
+- **Fix Imgur links** — Sync resolves Imgur links through a proxy of its own that no longer
+  exists. Those requests are answered in the app instead. Album contents come from an
+  archived copy of the album page, so only albums the archive captured while Imgur still
+  rendered them can be listed.
+- **Automatically undelete Imgur media** — Imgur removed a large amount of older content.
+  Images and videos that no longer exist are loaded from the Wayback Machine, including the
+  still shown for a video in a feed. Only what the archive happens to hold is recoverable.
+- **Fix post thumbnails** — Corrects the thumbnail URLs Sync builds.
+- **Recover post thumbnails from the archive** — Reddit purges the preview it generated for
+  older posts, leaving a blank tile even where opening the post still works. The linked
+  image is fetched from the Wayback Machine, and only once the preview has actually failed.
+- **Fix video downloads** — Corrects Sync's MPD parser, which saved only the audio track.
+- **Show videos posted in comments** — Reddit writes a video posted in a comment as a link
+  to a player page on its own site, which opens in a browser and is answered with a banned
+  notice. The link is pointed at the video itself, so it is drawn beside the comment like
+  any other media and plays in Sync's own player. Whether it is drawn is governed by Sync's
+  own *Inline image previews* setting.
+
+#### Text that is missing or inert
+
+- **Automatically undelete Reddit content** — Restores the text of removed posts and
+  comments from Project Arctic Shift, and the name of an author whose account has since
+  been deleted. A note under the author says why the content was taken down. Only text is
+  recoverable, only where the archive holds it, and media in a removed post stays gone.
+- **Show a hidden profile from the archive** — An account can hide its own posts and
+  comments from its profile, which Sync shows as a user with nothing to their name. Project
+  Arctic Shift still serves what it recorded while those posts were public. Only a profile
+  that comes back empty is filled in, and only its posts, comments and overview tabs.
+- **Keep the links in the text of a post** — Sync renders the body shown under a post in
+  full and then discards the result, drawing bare characters. Keeping it means quotes,
+  emphasis and links appear. Images are still discarded, so a feed loads no more than it
+  did. A link in a post body in a feed becomes tappable, so tapping directly on one opens
+  the link rather than the post.
+- **Make an address in a post tappable** — Sync turns a bare address into a link only where
+  it recognises the host, which is Reddit, Imgur and a couple besides. Any address in a
+  post body is written as a link instead. An address already written as a link is left
+  alone.
+- **Load threads whose text contains a dollar sign** — Sync rewrites code blocks and links
+  before drawing them and puts the matched text back as a replacement, where a dollar sign
+  does not stand for itself. Text such as `${SYS_USER}` aborted the whole thread with
+  "Error loading page".
+- **Add archive links to menus** — Adds Wayback Machine and archive.today options to the
+  menu behind a post's overflow button and to the one behind a link, next to *Open in
+  browser*, for reading a page since taken down or put behind a paywall. Nothing is
+  requested until one is tapped.
+
+#### Other
+
+- **Enable Android debugging** — Inherited from upstream, off by default, and applies to any
+  app rather than to Sync alone. It slows the app down and is only useful when debugging it.
+
 ## 🚀 Getting started
 
 1. Install [Morphe Manager](https://morphe.software/) and switch it to advanced/expert mode.

@@ -14,9 +14,8 @@ internal const val EXTENSION_CLASS_DESCRIPTOR =
 @Suppress("unused")
 val redirectGfycatPatch = bytecodePatch(
     name = "Redirect Gfycat links to RedGifs",
-    description = "Answers Gfycat requests from RedGifs, which hosts much of the content that " +
-            "moved there before Gfycat shut down. Gfycat's domains no longer resolve, so " +
-            "without this every Gfycat link fails to load.",
+    description = "Loads Gfycat links from RedGifs. Gfycat's domains no longer resolve, so without " +
+            "this every Gfycat link fails.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch, interceptHttpRequests)

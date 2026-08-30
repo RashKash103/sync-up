@@ -15,13 +15,7 @@ private const val QUOTE_REPLACEMENT =
 @Suppress("unused")
 val quoteReplacementsPatch = bytecodePatch(
     name = "Load threads whose text contains a dollar sign",
-    description = "Stops a thread failing to load because of what someone wrote in it. Sync " +
-            "rewrites code blocks and links before drawing them, and puts the text it matched " +
-            "back in as a replacement, where a dollar sign does not stand for itself: text such " +
-            "as \"\${SYS_USER}\" is read as naming part of the pattern, and finding no such part " +
-            "the whole thread is abandoned with \"Error loading page\". Taken as the characters " +
-            "it is written with, as Sync already does when rewriting a comment's code, the " +
-            "thread loads.",
+    description = "Stops a thread failing to load when the text in it contains a dollar sign.",
     default = true
 ) {
     compatibleWith(*SyncForRedditCompatible)

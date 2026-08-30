@@ -20,11 +20,8 @@ private const val KEEP_DRAWING_METHOD = "keepDrawing(Loc/c;)V"
 @Suppress("unused")
 val keepSelftextLinksPatch = bytecodePatch(
     name = "Keep the links in the text of a post",
-    description = "Keeps what Sync works out about the body shown under a post instead of " +
-            "dropping it. Sync draws that body in full and then throws the working away, " +
-            "leaving bare characters, so an address written in a post is drawn in the same " +
-            "colour as the words around it and nothing happens when it is tapped. Images are " +
-            "still dropped, so a feed loads no more than it did.",
+    description = "Keeps the formatting and links in the body shown under a post, which Sync " +
+            "otherwise discards.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch)

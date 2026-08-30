@@ -34,10 +34,8 @@ private const val SHEET_CLASS =
 @Suppress("unused")
 val addArchiveLinksPatch = bytecodePatch(
     name = "Add archive links to menus",
-    description = "Adds Wayback Machine and archive.today options to the menu behind a post's " +
-            "overflow button and to the one behind a link, next to \"Open in browser\". Useful " +
-            "for reading a page that has since been taken down or put behind a paywall. " +
-            "Nothing is requested until one of them is tapped.",
+    description = "Adds Wayback Machine and archive.today options to the menus behind a post and " +
+            "behind a link.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch)

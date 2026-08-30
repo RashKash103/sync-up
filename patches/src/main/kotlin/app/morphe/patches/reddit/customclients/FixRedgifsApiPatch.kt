@@ -18,6 +18,7 @@ fun fixRedgifsApiPatch(
     block: BytecodePatchBuilder.() -> Unit = {},
 ) = bytecodePatch(
     name = "Fix Redgifs API",
+    description = "Fixes loading RedGifs media, which RedGifs otherwise refuses.",
     default = true
 ) {
     dependsOn(

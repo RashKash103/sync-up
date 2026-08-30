@@ -21,10 +21,8 @@ private const val REMEMBER_METHOD =
 @Suppress("unused")
 val recoverThumbnailsPatch = bytecodePatch(
     name = "Recover post thumbnails from the archive",
-    description = "Restores the thumbnail beside a post whose Reddit preview has been purged, " +
-            "which is why an old Imgur album shows a blank tile even though opening it works. " +
-            "The linked image is fetched from the Wayback Machine only once its preview has " +
-            "actually failed.",
+    description = "Loads a post's thumbnail from the Wayback Machine when its Reddit preview has " +
+            "been purged.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch, interceptHttpRequests)

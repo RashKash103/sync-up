@@ -30,10 +30,8 @@ private const val APPEND_POST_NOTE_METHOD =
 @Suppress("unused")
 val undeleteRedditPatch = bytecodePatch(
     name = "Automatically undelete Reddit content",
-    description = "Restores the text of removed posts and comments from Project Arctic Shift, and " +
-            "the name of an author whose account has since been deleted. A comment says why " +
-            "it was taken down on the line under its author. Only text can be recovered, and " +
-            "only where the archive has it.",
+    description = "Restores the text of removed posts and comments, and the names of deleted " +
+            "authors, from Project Arctic Shift.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch, interceptHttpRequests)

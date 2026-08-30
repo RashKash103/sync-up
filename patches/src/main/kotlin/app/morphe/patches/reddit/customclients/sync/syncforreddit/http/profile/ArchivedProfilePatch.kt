@@ -13,11 +13,8 @@ private const val EXTENSION_CLASS_DESCRIPTOR =
 @Suppress("unused")
 val archivedProfilePatch = bytecodePatch(
     name = "Show a hidden profile from the archive",
-    description = "Fills in a profile Reddit answers with nothing. An account can hide what it " +
-            "has written from its own profile, which Sync shows as a user with no posts, while " +
-            "Project Arctic Shift still serves what it recorded when those posts and comments " +
-            "were public. Only a profile that comes back empty is filled in, and only its posts " +
-            "and comments tabs.",
+    description = "Fills in a profile from Project Arctic Shift when Reddit answers with nothing, " +
+            "which is what a hidden profile returns.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch, interceptHttpRequests)
