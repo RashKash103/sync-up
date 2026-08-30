@@ -1,3 +1,9 @@
+## [1.5.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.9...v1.5.0-dev.10) (2026-08-30)
+
+### 🐛 Bug Fixes
+
+* Report the view on the path both kinds of view take ([f7024ec](https://github.com/RashKash103/sync-up/commit/f7024ecca240e74d62fb0bb49ced4f9589957136))
+
 ## [1.5.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.8...v1.5.0-dev.9) (2026-08-30)
 
 ### ✨ New Features
