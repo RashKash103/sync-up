@@ -1,14 +1,16 @@
 package app.morphe.patches.reddit.customclients.sync.syncforreddit.fix.markdown
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
+import app.morphe.util.getReference
+import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/ui/MarkdownTracePatch;"
@@ -25,7 +27,8 @@ private const val APPENDED_WITH_METHOD =
 
 private const val SPAN_APPLIED_METHOD = "spanApplied(Ljava/lang/Object;II)V"
 
-private const val DRAWN_INTO_METHOD = "drawnInto(Ljava/lang/Object;)V"
+private const val DRAWN_INTO_METHOD =
+    "drawnInto(Ljava/lang/Object;Ljava/lang/CharSequence;)V"
 
 @Suppress("unused")
 val markdownTracePatch = bytecodePatch(
@@ -84,12 +87,18 @@ val markdownTracePatch = bytecodePatch(
             "invoke-static { p1, p2, p3 }, $EXTENSION_CLASS_DESCRIPTOR->$SPAN_APPLIED_METHOD"
         )
 
-        // Reported once the view has the text rather than on the way in, so that what the view
-        // ended up holding can be read back off it.
+        // Reported where the built text is taken off the builder rather than at the end of the
+        // method: a view that has its measuring worked out ahead of time jumps straight to the
+        // return, so nothing put in front of that is reached on the way there.
         handToViewFingerprint.method.apply {
-            addInstruction(
-                instructions.count() - 1,
-                "invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->$DRAWN_INTO_METHOD"
+            val built = indexOfFirstInstructionOrThrow {
+                val reference = getReference<MethodReference>()
+                reference?.name == "d" && reference.returnType == "Ljava/lang/CharSequence;"
+            }
+            val text = getInstruction<OneRegisterInstruction>(built + 1).registerA
+            addInstructions(
+                built + 2,
+                "invoke-static { p0, v$text }, $EXTENSION_CLASS_DESCRIPTOR->$DRAWN_INTO_METHOD"
             )
         }
     }

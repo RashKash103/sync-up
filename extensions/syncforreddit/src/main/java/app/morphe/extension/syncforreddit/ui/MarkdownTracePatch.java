@@ -102,18 +102,17 @@ public final class MarkdownTracePatch {
     private static int unprompted = 3;
 
     /**
-     * Reports the view a piece of text was handed to once it has it, which is the last place a
-     * link can be lost: the span that makes the words tappable paints them in the view's own
+     * Reports the view a piece of text is handed to, and the text it is given, which is the
+     * last place a link can be lost: the span that makes the words tappable paints them in the view's own
      * link colour and adds nothing else, so a view that draws them plainly is either not the
      * kind that carries links or has been given the same colour as its text.
      */
-    public static void drawnInto(Object view) {
+    public static void drawnInto(Object view, CharSequence drawn) {
         try {
             if (!(view instanceof TextView)) {
                 return;
             }
             TextView text = (TextView) view;
-            CharSequence drawn = text.getText();
             boolean wanted = following > 0
                     || (drawn != null && drawn.toString().contains("://"));
             if (!wanted) {
