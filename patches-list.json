@@ -1,5 +1,5 @@
 {
-  "version": "1.5.0-dev.4",
+  "version": "1.5.0-dev.5",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -170,6 +170,23 @@
       "description": "Stops a thread failing to load because of what someone wrote in it. Sync rewrites code blocks and links before drawing them, and puts the text it matched back in as a replacement, where a dollar sign does not stand for itself: text such as \"${SYS_USER}\" is read as naming part of the pattern, and finding no such part the whole thread is abandoned with \"Error loading page\". Taken as the characters it is written with, as Sync already does when rewriting a comment's code, the thread loads.",
       "use": true,
       "dependencies": [],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Make an address in a post tappable",
+      "description": "Writes an address in a post's own body as a link. Sync draws a link where one is written as a link, and turns a bare address into one only where it recognises it, which is Reddit's own addresses, Imgur's and a couple besides, so a post whose body is an address to anywhere else has nothing to tap. An address already written as a link is left exactly as it is.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
       "compatiblePackages": {
         "com.laurencedawson.reddit_sync": [
           "v23.06.30-13:39"

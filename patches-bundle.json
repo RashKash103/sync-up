@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-30T17:50:16",
-  "description": "## [1.5.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.3...v1.5.0-dev.4) (2026-08-30)\n\n### 🐛 Bug Fixes\n\n* Load a thread whose text contains a dollar sign ([08f5793](https://github.com/RashKash103/sync-up/commit/08f57930b1f76b2e964a56ab025710a801d9704e))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.5.0-dev.4/patches-1.5.0-dev.4.mpp",
+  "created_at": "2026-08-30T18:06:43",
+  "description": "## [1.5.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.4...v1.5.0-dev.5) (2026-08-30)\n\n### ✨ New Features\n\n* Write an address in a post as a link ([6bef2e6](https://github.com/RashKash103/sync-up/commit/6bef2e6a11bed2251877f083ab7e96eb43df4216))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.5.0-dev.5/patches-1.5.0-dev.5.mpp",
   "signature_download_url": "",
-  "version": "1.5.0-dev.4"
+  "version": "1.5.0-dev.5"
 }

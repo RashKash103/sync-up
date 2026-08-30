@@ -1,3 +1,9 @@
+## [1.5.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.4...v1.5.0-dev.5) (2026-08-30)
+
+### ✨ New Features
+
+* Write an address in a post as a link ([6bef2e6](https://github.com/RashKash103/sync-up/commit/6bef2e6a11bed2251877f083ab7e96eb43df4216))
+
 ## [1.5.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.3...v1.5.0-dev.4) (2026-08-30)
 
 ### 🐛 Bug Fixes
