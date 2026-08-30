@@ -1,3 +1,9 @@
+## [1.5.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.7...v1.5.0-dev.8) (2026-08-30)
+
+### ✨ New Features
+
+* Report the view a body is finally handed to ([1a8aa7b](https://github.com/RashKash103/sync-up/commit/1a8aa7befdd7d6253502a5abb60caa833dfe9133))
+
 ## [1.5.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.6...v1.5.0-dev.7) (2026-08-30)
 
 ### ✨ New Features
