@@ -15,7 +15,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -24,8 +23,6 @@ import java.util.regex.Pattern;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.requests.PatchedditInterceptor;
 import okhttp3.HttpUrl;
-import okhttp3.RequestBody;
-import okio.Buffer;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -50,6 +47,9 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
      * it also writes out who did it, as "[ Removed by Reddit ]" and the like, and a title it
      * has taken down reads that way rather than being blank.
      */
+    /** The thread last asked for, which is the one any "view more" under it belongs to. */
+    private static volatile String lastThread;
+
     private static final Pattern TAKEN_DOWN = Pattern.compile(
             "\\[\\s*(removed|deleted)\\s*(by\\s+[^\\]]+)?\\]", Pattern.CASE_INSENSITIVE);
 
@@ -109,8 +109,13 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
             restored = null;
         }
 
+        String served = restored != null ? restored : original;
+        boolean putBack = restored != null;
+        Logger.printInfo(() -> "Answering " + url.encodedPath() + " with " + served.length()
+                + " characters" + (putBack ? ", some of it put back" : ""));
+
         return response.newBuilder()
-                .body(ResponseBody.create(restored != null ? restored : original, contentType))
+                .body(ResponseBody.create(served, contentType))
                 .build();
     }
 
@@ -121,14 +126,15 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
     @Nullable
     private static String submissionIdFrom(HttpUrl url, Request request) {
         // Fetching more comments names the thread in what is sent rather than in the path, and
-        // sends it rather than asking for it, so the name is in the request's own body.
+        // what is sent can only be read through a library the app keeps under another name. The
+        // thread is the one being read, so remembering which that is answers it without looking.
         String asked = url.queryParameter("link_id");
-        if (asked == null || asked.isEmpty()) {
-            asked = sentValue(request, "link_id");
-        }
         if (asked != null && !asked.isEmpty()) {
             int prefix = asked.indexOf('_');
             return prefix < 0 ? asked : asked.substring(prefix + 1);
+        }
+        if (!url.encodedPath().contains("/comments/")) {
+            return lastThread;
         }
 
         java.util.List<String> segments = url.pathSegments();
@@ -141,35 +147,12 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
                 if (suffix >= 0) {
                     id = id.substring(0, suffix);
                 }
-                return id.isEmpty() ? null : id;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Reads one of the values a request sends, which for asking after more comments is where the
-     * thread is named.
-     */
-    @Nullable
-    private static String sentValue(Request request, String name) {
-        RequestBody sent = request.body();
-        if (sent == null) {
-            return null;
-        }
-        try {
-            Buffer buffer = new Buffer();
-            sent.writeTo(buffer);
-            String form = buffer.readUtf8();
-
-            for (String pair : form.split("&")) {
-                int equals = pair.indexOf('=');
-                if (equals > 0 && pair.substring(0, equals).equals(name)) {
-                    return URLDecoder.decode(pair.substring(equals + 1), "UTF-8");
+                if (id.isEmpty()) {
+                    return null;
                 }
+                lastThread = id;
+                return id;
             }
-        } catch (Exception ex) {
-            Logger.printInfo(() -> "Could not read what the request sent: " + ex);
         }
         return null;
     }
