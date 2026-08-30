@@ -1,5 +1,5 @@
 {
-  "version": "1.5.0-dev.5",
+  "version": "1.5.0-dev.6",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -235,6 +235,22 @@
       "use": true,
       "dependencies": [
         "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Report what Sync makes of a body",
+      "description": "Writes to the log what a post or comment body looked like before Sync drew it and what it turned into. For working out why an address written in one is drawn as a link and the same address written in the other is not. Of no use unless a log is being read, and noisy while it is.",
+      "use": false,
+      "dependencies": [
         "BytecodePatch"
       ],
       "compatiblePackages": {

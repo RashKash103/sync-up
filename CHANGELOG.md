@@ -1,3 +1,9 @@
+## [1.5.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.5...v1.5.0-dev.6) (2026-08-30)
+
+### ✨ New Features
+
+* Add a way to see what Sync makes of a body ([6cbff9f](https://github.com/RashKash103/sync-up/commit/6cbff9f5272ee46ac8b4d1160b7f1eaa11a3b47e))
+
 ## [1.5.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.5.0-dev.4...v1.5.0-dev.5) (2026-08-30)
 
 ### ✨ New Features
