@@ -15,6 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +24,8 @@ import java.util.regex.Pattern;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.requests.PatchedditInterceptor;
 import okhttp3.HttpUrl;
+import okhttp3.RequestBody;
+import okio.Buffer;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -110,8 +113,12 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
      */
     @Nullable
     private static String submissionIdFrom(HttpUrl url, Request request) {
-        // Fetching more comments names the thread in the request rather than the path.
+        // Fetching more comments names the thread in what is sent rather than in the path, and
+        // sends it rather than asking for it, so the name is in the request's own body.
         String asked = url.queryParameter("link_id");
+        if (asked == null || asked.isEmpty()) {
+            asked = sentValue(request, "link_id");
+        }
         if (asked != null && !asked.isEmpty()) {
             int prefix = asked.indexOf('_');
             return prefix < 0 ? asked : asked.substring(prefix + 1);
@@ -129,6 +136,33 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
                 }
                 return id.isEmpty() ? null : id;
             }
+        }
+        return null;
+    }
+
+    /**
+     * Reads one of the values a request sends, which for asking after more comments is where the
+     * thread is named.
+     */
+    @Nullable
+    private static String sentValue(Request request, String name) {
+        RequestBody sent = request.body();
+        if (sent == null) {
+            return null;
+        }
+        try {
+            Buffer buffer = new Buffer();
+            sent.writeTo(buffer);
+            String form = buffer.readUtf8();
+
+            for (String pair : form.split("&")) {
+                int equals = pair.indexOf('=');
+                if (equals > 0 && pair.substring(0, equals).equals(name)) {
+                    return URLDecoder.decode(pair.substring(equals + 1), "UTF-8");
+                }
+            }
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not read what the request sent: " + ex);
         }
         return null;
     }
