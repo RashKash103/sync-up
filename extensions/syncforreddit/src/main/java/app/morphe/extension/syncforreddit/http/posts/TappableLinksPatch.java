@@ -65,6 +65,9 @@ public class TappableLinksPatch extends PatchedditInterceptor {
 
         try {
             String rewritten = linkify(original);
+            Logger.printInfo(() -> rewritten != null
+                    ? "Wrote the plain links in a post as links"
+                    : "No plain link to write in " + url.encodedPath());
             return rebuilt(response, request, contentType,
                     rewritten != null ? rewritten : original);
         } catch (Throwable ex) {
