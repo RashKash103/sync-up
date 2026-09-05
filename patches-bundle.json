@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-05T19:42:31",
-  "description": "## [1.6.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.3...v1.6.0-dev.4) (2026-09-05)\n\n### ✨ New Features\n\n* Let the seek precision gesture be turned off ([02790b6](https://github.com/RashKash103/sync-up/commit/02790b64c8e7c6bb1721466fd5138e89d0533199))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.6.0-dev.4/patches-1.6.0-dev.4.mpp",
+  "created_at": "2026-09-05T19:53:16",
+  "description": "## [1.6.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.4...v1.6.0-dev.5) (2026-09-05)\n\n### 🐛 Bug Fixes\n\n* Put the volume gesture back on the device's own volume ([181b218](https://github.com/RashKash103/sync-up/commit/181b218d361b0976acf33b09d4fe34d9376966e8))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.6.0-dev.5/patches-1.6.0-dev.5.mpp",
   "signature_download_url": "",
-  "version": "1.6.0-dev.4"
+  "version": "1.6.0-dev.5"
 }

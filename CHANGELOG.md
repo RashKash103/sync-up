@@ -1,3 +1,9 @@
+## [1.6.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.4...v1.6.0-dev.5) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Put the volume gesture back on the device's own volume ([181b218](https://github.com/RashKash103/sync-up/commit/181b218d361b0976acf33b09d4fe34d9376966e8))
+
 ## [1.6.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.3...v1.6.0-dev.4) (2026-09-05)
 
 ### ✨ New Features
