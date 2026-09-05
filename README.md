@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.5.0](https://github.com/RashKash103/sync-up/releases/tag/v1.5.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;21 patches total
+> **[v1.6.0-dev.14](https://github.com/RashKash103/sync-up/releases/tag/v1.6.0-dev.14)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;22 patches total
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;20 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;21 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -57,6 +57,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix Redgifs API](#fix-redgifs-api) | Fixes loading RedGifs media, which RedGifs otherwise refuses. |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
+| [Gestures for the video player](#gestures-for-the-video-player) | Double tap a video or GIF to play or pause it rather than zoom, drag sideways to seek, and drag up or down after a double tap to change the volume. Each gesture can be turned on or off under Gestures in Sync's settings. |  |
 | [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps the formatting and links in the body shown under a post, which Sync otherwise discards. |  |
 | [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load when the text in it contains a dollar sign. |  |
 | [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Draws a bare address in a post's body as a link. |  |
@@ -71,7 +72,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;19 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;20 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -85,6 +86,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix Redgifs API](#fix-redgifs-api) | Fixes loading RedGifs media, which RedGifs otherwise refuses. |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
+| [Gestures for the video player](#gestures-for-the-video-player) | Double tap a video or GIF to play or pause it rather than zoom, drag sideways to seek, and drag up or down after a double tap to change the volume. Each gesture can be turned on or off under Gestures in Sync's settings. |  |
 | [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps the formatting and links in the body shown under a post, which Sync otherwise discards. |  |
 | [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load when the text in it contains a dollar sign. |  |
 | [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Draws a bare address in a post's body as a link. |  |
@@ -99,7 +101,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;19 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;20 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -113,6 +115,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix Redgifs API](#fix-redgifs-api) | Fixes loading RedGifs media, which RedGifs otherwise refuses. |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
+| [Gestures for the video player](#gestures-for-the-video-player) | Double tap a video or GIF to play or pause it rather than zoom, drag sideways to seek, and drag up or down after a double tap to change the volume. Each gesture can be turned on or off under Gestures in Sync's settings. |  |
 | [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps the formatting and links in the body shown under a post, which Sync otherwise discards. |  |
 | [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load when the text in it contains a dollar sign. |  |
 | [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Draws a bare address in a post's body as a link. |  |
@@ -170,9 +173,9 @@ service being asked.
   Much of its content moved to RedGifs, and Gfycat links are answered from there. Content
   that did not move stays broken.
 - **Fix Imgur links** — Sync resolves Imgur links through a proxy of its own that no longer
-  exists. Those requests are answered in the app instead. Album contents come from an
-  archived copy of the album page, so only albums the archive captured while Imgur still
-  rendered them can be listed.
+  exists. Those requests are answered in the app instead. An album that still exists is read
+  from its own page; one that has gone is looked for in the archive, where only albums
+  captured while Imgur still rendered the list into the page can be recovered.
 - **Automatically undelete Imgur media** — Imgur removed a large amount of older content.
   Images and videos that no longer exist are loaded from the Wayback Machine, including the
   still shown for a video in a feed. Only what the archive happens to hold is recoverable.
@@ -214,6 +217,25 @@ service being asked.
   menu behind a post's overflow button and to the one behind a link, next to *Open in
   browser*, for reading a page since taken down or put behind a paywall. Nothing is
   requested until one is tapped.
+
+#### Gestures
+
+- **Gestures for the video player** — In a video or GIF: double tap to play or pause rather
+  than zoom, drag sideways to seek, and drag up or down after a double tap to change the
+  volume. Each is read as the gesture is made, so anything here can be turned on or off under
+  *Gestures* in Sync's settings without repatching, and with all of them off the viewer
+  behaves exactly as it did.
+  - *Drag sideways to seek* is off, outside galleries, or everywhere. It defaults to outside
+    galleries, since an album already uses a sideways drag to move between items.
+  - *Seek across a full drag* is how much of the video a drag from edge to edge covers,
+    capped at the video's length so a short clip is always reachable end to end.
+  - *Change seek precision while dragging* covers more of the video as the finger wanders up
+    from where the drag began and less as it wanders down, in steps, with the overlay naming
+    the step it is in.
+  - *Double tap before seeking* requires a double tap to be held before a drag seeks, for a
+    screen where a stray drag would be unwelcome.
+  - Volume moves the device's own volume, in the steps the device has.
+  - A long press still shows and hides the viewer's controls, as it does without the patch.
 
 #### Other
 

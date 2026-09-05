@@ -1,3 +1,79 @@
+## [1.6.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.13...v1.6.0-dev.14) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Take the Imgur id from the end of an address, not the front ([0929717](https://github.com/RashKash103/sync-up/commit/09297170a29c235767c2e4d8f7ab9c2429339a8d))
+
+## [1.6.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.12...v1.6.0-dev.13) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Read an Imgur album that still exists from its own page ([5e18aba](https://github.com/RashKash103/sync-up/commit/5e18aba79152b07e21ff9a7d56df34120f15d294))
+
+## [1.6.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.11...v1.6.0-dev.12) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Tell the zoom handling a held tap is over, rather than papering over it ([38d87f6](https://github.com/RashKash103/sync-up/commit/38d87f63733458004f9fb2d6dff3af517bea18de))
+
+## [1.6.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.10...v1.6.0-dev.11) (2026-09-05)
+
+## [1.6.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.9...v1.6.0-dev.10) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Keep the whole chrome up, not just the bar inside it ([9e1bf77](https://github.com/RashKash103/sync-up/commit/9e1bf770be6bbdeef768468d6bd46de1a693517d))
+
+## [1.6.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.8...v1.6.0-dev.9) (2026-09-05)
+
+## [1.6.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.7...v1.6.0-dev.8) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Hold the controls still across a double tap, and say when they move ([9dda32e](https://github.com/RashKash103/sync-up/commit/9dda32e736f83ee4a3a2be86463151d37f755198))
+
+## [1.6.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.6...v1.6.0-dev.7) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Read the settings Sync actually wrote, and leave the controls up ([10e014f](https://github.com/RashKash103/sync-up/commit/10e014f42ff64b65ecdb248579e6d84d47c39b6a))
+
+## [1.6.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.5...v1.6.0-dev.6) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Play and pause by pressing Sync's own button ([8fbd324](https://github.com/RashKash103/sync-up/commit/8fbd324cf48ff540bae4c34fe06df6e3fee8059b))
+
+## [1.6.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.4...v1.6.0-dev.5) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Put the volume gesture back on the device's own volume ([181b218](https://github.com/RashKash103/sync-up/commit/181b218d361b0976acf33b09d4fe34d9376966e8))
+
+## [1.6.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.3...v1.6.0-dev.4) (2026-09-05)
+
+### ✨ New Features
+
+* Let the seek precision gesture be turned off ([02790b6](https://github.com/RashKash103/sync-up/commit/02790b64c8e7c6bb1721466fd5138e89d0533199))
+
+## [1.6.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.2...v1.6.0-dev.3) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Ask the player whether it is playing, and let a drag choose its own precision ([19e2d7f](https://github.com/RashKash103/sync-up/commit/19e2d7f545c6509ee641f961cee865291b34382c))
+
+## [1.6.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.1...v1.6.0-dev.2) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Keep a paused video open, hear the volume gesture, and show the seek ([012b6ef](https://github.com/RashKash103/sync-up/commit/012b6eff6b73dd9cfa9224846e43924d6867cc06))
+
+## [1.6.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.5.0...v1.6.0-dev.1) (2026-09-05)
+
+### ✨ New Features
+
+* Gestures for the video player ([e1283c9](https://github.com/RashKash103/sync-up/commit/e1283c9a27aee958a68c992d18210a781be86e50))
+
 ## [1.5.0](https://github.com/RashKash103/sync-up/compare/v1.4.0...v1.5.0) (2026-08-30)
 
 ### 🐛 Bug Fixes

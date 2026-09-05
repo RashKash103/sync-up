@@ -20,8 +20,10 @@ import app.morphe.extension.syncforreddit.http.ArchiveRequests;
  * Recovers the contents of an Imgur album from an archived copy of its page.
  *
  * <p>There is no way to derive an album's images from its id, and Sync reached them through a
- * proxy that no longer exists, so the page itself has to be read. Imgur used to render the
- * album server side and embed the list as JSON; pages captured since then are a script shell
+ * proxy that no longer exists, so the page itself has to be read. An album that is still there
+ * says what is in it on its own page, which is both current and the only thing that works for
+ * one the archive never captured. An album that has gone is looked for in the archive instead:
+ * Imgur used to render the list into the page, and pages captured since then are a script shell
  * with nothing in them, so older snapshots are tried first.
  */
 final class ImgurAlbum {
@@ -33,6 +35,13 @@ final class ImgurAlbum {
     private static final int CACHE_SIZE = 32;
 
     private static final String EMBEDDED_LIST = "\"album_images\"";
+
+    /**
+     * What a live album page carries: a run of JavaScript setting a string, and that string is
+     * the album written as JSON.
+     */
+    private static final Pattern EMBEDDED_POST = Pattern.compile(
+            "postDataJSON\\s*=\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
 
     /** Only used where the embedded list is absent, and carries no dimensions. */
     private static final Pattern LINKED_IMAGE = Pattern.compile(
@@ -62,6 +71,19 @@ final class ImgurAlbum {
         List<JSONObject> images = new ArrayList<>();
         IOException failure = null;
 
+        // What the album says about itself, where it is still there to say it.
+        try {
+            images = live(albumId);
+            if (!images.isEmpty()) {
+                Logger.printInfo(() -> "Read album " + albumId + " from Imgur");
+                cache.put(albumId, images);
+                return images;
+            }
+        } catch (IOException ex) {
+            // Gone, or unreachable; the archive may still have it either way.
+            failure = ex;
+        }
+
         for (String snapshot : WaybackMachine.findSnapshots(ALBUM_URL + albumId, SNAPSHOTS_TO_TRY)) {
             String html;
             try {
@@ -86,6 +108,45 @@ final class ImgurAlbum {
         }
 
         cache.put(albumId, images);
+        return images;
+    }
+
+    /**
+     * The album as its own page gives it, which is where an album that still exists is read
+     * from. Nothing is derived from the id: the page names each image, its kind and its size.
+     */
+    private static List<JSONObject> live(String albumId) throws IOException, JSONException {
+        String html = ArchiveRequests.get(ALBUM_URL + albumId, "text/html");
+
+        Matcher found = EMBEDDED_POST.matcher(html);
+        if (!found.find()) {
+            return new ArrayList<>();
+        }
+        // The album is written as JSON inside a JavaScript string, so the string is read first.
+        String written = new JSONArray("[\"" + found.group(1) + "\"]").getString(0);
+
+        JSONArray media = new JSONObject(written).optJSONArray("media");
+        if (media == null) {
+            return new ArrayList<>();
+        }
+
+        List<JSONObject> images = new ArrayList<>();
+        for (int i = 0; i < media.length(); i++) {
+            JSONObject entry = media.optJSONObject(i);
+            if (entry == null) {
+                continue;
+            }
+            String link = entry.optString("url", "");
+            if (link.isEmpty()) {
+                String id = entry.optString("id", "");
+                if (id.isEmpty()) {
+                    continue;
+                }
+                link = "https://i.imgur.com/" + id + "." + entry.optString("ext", "jpg");
+            }
+            images.add(image(link, entry.optInt("width"), entry.optInt("height"),
+                    entry.optString("name"), entry.optString("description")));
+        }
         return images;
     }
 

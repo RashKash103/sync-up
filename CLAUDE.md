@@ -74,6 +74,10 @@ do not need to be listed in `settings.gradle.kts`.
 Building needs **JDK 21**, an **Android SDK** with platforms 34 and 36, and a GitHub PAT with
 `read:packages`, exported as `GITHUB_ACTOR` / `GITHUB_TOKEN` or set as `gpr.user` / `gpr.key`
 in `~/.gradle/gradle.properties`; the Morphe plugin and libraries come from GitHub Packages.
+There is no `~/.gradle/gradle.properties` on this machine, and where `gh` is authenticated
+`GITHUB_ACTOR=$(gh api user -q .login)` and `GITHUB_TOKEN=$(gh auth token)` serve. Without them
+the Morphe plugin fails to resolve and the build dies with an unhelpful
+`IllegalArgumentException (no error message)` before it starts.
 
 Use `uv run` for Python, not bare `python3`.
 
@@ -92,6 +96,25 @@ The middle layer is the one that is easy to forget and the one that hurts. **The
 those Kotlin string literals is not assembled until a patch executes against an APK**, so a
 malformed instruction compiles perfectly and fails only at patch time. A patch that has only
 been built has not been tested in any meaningful sense.
+
+### Measure, do not infer
+
+Reading the app is how a patch gets written. It is not how a broken one gets diagnosed, and
+mistaking the one for the other is expensive: an address in a post that would not draw as a link
+took nine prereleases, and the ones that shipped a cause inferred from the bytecode were wasted,
+including a patch that had to be withdrawn. The link was being made correctly every time and
+thrown away afterwards, by a call that reading the code had already dismissed.
+
+The tell is two readings that cannot both be true — a span applied to a builder, and the same
+builder returning text with no spans. At that point stop reading and instrument. What settles it
+is the object's own state at the moment it is used: identity (`System.identityHashCode`), the
+thread, fields read by reflection rather than deduced, and `new Throwable().getStackTrace()` to
+name the path that got there. Reflection over `getDeclaredFields()` by type works where names
+cannot, since the app's are obfuscated and change with every build.
+
+Make the instrument prove itself: log the first few calls unconditionally, so that a capture
+showing nothing means the diagnostic is not running rather than that the code never ran. That
+distinction cost two rounds on its own, once to a hook that was never reached.
 
 ### Local toolchain
 
@@ -170,6 +193,14 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   the injection site rather than trusting `p1` to mean what it says.
 - **Do not add a `new-instance`** to a method another patch fingerprints by counting them. The
   Redgifs fingerprint counts `NEW_INSTANCE == 1` in the method it hooks.
+- **Injecting before the final `return` does not cover every path.** `Loc/b;->F` jumps from the
+  middle of the method straight to the return when the view measures its text ahead of time, so
+  a call placed in front of that return is never reached by the path that matters, and nothing
+  is logged at all. Anchor on an instruction every path executes — the one that reads the value
+  being passed around is usually it — and resolve the branch targets before choosing an index.
+- **Two methods on a class can have the same signature.** `Loc/c;` has both `u()V` and `p()V`,
+  so a predicate matching "no parameters, returns void, on `Loc/c;`" finds the wrong one. Anchor
+  on what guards or surrounds the call instead.
 
 ## How Sync is put together
 
@@ -204,6 +235,29 @@ Boost patches match `^https?://\w+\.reddit\.com/comments/`, which never fires on
 `res/layout/dialog_bottom_post_more.xml`, a `LinearLayout` of `MaterialRow` views dispatched by
 `view.getId()` in `onItemClicked`. Adding an entry the way Boost does is not possible; rows are
 built and inserted at runtime instead, which avoids introducing an id resource.
+
+**Text is built, then handed to a view.** `Loc/c;` is a builder: characters in a `StringBuilder`
+and a list of spans beside them. `Loc/c;->d()` returns a `SpannableString` when that list holds
+anything and a plain `String` when it does not. `Loc/b;` is the text view that reads it — `A()`
+hands back the builder *after resetting it*, `F()` takes the built text and sets it. Sync finds
+its own tappable spans in `Loc/b;->onTouchEvent` through the `Lnb/a;` interface, which the link
+span `Lmb/d;` implements. `Lmb/d;` paints with nothing but the view's `textColorLink` and adds no
+underline, so a link that has lost its span is indistinguishable from the words around it.
+
+**A preview is drawn in full and then stripped.** `Lnc/d;->c()` runs the SAX parse and, when
+`Lnc/a;->d` is set, finishes by calling `Loc/c;->p()`, which drops every span and keeps the
+characters. `Lnc/a;->c()` sets that flag, and it is the option set used by both
+`SimpleSelftextPreviewTextView` and `CardSelftextPreviewTextView`, so a post's body was drawn as
+inert text in every layout until `keepSelftextLinksPatch`. `SimpleHolder` draws the post header
+in `CommentsActivity` as well as feed rows, so the post screen was affected too, and Sync's
+`slideSelftextPreviews` setting only chooses between two paths that both end at the strip.
+
+**Interceptors must not assume how a response is labelled or written.** A rewrite that reached
+threads was skipping listings, and either of two guards could account for it; Reddit no longer
+answers the API unauthenticated, so which one it was could not be established, and both were
+dropped. Do not gate on `Content-Type` being `application/json` — the undelete interceptor asks
+nothing about the kind and works on every listing — and let a regex over a body tolerate `\/`,
+since JSON may escape the slashes in a URL. Writing them back unescaped is valid either way.
 
 **Dead endpoints Sync still calls.** Worth knowing before diagnosing a media bug:
 
@@ -278,6 +332,21 @@ is in [NOTICE](NOTICE). Two things constrain the code:
 - Semantic commit messages; the release version and changelog are generated from them.
   `feat:` minor, `fix:`/`bump:`/`perf:` patch, `chore:` no release.
 - Work on `dev`. `main` is stable releases only, reached by merging `dev` (not squashing).
+- **Diagnostics go on `chore:` commits.** Because `main` is merged rather than squashed, every
+  commit on `dev` appears in the stable changelog, and a release that reads as six entries about
+  a diagnostic that no longer exists is worse than no entry at all. A patch written to answer a
+  question is `default = false` while it exists and is deleted once it has answered, before the
+  release that would ship it. A `chore:` commit publishes nothing, so a diagnostic that has to
+  reach a device goes on `build(Needs bump):`, which releases a prerelease and is hidden from
+  the notes — the scope has to be exactly that for `.releaserc` to match it.
+- **Patch descriptions are one or two sentences of what the patch does.** They are read in the
+  manager by someone choosing patches, not by someone maintaining them: no reasoning about why
+  the patch exists, no account of what was learnt writing it. The detail — what a patch changes
+  and where it stops — goes in the hand-written *What the patches do* section of `README.md`,
+  below the `PATCHES_END` marker.
+- **No toasts in a stable release.** `Logger.printException` raises one; anything on a hot path
+  or a transient network failure uses `printInfo` instead. Toasts are acceptable in a prerelease
+  being tested.
 - Never hand-edit `CHANGELOG.md`, `patches-list.json`, `patches-bundle.json`, or the region
   between the `PATCHES_START` / `PATCHES_END` markers in `README.md`. The release writes them.
 - Do not create releases by hand.
@@ -300,5 +369,7 @@ Current, from this project's own patches:
 - The undelete patches call Arctic Shift and the Wayback Machine, both free community
   services. Results are cached and only fetched when a thread actually contains removed
   content. Keep it that way; do not add speculative prefetching.
-- Restored text is marked with an emoji prefix rather than a separate field, because Sync has
-  no equivalent of the model field Boost renders its markers in.
+- Restored text is marked by a coloured note appended to the line under the author, built with
+  Sync's own header builder, because Sync has no equivalent of the model field Boost renders its
+  markers in. The wording comes from Reddit's own placeholder (`[ Removed by moderator ]`), so
+  it says what actually happened rather than guessing.
