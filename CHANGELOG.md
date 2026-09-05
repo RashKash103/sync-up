@@ -1,3 +1,23 @@
+## [1.6.0](https://github.com/RashKash103/sync-up/compare/v1.5.0...v1.6.0) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Ask the player whether it is playing, and let a drag choose its own precision ([19e2d7f](https://github.com/RashKash103/sync-up/commit/19e2d7f545c6509ee641f961cee865291b34382c))
+* Hold the controls still across a double tap, and say when they move ([9dda32e](https://github.com/RashKash103/sync-up/commit/9dda32e736f83ee4a3a2be86463151d37f755198))
+* Keep a paused video open, hear the volume gesture, and show the seek ([012b6ef](https://github.com/RashKash103/sync-up/commit/012b6eff6b73dd9cfa9224846e43924d6867cc06))
+* Keep the whole chrome up, not just the bar inside it ([9e1bf77](https://github.com/RashKash103/sync-up/commit/9e1bf770be6bbdeef768468d6bd46de1a693517d))
+* Play and pause by pressing Sync's own button ([8fbd324](https://github.com/RashKash103/sync-up/commit/8fbd324cf48ff540bae4c34fe06df6e3fee8059b))
+* Put the volume gesture back on the device's own volume ([181b218](https://github.com/RashKash103/sync-up/commit/181b218d361b0976acf33b09d4fe34d9376966e8))
+* Read an Imgur album that still exists from its own page ([5e18aba](https://github.com/RashKash103/sync-up/commit/5e18aba79152b07e21ff9a7d56df34120f15d294))
+* Read the settings Sync actually wrote, and leave the controls up ([10e014f](https://github.com/RashKash103/sync-up/commit/10e014f42ff64b65ecdb248579e6d84d47c39b6a))
+* Take the Imgur id from the end of an address, not the front ([0929717](https://github.com/RashKash103/sync-up/commit/09297170a29c235767c2e4d8f7ab9c2429339a8d))
+* Tell the zoom handling a held tap is over, rather than papering over it ([38d87f6](https://github.com/RashKash103/sync-up/commit/38d87f63733458004f9fb2d6dff3af517bea18de))
+
+### ✨ New Features
+
+* Gestures for the video player ([e1283c9](https://github.com/RashKash103/sync-up/commit/e1283c9a27aee958a68c992d18210a781be86e50))
+* Let the seek precision gesture be turned off ([02790b6](https://github.com/RashKash103/sync-up/commit/02790b64c8e7c6bb1721466fd5138e89d0533199))
+
 ## [1.6.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.13...v1.6.0-dev.14) (2026-09-05)
 
 ### 🐛 Bug Fixes
