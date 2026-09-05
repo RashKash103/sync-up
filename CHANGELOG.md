@@ -1,3 +1,9 @@
+## [1.6.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.2...v1.6.0-dev.3) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Ask the player whether it is playing, and let a drag choose its own precision ([19e2d7f](https://github.com/RashKash103/sync-up/commit/19e2d7f545c6509ee641f961cee865291b34382c))
+
 ## [1.6.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.1...v1.6.0-dev.2) (2026-09-05)
 
 ### 🐛 Bug Fixes
