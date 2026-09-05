@@ -27,6 +27,12 @@ private val imgurRequestSourceFiles = setOf(
     "ImgurSingleImageRequest.java",
 )
 
+private const val IMGUR_IDS_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/http/imgur/ImgurIds;"
+
+private const val FROM_SLUG_METHOD =
+    "fromSlug(Ljava/lang/String;)Ljava/lang/String;"
+
 @Suppress("unused")
 val fixImgurProxyPatch = bytecodePatch(
     name = "Fix Imgur links",
@@ -43,6 +49,21 @@ val fixImgurProxyPatch = bytecodePatch(
             definingClass = EXTENSION_CLASS_DESCRIPTOR,
             name = "isPatchIncluded",
         ).method.returnEarly(true)
+
+        // Imgur writes an album as a title with the id on the end, and Sync takes everything
+        // up to the first dash, so it asks for an album named after the first word of the
+        // title. Read the value before Sync does and hand it the id where there is one.
+        Fingerprint(
+            parameters = listOf("Ljava/lang/String;"),
+            returnType = "Ljava/lang/String;",
+            strings = listOf("_d", "`"),
+        ).method.addInstructions(
+            0,
+            """
+            invoke-static       { p0 }, $IMGUR_IDS_CLASS_DESCRIPTOR->$FROM_SLUG_METHOD
+            move-result-object  p0
+            """
+        )
 
         // Volley gives these two and a half seconds by default, which an archive lookup
         // regularly exceeds, so Sync gave up and opened the link in a browser before the
