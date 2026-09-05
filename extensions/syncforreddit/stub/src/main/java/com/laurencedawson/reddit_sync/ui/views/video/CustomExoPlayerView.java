@@ -17,19 +17,6 @@ public class CustomExoPlayerView extends FrameLayout {
         throw new UnsupportedOperationException("Stub");
     }
 
-    /** Whether the video is playing rather than paused or finished. */
-    public boolean isVideoPlaying() {
-        throw new UnsupportedOperationException("Stub");
-    }
-
-    public void pause() {
-        throw new UnsupportedOperationException("Stub");
-    }
-
-    public void resume() {
-        throw new UnsupportedOperationException("Stub");
-    }
-
     /** How far into the video playback is, in milliseconds. */
     public int getProgress() {
         throw new UnsupportedOperationException("Stub");

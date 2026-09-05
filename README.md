@@ -218,6 +218,25 @@ service being asked.
   browser*, for reading a page since taken down or put behind a paywall. Nothing is
   requested until one is tapped.
 
+#### Gestures
+
+- **Gestures for the video player** — In a video or GIF: double tap to play or pause rather
+  than zoom, drag sideways to seek, and drag up or down after a double tap to change the
+  volume. Each is read as the gesture is made, so anything here can be turned on or off under
+  *Gestures* in Sync's settings without repatching, and with all of them off the viewer
+  behaves exactly as it did.
+  - *Drag sideways to seek* is off, outside galleries, or everywhere. It defaults to outside
+    galleries, since an album already uses a sideways drag to move between items.
+  - *Seek across a full drag* is how much of the video a drag from edge to edge covers,
+    capped at the video's length so a short clip is always reachable end to end.
+  - *Change seek precision while dragging* covers more of the video as the finger wanders up
+    from where the drag began and less as it wanders down, in steps, with the overlay naming
+    the step it is in.
+  - *Double tap before seeking* requires a double tap to be held before a drag seeks, for a
+    screen where a stray drag would be unwelcome.
+  - Volume moves the device's own volume, in the steps the device has.
+  - A long press still shows and hides the viewer's controls, as it does without the patch.
+
 #### Other
 
 - **Enable Android debugging** — Inherited from upstream, off by default, and applies to any
