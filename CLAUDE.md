@@ -336,7 +336,9 @@ is in [NOTICE](NOTICE). Two things constrain the code:
   commit on `dev` appears in the stable changelog, and a release that reads as six entries about
   a diagnostic that no longer exists is worse than no entry at all. A patch written to answer a
   question is `default = false` while it exists and is deleted once it has answered, before the
-  release that would ship it.
+  release that would ship it. A `chore:` commit publishes nothing, so a diagnostic that has to
+  reach a device goes on `build(Needs bump):`, which releases a prerelease and is hidden from
+  the notes — the scope has to be exactly that for `.releaserc` to match it.
 - **Patch descriptions are one or two sentences of what the patch does.** They are read in the
   manager by someone choosing patches, not by someone maintaining them: no reasoning about why
   the patch exists, no account of what was learnt writing it. The detail — what a patch changes
