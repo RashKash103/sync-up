@@ -53,9 +53,16 @@ public final class VideoGesturePatch {
     /** Sync's own play and pause button, in the viewer the player is opened in. */
     private static final String PLAY_BUTTON = "image_gif_controls";
 
-    /** The controls that belong with it, which a paused video should not be left without. */
+    /**
+     * What a paused video should not be left without: the whole chrome, which a tap puts away
+     * and brings back as one, and the controls inside it.
+     *
+     * <p>The chrome comes first. Holding the bar up inside a container that has been put away
+     * shows nothing at all, which is what made an earlier attempt at this look like it had
+     * worked while the bar stayed gone.
+     */
     private static final String[] CONTROLS =
-            {"image_gif_controls", "image_gif_seek_wrapper", "image_gif_time"};
+            {"coordinator", "image_gif_controls", "image_gif_seek_wrapper", "image_gif_time"};
 
     /** Below this a video is too short for Sync to offer a seek bar for it at all. */
     private static final int WORTH_SEEKING_MS = 1000;
@@ -591,13 +598,9 @@ public final class VideoGesturePatch {
             for (long delay : new long[]{150, 400}) {
                 keepingControls.postDelayed(() -> keepControlsShowing(delay), delay);
             }
-            // Nothing was ever found put away inside that window, though the bar plainly goes.
-            // Watch it for a while afterwards instead, and say what it and what it sits in are
-            // doing, rather than guessing again at when it happens.
-            watchTheBar();
         }
 
-        private void keepControlsShowing(long after) {
+        private void keepControlsShowing(long unused) {
             if (player.getDuration() <= WORTH_SEEKING_MS) {
                 // Too short for Sync to draw a seek bar for, so there is none to put back.
                 return;
@@ -612,53 +615,12 @@ public final class VideoGesturePatch {
                     if (control == null) {
                         continue;
                     }
-                    if (control.getVisibility() != View.VISIBLE || control.getAlpha() < 1f) {
-                        Logger.printInfo(() -> "controls: " + named + " was "
-                                + control.getVisibility() + " at " + control.getAlpha()
-                                + ", " + after + "ms after the tap");
-                    }
                     control.setVisibility(View.VISIBLE);
                     control.setAlpha(1f);
                 }
             } catch (Exception ex) {
                 Logger.printInfo(() -> "Could not put the controls back: " + ex);
             }
-        }
-
-        /**
-         * Follows the seek bar for a few seconds after a double tap, reporting anything that
-         * would take it off the screen: its own state, and that of what it sits in, since a
-         * parent put away or slid aside takes its children with it.
-         */
-        private void watchTheBar() {
-            View bar = controlNamed("image_gif_seek_wrapper");
-            if (bar == null) {
-                Logger.printInfo(() -> "controls: no seek bar to watch");
-                return;
-            }
-            for (long at = 200; at <= 3000; at += 200) {
-                long when = at;
-                keepingControls.postDelayed(() -> {
-                    String state = stateOf(bar, "bar");
-                    ViewParent parent = bar.getParent();
-                    if (parent instanceof View) {
-                        state += " " + stateOf((View) parent, "in");
-                    }
-                    if (state.contains("!")) {
-                        String said = state;
-                        Logger.printInfo(() -> "controls: " + when + "ms " + said);
-                    }
-                }, when);
-            }
-        }
-
-        /** What a view is doing, marked where it is anything but plainly on the screen. */
-        private String stateOf(View view, String called) {
-            boolean shown = view.getVisibility() == View.VISIBLE && view.getAlpha() >= 1f
-                    && view.getTranslationY() == 0f && view.getHeight() > 0;
-            return called + (shown ? "=shown" : "!vis=" + view.getVisibility()
-                    + ",alpha=" + view.getAlpha() + ",y=" + view.getTranslationY()
-                    + ",h=" + view.getHeight());
         }
 
         private View controlNamed(String named) {
