@@ -173,9 +173,9 @@ service being asked.
   Much of its content moved to RedGifs, and Gfycat links are answered from there. Content
   that did not move stays broken.
 - **Fix Imgur links** — Sync resolves Imgur links through a proxy of its own that no longer
-  exists. Those requests are answered in the app instead. Album contents come from an
-  archived copy of the album page, so only albums the archive captured while Imgur still
-  rendered them can be listed.
+  exists. Those requests are answered in the app instead. An album that still exists is read
+  from its own page; one that has gone is looked for in the archive, where only albums
+  captured while Imgur still rendered the list into the page can be recovered.
 - **Automatically undelete Imgur media** — Imgur removed a large amount of older content.
   Images and videos that no longer exist are loaded from the Wayback Machine, including the
   still shown for a video in a feed. Only what the archive happens to hold is recoverable.
