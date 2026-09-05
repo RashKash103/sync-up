@@ -1,5 +1,5 @@
 {
-  "version": "1.6.0-dev.11",
+  "version": "1.6.0-dev.12",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -171,8 +171,7 @@
       "use": true,
       "dependencies": [
         "BytecodePatch",
-        "ResourcePatch",
-        "BytecodePatch"
+        "ResourcePatch"
       ],
       "compatiblePackages": {
         "com.laurencedawson.reddit_sync": [

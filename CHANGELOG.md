@@ -1,3 +1,9 @@
+## [1.6.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.11...v1.6.0-dev.12) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Tell the zoom handling a held tap is over, rather than papering over it ([38d87f6](https://github.com/RashKash103/sync-up/commit/38d87f63733458004f9fb2d6dff3af517bea18de))
+
 ## [1.6.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.10...v1.6.0-dev.11) (2026-09-05)
 
 ## [1.6.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.9...v1.6.0-dev.10) (2026-09-05)
