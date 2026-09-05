@@ -44,11 +44,6 @@ public class CustomExoPlayerView extends FrameLayout {
         throw new UnsupportedOperationException("Stub");
     }
 
-    /** Whether the video has an audio track at all; a GIF served as a video has none. */
-    public boolean hasAudio() {
-        throw new UnsupportedOperationException("Stub");
-    }
-
     public void setMuted(boolean muted) {
         throw new UnsupportedOperationException("Stub");
     }

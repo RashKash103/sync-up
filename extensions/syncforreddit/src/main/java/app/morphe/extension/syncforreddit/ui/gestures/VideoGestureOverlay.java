@@ -21,6 +21,8 @@ import java.util.Locale;
  */
 final class VideoGestureOverlay {
     private static final int BACKGROUND = 0xB3000000;
+    /** Left a little see through, so that the video is not lost behind what is said about it. */
+    private static final float OPACITY = 0.8f;
     private static final long FLASH_MS = 550;
 
     private final FrameLayout over;
@@ -99,6 +101,7 @@ final class VideoGestureOverlay {
                     FrameLayout.LayoutParams.WRAP_CONTENT);
             where.gravity = Gravity.CENTER;
             built.setLayoutParams(where);
+            built.setAlpha(OPACITY);
             built.setVisibility(View.GONE);
             // Not something to be touched: it sits over the video the gestures are made on.
             built.setClickable(false);

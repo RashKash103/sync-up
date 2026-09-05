@@ -9,6 +9,8 @@ import static app.morphe.extension.syncforreddit.ui.gestures.VideoGestureSetting
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -46,6 +48,9 @@ public final class VideoGesturePatch {
     private static final int CHANGING_VOLUME = 3;
     /** Passed to the listener behind, and not ours to interpret. */
     private static final int PASSED_ON = 4;
+
+    /** How often the picture is moved while a seek is being dragged out. */
+    private static final long SEEK_PREVIEW_MS = 60;
 
     private VideoGesturePatch() {}
 
@@ -113,6 +118,21 @@ public final class VideoGesturePatch {
         private int seekingTo;
         /** The volume a volume drag started from, so that the drag is read as a distance. */
         private int startingVolume = -1;
+        /** Whether a seek interrupted playback, and so should hand it back when it is done. */
+        private boolean playingBeforeSeek;
+        /** When the video was last moved during a drag, so that it is not moved every frame. */
+        private long lastSeekAt;
+
+        /**
+         * The first tap of what might become a double tap, held back rather than passed on.
+         *
+         * <p>Sync closes the viewer on a tap. Handing the first tap on and then swallowing the
+         * second leaves the app seeing one tap and closing, which is what happened. Neither tap
+         * is handed on until it is known that no second one is coming, and then both are.
+         */
+        private MotionEvent heldDown;
+        private MotionEvent heldUp;
+        private final Handler afterTheTap = new Handler(Looper.getMainLooper());
 
         Gestures(CustomExoPlayerView player, View.OnTouchListener behind) {
             this.player = player;
@@ -141,11 +161,11 @@ public final class VideoGesturePatch {
         private Boolean interpret(View view, MotionEvent event) {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    return began(event);
+                    return began(view, event);
                 case MotionEvent.ACTION_MOVE:
                     return moved(view, event);
                 case MotionEvent.ACTION_UP:
-                    return lifted(event);
+                    return lifted(view, event);
                 case MotionEvent.ACTION_CANCEL:
                     return ended(false);
                 case MotionEvent.ACTION_POINTER_DOWN:
@@ -157,19 +177,24 @@ public final class VideoGesturePatch {
             }
         }
 
-        private Boolean began(MotionEvent event) {
+        private Boolean began(View view, MotionEvent event) {
             downX = event.getX();
             downY = event.getY();
             afterDoubleTap = soonAfterLift(event);
             doing = UNDECIDED;
             startingVolume = -1;
 
-            // The second tap of a double tap is taken in full, so that the listener behind never
-            // sees a double tap and never zooms in answer to one.
             if (afterDoubleTap && anyDoubleTapGesture()) {
+                // The second tap. The first is still held, and now never needs handing on.
+                dropHeldTap();
+                // Up and down after a double tap is ours, and what the player sits in must not
+                // take the drag for putting the viewer away before it is read.
+                disallowInterception();
                 return Boolean.TRUE;
             }
             doing = PASSED_ON;
+            releaseHeldDown();
+            heldDown = MotionEvent.obtain(event);
             return null;
         }
 
@@ -196,13 +221,19 @@ public final class VideoGesturePatch {
             if (Math.abs(upOrDown) > Math.abs(sideways)) {
                 // Up and down is Sync's own gesture for putting the viewer away, so the volume is
                 // only ever changed after a double tap, which nothing else answers to.
-                if (afterDoubleTap && player.hasAudio()
-                        && VideoGestureSettings.enabled(context, VOLUME, true)) {
+                if (afterDoubleTap && VideoGestureSettings.enabled(context, VOLUME, true)) {
                     return claim(view, CHANGING_VOLUME);
                 }
             } else if (seekingAllowed(context)) {
                 seekingFrom = player.getProgress();
                 seekingTo = seekingFrom;
+                playingBeforeSeek = player.isVideoPlaying();
+                if (playingBeforeSeek) {
+                    // Held still, so that what is drawn is where the drag has reached rather
+                    // than the video carrying on from where it was.
+                    player.pause();
+                }
+                lastSeekAt = 0;
                 return claim(view, SEEKING);
             }
 
@@ -210,7 +241,7 @@ public final class VideoGesturePatch {
             return null;
         }
 
-        private Boolean lifted(MotionEvent event) {
+        private Boolean lifted(View view, MotionEvent event) {
             int was = doing;
             boolean wasAfterDoubleTap = afterDoubleTap;
             lastLifted = event.getEventTime();
@@ -219,6 +250,9 @@ public final class VideoGesturePatch {
 
             if (was == SEEKING) {
                 player.seekTo(seekingTo);
+                if (playingBeforeSeek) {
+                    player.resume();
+                }
                 overlay.hide();
                 doing = IDLE;
                 return Boolean.TRUE;
@@ -232,21 +266,37 @@ public final class VideoGesturePatch {
             doing = IDLE;
             boolean still = Math.abs(event.getX() - downX) < slop
                     && Math.abs(event.getY() - downY) < slop;
-            if (was == UNDECIDED && wasAfterDoubleTap && still
-                    && VideoGestureSettings.enabled(player.getContext(), DOUBLE_TAP, true)) {
-                playOrPause();
+
+            if (was == UNDECIDED && wasAfterDoubleTap) {
+                if (still && VideoGestureSettings.enabled(player.getContext(), DOUBLE_TAP, true)) {
+                    playOrPause();
+                }
                 // Not a lift to count a further tap from: three taps are two gestures, not three.
                 lastLifted = 0;
                 return Boolean.TRUE;
             }
-            return was == UNDECIDED ? Boolean.TRUE : null;
+
+            // A first tap that could still become a double one is held rather than handed on,
+            // and handed on late if no second tap arrives.
+            if (was == PASSED_ON && still && anyDoubleTapGesture()) {
+                holdTap(view, event);
+                return Boolean.TRUE;
+            }
+            // A drag rather than a tap: the press it began with is the app's, and was handed on
+            // when it happened, so there is nothing left to hold.
+            releaseHeldDown();
+            return null;
         }
 
         private Boolean ended(boolean handOn) {
             boolean ours = doing == SEEKING || doing == CHANGING_VOLUME;
+            if (doing == SEEKING && playingBeforeSeek) {
+                player.resume();
+            }
             if (ours) {
                 overlay.hide();
             }
+            dropHeldTap();
             doing = IDLE;
             return ours && !handOn ? Boolean.TRUE : null;
         }
@@ -257,6 +307,7 @@ public final class VideoGesturePatch {
          */
         private Boolean claim(View view, int gesture) {
             doing = gesture;
+            dropHeldTap();
             if (behind != null) {
                 MotionEvent cancel = MotionEvent.obtain(
                         0, 0, MotionEvent.ACTION_CANCEL, 0f, 0f, 0);
@@ -337,6 +388,13 @@ public final class VideoGesturePatch {
 
             seekingTo = Math.max(0, Math.min(duration, seekingFrom + moved));
             overlay.show(overlay.describeSeek(seekingTo, duration, seekingTo - seekingFrom));
+
+            // The picture follows the drag, at a rate the player can keep up with.
+            long now = android.os.SystemClock.uptimeMillis();
+            if (now - lastSeekAt >= SEEK_PREVIEW_MS) {
+                lastSeekAt = now;
+                player.seekTo(seekingTo);
+            }
         }
 
         private void changeVolume(View view, float upOrDown) {
@@ -364,6 +422,65 @@ public final class VideoGesturePatch {
                 startingVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
             }
             return startingVolume;
+        }
+
+        /**
+         * Holds a tap back for as long as a second one could still follow, and hands it on if
+         * none does, so that a tap meant on its own still reaches the app.
+         */
+        private void holdTap(View view, MotionEvent up) {
+            releaseHeldUp();
+            heldUp = MotionEvent.obtain(up);
+            afterTheTap.removeCallbacksAndMessages(null);
+            afterTheTap.postDelayed(() -> handOnHeldTap(view),
+                    ViewConfiguration.getDoubleTapTimeout());
+        }
+
+        /** Hands on a tap that turned out to be on its own, press and lift together. */
+        private void handOnHeldTap(View view) {
+            MotionEvent down = heldDown;
+            MotionEvent up = heldUp;
+            heldDown = null;
+            heldUp = null;
+            try {
+                if (behind != null && down != null && up != null) {
+                    behind.onTouch(view, down);
+                    behind.onTouch(view, up);
+                }
+            } catch (Exception ex) {
+                Logger.printInfo(() -> "Could not hand on a tap: " + ex);
+            } finally {
+                if (down != null) down.recycle();
+                if (up != null) up.recycle();
+            }
+        }
+
+        /** Forgets a held tap, for a second tap that arrived or a drag that began. */
+        private void dropHeldTap() {
+            afterTheTap.removeCallbacksAndMessages(null);
+            releaseHeldDown();
+            releaseHeldUp();
+        }
+
+        private void releaseHeldDown() {
+            if (heldDown != null) {
+                heldDown.recycle();
+                heldDown = null;
+            }
+        }
+
+        private void releaseHeldUp() {
+            if (heldUp != null) {
+                heldUp.recycle();
+                heldUp = null;
+            }
+        }
+
+        private void disallowInterception() {
+            ViewParent parent = player.getParent();
+            if (parent != null) {
+                parent.requestDisallowInterceptTouchEvent(true);
+            }
         }
 
         private void playOrPause() {
