@@ -1,3 +1,9 @@
+## [1.6.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.1...v1.6.0-dev.2) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Keep a paused video open, hear the volume gesture, and show the seek ([012b6ef](https://github.com/RashKash103/sync-up/commit/012b6eff6b73dd9cfa9224846e43924d6867cc06))
+
 ## [1.6.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.5.0...v1.6.0-dev.1) (2026-09-05)
 
 ### ✨ New Features
