@@ -182,16 +182,31 @@ public final class VideoGesturePatch {
 
         @Override
         public boolean onTouch(View view, MotionEvent event) {
+            int before = doing;
+            Boolean handled = null;
             try {
-                Boolean handled = interpret(view, event);
-                if (handled != null) {
-                    return handled;
-                }
+                handled = interpret(view, event);
             } catch (Exception ex) {
                 Logger.printInfo(() -> "Could not read the gesture: " + ex);
                 doing = PASSED_ON;
             }
+            GestureTrace.touch(event, named(before) + ">" + named(doing),
+                    handled == null ? "handed on" : handled ? "taken" : "declined",
+                    controlNamed("coordinator"));
+            if (handled != null) {
+                return handled;
+            }
             return behind != null && behind.onTouch(view, event);
+        }
+
+        private String named(int gesture) {
+            switch (gesture) {
+                case IDLE: return "idle";
+                case UNDECIDED: return "undecided";
+                case SEEKING: return "seeking";
+                case CHANGING_VOLUME: return "volume";
+                default: return "handedOn";
+            }
         }
 
         /**
@@ -224,6 +239,7 @@ public final class VideoGesturePatch {
             startingVolume = -1;
 
             if (afterDoubleTap && anyDoubleTapGesture()) {
+                GestureTrace.note("second tap, the first is dropped");
                 // The second tap. The first is still held, and now never needs handing on.
                 dropHeldTap();
                 // Up and down after a double tap is ours, and what the player sits in must not
@@ -352,6 +368,7 @@ public final class VideoGesturePatch {
          * and whatever the view sits in is asked to stop taking sideways drags for its own.
          */
         private Boolean claim(View view, int gesture) {
+            GestureTrace.note("claiming " + named(gesture));
             doing = gesture;
             dropHeldTap();
             if (behind != null) {
@@ -503,6 +520,7 @@ public final class VideoGesturePatch {
          * none does, so that a tap meant on its own still reaches the app.
          */
         private void holdTap(View view, MotionEvent up) {
+            GestureTrace.note("holding a tap for " + ViewConfiguration.getDoubleTapTimeout() + "ms");
             releaseHeldUp();
             heldUp = MotionEvent.obtain(up);
             afterTheTap.removeCallbacksAndMessages(null);
@@ -518,6 +536,7 @@ public final class VideoGesturePatch {
             heldUp = null;
             try {
                 if (behind != null && down != null && up != null) {
+                    GestureTrace.noteWhere("handing a held tap on to " + behind.getClass().getName());
                     behind.onTouch(view, down);
                     behind.onTouch(view, up);
                 }
@@ -570,6 +589,7 @@ public final class VideoGesturePatch {
             if (button != null) {
                 // Selected is Sync's way of saying the video is already stopped.
                 boolean paused = button.isSelected();
+                GestureTrace.note("pressing Sync's button, which says paused=" + paused);
                 button.performClick();
                 keepControlsShowing();
                 overlay.flash(overlay.describePaused(!paused));
@@ -614,6 +634,9 @@ public final class VideoGesturePatch {
                     View control = id == 0 ? null : root.findViewById(id);
                     if (control == null) {
                         continue;
+                    }
+                    if (control.getVisibility() != View.VISIBLE) {
+                        GestureTrace.note("putting " + named + " back, " + unused + "ms after");
                     }
                     control.setVisibility(View.VISIBLE);
                     control.setAlpha(1f);

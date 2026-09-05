@@ -19,7 +19,7 @@ val videoGesturesPatch = bytecodePatch(
             "Each gesture can be turned on or off under Gestures in Sync's settings.",
     default = true
 ) {
-    dependsOn(sharedExtensionPatch, videoGestureSettingsPatch)
+    dependsOn(sharedExtensionPatch, videoGestureSettingsPatch, traceChromePatch)
 
     compatibleWith(*SyncForRedditCompatible)
 
