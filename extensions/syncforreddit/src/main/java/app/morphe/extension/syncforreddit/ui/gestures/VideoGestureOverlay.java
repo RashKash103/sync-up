@@ -55,13 +55,23 @@ final class VideoGestureOverlay {
         }
     }
 
-    String describeSeek(int to, int duration, int by) {
-        return String.format(Locale.US, "%s / %s\n%s%s",
-                clock(to), clock(duration), by < 0 ? "−" : "+", clock(Math.abs(by)));
+    String describeSeek(int to, int duration, int by, float precision, String named) {
+        String scale = precision == 1f
+                ? "" : String.format(Locale.US, "\n%s  (%s)", times(precision), named);
+        return String.format(Locale.US, "%s / %s\n%s%s%s",
+                clock(to), clock(duration), by < 0 ? "−" : "+", clock(Math.abs(by)), scale);
     }
 
-    String describeVolume(int level, int steps) {
-        return String.format(Locale.US, "Volume %d%%", Math.round(level * 100f / Math.max(steps, 1)));
+    String describeVolume(float level) {
+        return String.format(Locale.US, "Volume %d%%", Math.round(level * 100f));
+    }
+
+    /** How much of the video a drag is covering, said as people say it rather than as a decimal. */
+    private static String times(float precision) {
+        if (precision >= 1f) {
+            return String.format(Locale.US, "%d× speed", Math.round(precision));
+        }
+        return String.format(Locale.US, "1/%d speed", Math.round(1f / precision));
     }
 
     String describePaused(boolean paused) {

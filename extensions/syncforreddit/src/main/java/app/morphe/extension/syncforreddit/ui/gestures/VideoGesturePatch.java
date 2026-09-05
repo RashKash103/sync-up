@@ -8,7 +8,6 @@ import static app.morphe.extension.syncforreddit.ui.gestures.VideoGestureSetting
 import static app.morphe.extension.syncforreddit.ui.gestures.VideoGestureSettings.VOLUME;
 
 import android.content.Context;
-import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.MotionEvent;
@@ -51,6 +50,17 @@ public final class VideoGesturePatch {
 
     /** How often the picture is moved while a seek is being dragged out. */
     private static final long SEEK_PREVIEW_MS = 60;
+
+    /**
+     * How far up or down a seek drag has to wander before it changes how much of the video the
+     * same sideways distance covers, in the density independent pixels a finger is measured in.
+     */
+    private static final float PRECISION_BAND_DP = 90f;
+
+    /** What a sideways drag covers, from farthest up to farthest down. */
+    private static final float[] PRECISION = {4f, 2f, 1f, 0.5f, 0.25f};
+    private static final String[] PRECISION_NAMED =
+            {"coarse", "quicker", "normal", "finer", "finest"};
 
     private VideoGesturePatch() {}
 
@@ -117,11 +127,18 @@ public final class VideoGesturePatch {
         private int seekingFrom;
         private int seekingTo;
         /** The volume a volume drag started from, so that the drag is read as a distance. */
-        private int startingVolume = -1;
+        private float startingVolume = -1f;
         /** Whether a seek interrupted playback, and so should hand it back when it is done. */
         private boolean playingBeforeSeek;
         /** When the video was last moved during a drag, so that it is not moved every frame. */
         private long lastSeekAt;
+        /**
+         * How far the drag has carried the video so far, added to as it goes rather than
+         * measured from where it began: how much a sideways distance is worth changes while the
+         * drag is in progress, and what it was already worth should not change with it.
+         */
+        private float seekedBy;
+        private float lastSeekX;
 
         /**
          * The first tap of what might become a double tap, held back rather than passed on.
@@ -182,7 +199,7 @@ public final class VideoGesturePatch {
             downY = event.getY();
             afterDoubleTap = soonAfterLift(event);
             doing = UNDECIDED;
-            startingVolume = -1;
+            startingVolume = -1f;
 
             if (afterDoubleTap && anyDoubleTapGesture()) {
                 // The second tap. The first is still held, and now never needs handing on.
@@ -200,7 +217,7 @@ public final class VideoGesturePatch {
 
         private Boolean moved(View view, MotionEvent event) {
             if (doing == SEEKING) {
-                showSeek(view, event.getX() - downX);
+                showSeek(view, event);
                 return Boolean.TRUE;
             }
             if (doing == CHANGING_VOLUME) {
@@ -227,13 +244,16 @@ public final class VideoGesturePatch {
             } else if (seekingAllowed(context)) {
                 seekingFrom = player.getProgress();
                 seekingTo = seekingFrom;
-                playingBeforeSeek = player.isVideoPlaying();
+                Playback playback = Playback.of(player);
+                playingBeforeSeek = playback != null && playback.isPlaying();
                 if (playingBeforeSeek) {
                     // Held still, so that what is drawn is where the drag has reached rather
                     // than the video carrying on from where it was.
-                    player.pause();
+                    playback.setPlaying(false);
                 }
                 lastSeekAt = 0;
+                seekedBy = 0f;
+                lastSeekX = event.getX();
                 return claim(view, SEEKING);
             }
 
@@ -251,7 +271,7 @@ public final class VideoGesturePatch {
             if (was == SEEKING) {
                 player.seekTo(seekingTo);
                 if (playingBeforeSeek) {
-                    player.resume();
+                    resumePlaying();
                 }
                 overlay.hide();
                 doing = IDLE;
@@ -291,7 +311,7 @@ public final class VideoGesturePatch {
         private Boolean ended(boolean handOn) {
             boolean ours = doing == SEEKING || doing == CHANGING_VOLUME;
             if (doing == SEEKING && playingBeforeSeek) {
-                player.resume();
+                resumePlaying();
             }
             if (ours) {
                 overlay.hide();
@@ -374,7 +394,7 @@ public final class VideoGesturePatch {
             return false;
         }
 
-        private void showSeek(View view, float sideways) {
+        private void showSeek(View view, MotionEvent event) {
             int duration = player.getDuration();
             if (duration <= 0) {
                 return;
@@ -384,10 +404,15 @@ public final class VideoGesturePatch {
                     view.getContext(), SEEK_SPAN, DEFAULT_SEEK_SPAN) * 1000;
             // A short video is covered end to end, so a swipe always reaches all of it.
             int across = Math.min(span, duration);
-            int moved = Math.round(sideways / width * across);
 
-            seekingTo = Math.max(0, Math.min(duration, seekingFrom + moved));
-            overlay.show(overlay.describeSeek(seekingTo, duration, seekingTo - seekingFrom));
+            int band = precisionBand(view, event.getY() - downY);
+            float sideways = event.getX() - lastSeekX;
+            lastSeekX = event.getX();
+            seekedBy += sideways / width * across * PRECISION[band];
+
+            seekingTo = Math.max(0, Math.min(duration, seekingFrom + Math.round(seekedBy)));
+            overlay.show(overlay.describeSeek(seekingTo, duration, seekingTo - seekingFrom,
+                    PRECISION[band], PRECISION_NAMED[band]));
 
             // The picture follows the drag, at a rate the player can keep up with.
             long now = android.os.SystemClock.uptimeMillis();
@@ -398,30 +423,43 @@ public final class VideoGesturePatch {
         }
 
         private void changeVolume(View view, float upOrDown) {
-            AudioManager audio = (AudioManager)
-                    view.getContext().getSystemService(Context.AUDIO_SERVICE);
-            if (audio == null) {
+            Playback playback = Playback.of(player);
+            if (playback == null) {
                 return;
             }
-            int steps = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            if (startingVolume < 0f) {
+                float held = playback.volume();
+                startingVolume = held < 0f ? 1f : held;
+            }
             int height = Math.max(view.getHeight(), 1);
-            // Upwards is louder, and the whole height covers the whole range.
-            int moved = Math.round(-upOrDown / height * steps);
-            int wanted = Math.max(0, Math.min(steps, volumeWhenClaimed(audio) + moved));
+            // Upwards is louder, and the whole height covers silent to full.
+            float wanted = Math.max(0f, Math.min(1f, startingVolume + (-upOrDown / height)));
 
-            audio.setStreamVolume(AudioManager.STREAM_MUSIC, wanted, 0);
+            playback.setVolume(wanted);
             // Raising the volume of a video Sync opened muted should be heard.
-            if (wanted > 0) {
+            if (wanted > 0f) {
                 player.setMuted(false);
             }
-            overlay.show(overlay.describeVolume(wanted, steps));
+            overlay.show(overlay.describeVolume(wanted));
         }
 
-        private int volumeWhenClaimed(AudioManager audio) {
-            if (startingVolume < 0) {
-                startingVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
+        /**
+         * Which of the bands the finger is in, counted from the coarsest. Held away from the
+         * line it started on, a drag covers more of the video above it and less below, as a
+         * video player is expected to behave.
+         */
+        private int precisionBand(View view, float upOrDown) {
+            float band = PRECISION_BAND_DP * view.getResources().getDisplayMetrics().density;
+            int middle = PRECISION.length / 2;
+            int steps = Math.round(upOrDown / band);
+            return Math.max(0, Math.min(PRECISION.length - 1, middle + steps));
+        }
+
+        private void resumePlaying() {
+            Playback playback = Playback.of(player);
+            if (playback != null) {
+                playback.setPlaying(true);
             }
-            return startingVolume;
         }
 
         /**
@@ -484,13 +522,13 @@ public final class VideoGesturePatch {
         }
 
         private void playOrPause() {
-            if (player.isVideoPlaying()) {
-                player.pause();
-                overlay.flash(overlay.describePaused(true));
-            } else {
-                player.resume();
-                overlay.flash(overlay.describePaused(false));
+            Playback playback = Playback.of(player);
+            if (playback == null) {
+                return;
             }
+            boolean playing = playback.isPlaying();
+            playback.setPlaying(!playing);
+            overlay.flash(overlay.describePaused(playing));
         }
     }
 }
