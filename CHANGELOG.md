@@ -1,3 +1,9 @@
+## [1.6.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.12...v1.6.0-dev.13) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Read an Imgur album that still exists from its own page ([5e18aba](https://github.com/RashKash103/sync-up/commit/5e18aba79152b07e21ff9a7d56df34120f15d294))
+
 ## [1.6.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.11...v1.6.0-dev.12) (2026-09-05)
 
 ### 🐛 Bug Fixes
