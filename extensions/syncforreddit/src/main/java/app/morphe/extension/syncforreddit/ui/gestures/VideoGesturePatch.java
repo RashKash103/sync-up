@@ -53,6 +53,13 @@ public final class VideoGesturePatch {
     /** Sync's own play and pause button, in the viewer the player is opened in. */
     private static final String PLAY_BUTTON = "image_gif_controls";
 
+    /** The controls that belong with it, which a paused video should not be left without. */
+    private static final String[] CONTROLS =
+            {"image_gif_controls", "image_gif_seek_wrapper", "image_gif_time"};
+
+    /** Below this a video is too short for Sync to offer a seek bar for it at all. */
+    private static final int WORTH_SEEKING_MS = 1000;
+
     /** How often the picture is moved while a seek is being dragged out. */
     private static final long SEEK_PREVIEW_MS = 60;
 
@@ -551,6 +558,7 @@ public final class VideoGesturePatch {
                 // Selected is Sync's way of saying the video is already stopped.
                 boolean paused = button.isSelected();
                 button.performClick();
+                keepControlsShowing();
                 overlay.flash(overlay.describePaused(!paused));
                 return;
             }
@@ -566,6 +574,32 @@ public final class VideoGesturePatch {
         }
 
         /**
+         * Puts the controls back where something has taken them away, so that a video paused by
+         * a double tap can be played again from the bar as well as by another one.
+         */
+        private void keepControlsShowing() {
+            if (player.getDuration() <= WORTH_SEEKING_MS) {
+                // Too short for Sync to draw a seek bar for, so there is none to put back.
+                return;
+            }
+            try {
+                Context context = player.getContext();
+                View root = player.getRootView();
+                for (String named : CONTROLS) {
+                    int id = context.getResources().getIdentifier(
+                            named, "id", context.getPackageName());
+                    View control = id == 0 ? null : root.findViewById(id);
+                    if (control != null) {
+                        control.setVisibility(View.VISIBLE);
+                        control.setAlpha(1f);
+                    }
+                }
+            } catch (Exception ex) {
+                Logger.printInfo(() -> "Could not put the controls back: " + ex);
+            }
+        }
+
+        /**
          * The play and pause button of the viewer the player is in, found by the name of its id.
          * Names of resources survive where names in the code do not.
          */
@@ -577,8 +611,9 @@ public final class VideoGesturePatch {
                 if (id == 0) {
                     return null;
                 }
-                View found = player.getRootView().findViewById(id);
-                return found != null && found.isShown() ? found : null;
+                // Taken whether or not it can be seen: a button out of sight still works, and
+                // is what keeps Sync's idea of the video and its own agreeing.
+                return player.getRootView().findViewById(id);
             } catch (Exception ex) {
                 Logger.printInfo(() -> "Could not find the play button: " + ex);
                 return null;

@@ -88,12 +88,39 @@ public final class VideoGestureSettings {
             read.append(key.replace("sync_up_video_", "")).append('=')
                     .append(held == null ? "unset" : held).append(' ');
         }
-        Logger.printInfo(() -> "gestures: " + read);
+        Logger.printInfo(() -> "gestures: " + read + "in " + name(context));
+    }
+
+    /**
+     * The settings, from wherever Sync is keeping them.
+     *
+     * <p>Sync keeps a set for each account signed in, in a file named after that account, and
+     * points its settings screens at it. Reading the file an app has by default finds nothing
+     * those screens ever wrote, which is what made every one of these settings look unset.
+     */
+    /** Which settings file was read, for as long as that is in question. */
+    private static String name(Context context) {
+        try {
+            return t7.z.i() ? t7.z.a() : "the default";
+        } catch (Throwable ex) {
+            return "the default";
+        }
     }
 
     private static SharedPreferences store(Context context) {
         try {
-            return PreferenceManager.getDefaultSharedPreferences(context);
+            String named = null;
+            try {
+                if (t7.z.i()) {
+                    named = t7.z.a();
+                }
+            } catch (Throwable ex) {
+                // An older or newer Sync that keeps one set of settings for everyone.
+                Logger.printInfo(() -> "Could not tell which settings are in use: " + ex);
+            }
+            return named == null || named.isEmpty()
+                    ? PreferenceManager.getDefaultSharedPreferences(context)
+                    : context.getSharedPreferences(named, Context.MODE_PRIVATE);
         } catch (Exception ex) {
             Logger.printInfo(() -> "Could not reach the settings: " + ex);
             return null;
