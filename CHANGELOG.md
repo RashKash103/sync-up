@@ -1,3 +1,9 @@
+## [1.6.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.5.0...v1.6.0-dev.1) (2026-09-05)
+
+### ✨ New Features
+
+* Gestures for the video player ([e1283c9](https://github.com/RashKash103/sync-up/commit/e1283c9a27aee958a68c992d18210a781be86e50))
+
 ## [1.5.0](https://github.com/RashKash103/sync-up/compare/v1.4.0...v1.5.0) (2026-08-30)
 
 ### 🐛 Bug Fixes

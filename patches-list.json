@@ -1,5 +1,5 @@
 {
-  "version": "1.5.0",
+  "version": "1.6.0-dev.1",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -155,6 +155,23 @@
       "use": true,
       "dependencies": [
         "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Gestures for the video player",
+      "description": "Double tap a video or GIF to play or pause it rather than zoom, drag sideways to seek, and drag up or down after a double tap to change the volume. Each gesture can be turned on or off under Gestures in Sync's settings.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "ResourcePatch"
       ],
       "compatiblePackages": {
         "com.laurencedawson.reddit_sync": [
