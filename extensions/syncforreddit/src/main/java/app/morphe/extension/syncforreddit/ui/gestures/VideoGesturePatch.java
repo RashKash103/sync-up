@@ -9,6 +9,7 @@ import static app.morphe.extension.syncforreddit.ui.gestures.VideoGestureSetting
 import static app.morphe.extension.syncforreddit.ui.gestures.VideoGestureSettings.VOLUME;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.MotionEvent;
@@ -128,7 +129,7 @@ public final class VideoGesturePatch {
         private int seekingFrom;
         private int seekingTo;
         /** The volume a volume drag started from, so that the drag is read as a distance. */
-        private float startingVolume = -1f;
+        private int startingVolume = -1;
         /** Whether a seek interrupted playback, and so should hand it back when it is done. */
         private boolean playingBeforeSeek;
         /** When the video was last moved during a drag, so that it is not moved every frame. */
@@ -200,7 +201,7 @@ public final class VideoGesturePatch {
             downY = event.getY();
             afterDoubleTap = soonAfterLift(event);
             doing = UNDECIDED;
-            startingVolume = -1f;
+            startingVolume = -1;
 
             if (afterDoubleTap && anyDoubleTapGesture()) {
                 // The second tap. The first is still held, and now never needs handing on.
@@ -423,25 +424,32 @@ public final class VideoGesturePatch {
             }
         }
 
+        /**
+         * Moves the volume the device is playing at, in the steps the device has. How many there
+         * are is the device's own affair, and is usually about fifteen; nothing public offers a
+         * finer hold on it than that.
+         */
         private void changeVolume(View view, float upOrDown) {
-            Playback playback = Playback.of(player);
-            if (playback == null) {
+            AudioManager audio = (AudioManager)
+                    view.getContext().getSystemService(Context.AUDIO_SERVICE);
+            if (audio == null) {
                 return;
             }
-            if (startingVolume < 0f) {
-                float held = playback.volume();
-                startingVolume = held < 0f ? 1f : held;
+            int steps = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            if (startingVolume < 0) {
+                startingVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
             }
             int height = Math.max(view.getHeight(), 1);
             // Upwards is louder, and the whole height covers silent to full.
-            float wanted = Math.max(0f, Math.min(1f, startingVolume + (-upOrDown / height)));
+            int wanted = Math.max(0, Math.min(steps,
+                    startingVolume + Math.round(-upOrDown / height * steps)));
 
-            playback.setVolume(wanted);
+            audio.setStreamVolume(AudioManager.STREAM_MUSIC, wanted, 0);
             // Raising the volume of a video Sync opened muted should be heard.
-            if (wanted > 0f) {
+            if (wanted > 0) {
                 player.setMuted(false);
             }
-            overlay.show(overlay.describeVolume(wanted));
+            overlay.show(overlay.describeVolume(wanted, steps));
         }
 
         /**

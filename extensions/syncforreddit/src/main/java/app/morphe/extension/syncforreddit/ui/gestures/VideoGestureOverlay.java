@@ -62,8 +62,9 @@ final class VideoGestureOverlay {
                 clock(to), clock(duration), by < 0 ? "−" : "+", clock(Math.abs(by)), scale);
     }
 
-    String describeVolume(float level) {
-        return String.format(Locale.US, "Volume %d%%", Math.round(level * 100f));
+    String describeVolume(int level, int steps) {
+        return String.format(Locale.US, "Volume %d%%",
+                Math.round(level * 100f / Math.max(steps, 1)));
     }
 
     /** How much of the video a drag is covering, said as people say it rather than as a decimal. */
