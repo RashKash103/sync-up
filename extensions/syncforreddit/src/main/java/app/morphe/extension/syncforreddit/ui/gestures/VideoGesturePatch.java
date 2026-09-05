@@ -163,6 +163,8 @@ public final class VideoGesturePatch {
         private MotionEvent heldDown;
         private MotionEvent heldUp;
         private final Handler afterTheTap = new Handler(Looper.getMainLooper());
+        /** Kept apart from the tap's own, which a further tap cancels. */
+        private final Handler keepingControls = new Handler(Looper.getMainLooper());
 
         Gestures(CustomExoPlayerView player, View.OnTouchListener behind) {
             this.player = player;
@@ -303,6 +305,10 @@ public final class VideoGesturePatch {
             if (was == UNDECIDED && wasAfterDoubleTap) {
                 if (still && VideoGestureSettings.enabled(player.getContext(), DOUBLE_TAP, true)) {
                     playOrPause();
+                } else if (still) {
+                    // Play and pause is off, but the bar should still not come and go for a
+                    // gesture nothing was asked to do anything about.
+                    keepControlsShowing();
                 }
                 // Not a lift to count a further tap from: three taps are two gestures, not three.
                 lastLifted = 0;
@@ -578,6 +584,16 @@ public final class VideoGesturePatch {
          * a double tap can be played again from the bar as well as by another one.
          */
         private void keepControlsShowing() {
+            keepControlsShowing(0);
+            // Whatever takes them away has not been found, and does not do it at once: assert it
+            // again across the moment a tap would be answered, and say what was seen each time.
+            keepingControls.removeCallbacksAndMessages(null);
+            for (long delay : new long[]{150, 400}) {
+                keepingControls.postDelayed(() -> keepControlsShowing(delay), delay);
+            }
+        }
+
+        private void keepControlsShowing(long after) {
             if (player.getDuration() <= WORTH_SEEKING_MS) {
                 // Too short for Sync to draw a seek bar for, so there is none to put back.
                 return;
@@ -589,10 +605,16 @@ public final class VideoGesturePatch {
                     int id = context.getResources().getIdentifier(
                             named, "id", context.getPackageName());
                     View control = id == 0 ? null : root.findViewById(id);
-                    if (control != null) {
-                        control.setVisibility(View.VISIBLE);
-                        control.setAlpha(1f);
+                    if (control == null) {
+                        continue;
                     }
+                    if (control.getVisibility() != View.VISIBLE || control.getAlpha() < 1f) {
+                        Logger.printInfo(() -> "controls: " + named + " was "
+                                + control.getVisibility() + " at " + control.getAlpha()
+                                + ", " + after + "ms after the tap");
+                    }
+                    control.setVisibility(View.VISIBLE);
+                    control.setAlpha(1f);
                 }
             } catch (Exception ex) {
                 Logger.printInfo(() -> "Could not put the controls back: " + ex);
