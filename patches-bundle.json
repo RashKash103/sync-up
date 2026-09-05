@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-05T19:39:05",
-  "description": "## [1.6.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.2...v1.6.0-dev.3) (2026-09-05)\n\n### 🐛 Bug Fixes\n\n* Ask the player whether it is playing, and let a drag choose its own precision ([19e2d7f](https://github.com/RashKash103/sync-up/commit/19e2d7f545c6509ee641f961cee865291b34382c))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.6.0-dev.3/patches-1.6.0-dev.3.mpp",
+  "created_at": "2026-09-05T19:42:31",
+  "description": "## [1.6.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.3...v1.6.0-dev.4) (2026-09-05)\n\n### ✨ New Features\n\n* Let the seek precision gesture be turned off ([02790b6](https://github.com/RashKash103/sync-up/commit/02790b64c8e7c6bb1721466fd5138e89d0533199))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.6.0-dev.4/patches-1.6.0-dev.4.mpp",
   "signature_download_url": "",
-  "version": "1.6.0-dev.3"
+  "version": "1.6.0-dev.4"
 }

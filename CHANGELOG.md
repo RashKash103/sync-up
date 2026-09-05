@@ -1,3 +1,9 @@
+## [1.6.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.3...v1.6.0-dev.4) (2026-09-05)
+
+### ✨ New Features
+
+* Let the seek precision gesture be turned off ([02790b6](https://github.com/RashKash103/sync-up/commit/02790b64c8e7c6bb1721466fd5138e89d0533199))
+
 ## [1.6.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.2...v1.6.0-dev.3) (2026-09-05)
 
 ### 🐛 Bug Fixes
