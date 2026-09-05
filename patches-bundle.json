@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-05T21:51:42",
-  "description": "## [1.6.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.12...v1.6.0-dev.13) (2026-09-05)\n\n### 🐛 Bug Fixes\n\n* Read an Imgur album that still exists from its own page ([5e18aba](https://github.com/RashKash103/sync-up/commit/5e18aba79152b07e21ff9a7d56df34120f15d294))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.6.0-dev.13/patches-1.6.0-dev.13.mpp",
+  "created_at": "2026-09-05T22:06:52",
+  "description": "## [1.6.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.13...v1.6.0-dev.14) (2026-09-05)\n\n### 🐛 Bug Fixes\n\n* Take the Imgur id from the end of an address, not the front ([0929717](https://github.com/RashKash103/sync-up/commit/09297170a29c235767c2e4d8f7ab9c2429339a8d))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.6.0-dev.14/patches-1.6.0-dev.14.mpp",
   "signature_download_url": "",
-  "version": "1.6.0-dev.13"
+  "version": "1.6.0-dev.14"
 }

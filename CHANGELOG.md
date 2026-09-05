@@ -1,3 +1,9 @@
+## [1.6.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.13...v1.6.0-dev.14) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Take the Imgur id from the end of an address, not the front ([0929717](https://github.com/RashKash103/sync-up/commit/09297170a29c235767c2e4d8f7ab9c2429339a8d))
+
 ## [1.6.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.12...v1.6.0-dev.13) (2026-09-05)
 
 ### 🐛 Bug Fixes
