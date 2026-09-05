@@ -50,6 +50,9 @@ public final class VideoGesturePatch {
     /** Passed to the listener behind, and not ours to interpret. */
     private static final int PASSED_ON = 4;
 
+    /** Sync's own play and pause button, in the viewer the player is opened in. */
+    private static final String PLAY_BUTTON = "image_gif_controls";
+
     /** How often the picture is moved while a seek is being dragged out. */
     private static final long SEEK_PREVIEW_MS = 60;
 
@@ -79,6 +82,7 @@ public final class VideoGesturePatch {
             }
             View.OnTouchListener behind = listenerOn(drawnOn);
             drawnOn.setOnTouchListener(new Gestures(player, behind));
+            VideoGestureSettings.report(player.getContext());
         } catch (Exception ex) {
             // A player without gestures is the app as it was, so this is not worth a toast.
             Logger.printInfo(() -> "Could not add gestures to the player: " + ex);
@@ -533,7 +537,25 @@ public final class VideoGesturePatch {
             }
         }
 
+        /**
+         * Plays or pauses by pressing Sync's own button, where there is one.
+         *
+         * <p>Sync keeps whether a video is playing on that button rather than asking the player,
+         * and draws the button from it. Stopping the player without it leaves the two disagreeing:
+         * the video stops and the button goes on offering to stop it. Pressing the button does
+         * both, and leaves everything Sync draws from it right.
+         */
         private void playOrPause() {
+            View button = syncsOwnButton();
+            if (button != null) {
+                // Selected is Sync's way of saying the video is already stopped.
+                boolean paused = button.isSelected();
+                button.performClick();
+                overlay.flash(overlay.describePaused(!paused));
+                return;
+            }
+
+            // Nothing to press, as in a feed: stop the player itself instead.
             Playback playback = Playback.of(player);
             if (playback == null) {
                 return;
@@ -541,6 +563,26 @@ public final class VideoGesturePatch {
             boolean playing = playback.isPlaying();
             playback.setPlaying(!playing);
             overlay.flash(overlay.describePaused(playing));
+        }
+
+        /**
+         * The play and pause button of the viewer the player is in, found by the name of its id.
+         * Names of resources survive where names in the code do not.
+         */
+        private View syncsOwnButton() {
+            try {
+                Context context = player.getContext();
+                int id = context.getResources().getIdentifier(
+                        PLAY_BUTTON, "id", context.getPackageName());
+                if (id == 0) {
+                    return null;
+                }
+                View found = player.getRootView().findViewById(id);
+                return found != null && found.isShown() ? found : null;
+            } catch (Exception ex) {
+                Logger.printInfo(() -> "Could not find the play button: " + ex);
+                return null;
+            }
         }
     }
 }
