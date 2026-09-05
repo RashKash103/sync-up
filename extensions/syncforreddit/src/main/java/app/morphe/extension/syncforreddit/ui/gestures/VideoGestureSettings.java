@@ -71,6 +71,26 @@ public final class VideoGestureSettings {
         }
     }
 
+    /**
+     * Says what the settings were read as, and whether each was ever written, for as long as
+     * they are not taking effect. Reported once for a screen rather than for every touch.
+     */
+    static void report(Context context) {
+        SharedPreferences settings = store(context);
+        if (settings == null) {
+            Logger.printInfo(() -> "gestures: no settings to read");
+            return;
+        }
+        StringBuilder read = new StringBuilder();
+        for (String key : new String[]{DOUBLE_TAP, SEEK, SEEK_SPAN, SEEK_PRECISION,
+                SEEK_NEEDS_DOUBLE_TAP, VOLUME}) {
+            Object held = settings.getAll().get(key);
+            read.append(key.replace("sync_up_video_", "")).append('=')
+                    .append(held == null ? "unset" : held).append(' ');
+        }
+        Logger.printInfo(() -> "gestures: " + read);
+    }
+
     private static SharedPreferences store(Context context) {
         try {
             return PreferenceManager.getDefaultSharedPreferences(context);
