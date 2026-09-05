@@ -1,3 +1,9 @@
+## [1.6.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.9...v1.6.0-dev.10) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Keep the whole chrome up, not just the bar inside it ([9e1bf77](https://github.com/RashKash103/sync-up/commit/9e1bf770be6bbdeef768468d6bd46de1a693517d))
+
 ## [1.6.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.8...v1.6.0-dev.9) (2026-09-05)
 
 ## [1.6.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.7...v1.6.0-dev.8) (2026-09-05)
