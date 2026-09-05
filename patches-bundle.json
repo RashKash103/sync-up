@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-05T19:53:16",
-  "description": "## [1.6.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.4...v1.6.0-dev.5) (2026-09-05)\n\n### 🐛 Bug Fixes\n\n* Put the volume gesture back on the device's own volume ([181b218](https://github.com/RashKash103/sync-up/commit/181b218d361b0976acf33b09d4fe34d9376966e8))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.6.0-dev.5/patches-1.6.0-dev.5.mpp",
+  "created_at": "2026-09-05T20:15:49",
+  "description": "## [1.6.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.5...v1.6.0-dev.6) (2026-09-05)\n\n### 🐛 Bug Fixes\n\n* Play and pause by pressing Sync's own button ([8fbd324](https://github.com/RashKash103/sync-up/commit/8fbd324cf48ff540bae4c34fe06df6e3fee8059b))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.6.0-dev.6/patches-1.6.0-dev.6.mpp",
   "signature_download_url": "",
-  "version": "1.6.0-dev.5"
+  "version": "1.6.0-dev.6"
 }

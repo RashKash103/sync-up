@@ -1,3 +1,9 @@
+## [1.6.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.5...v1.6.0-dev.6) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Play and pause by pressing Sync's own button ([8fbd324](https://github.com/RashKash103/sync-up/commit/8fbd324cf48ff540bae4c34fe06df6e3fee8059b))
+
 ## [1.6.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.4...v1.6.0-dev.5) (2026-09-05)
 
 ### 🐛 Bug Fixes
