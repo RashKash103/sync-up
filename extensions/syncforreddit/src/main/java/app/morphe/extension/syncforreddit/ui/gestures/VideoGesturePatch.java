@@ -591,6 +591,10 @@ public final class VideoGesturePatch {
             for (long delay : new long[]{150, 400}) {
                 keepingControls.postDelayed(() -> keepControlsShowing(delay), delay);
             }
+            // Nothing was ever found put away inside that window, though the bar plainly goes.
+            // Watch it for a while afterwards instead, and say what it and what it sits in are
+            // doing, rather than guessing again at when it happens.
+            watchTheBar();
         }
 
         private void keepControlsShowing(long after) {
@@ -618,6 +622,53 @@ public final class VideoGesturePatch {
                 }
             } catch (Exception ex) {
                 Logger.printInfo(() -> "Could not put the controls back: " + ex);
+            }
+        }
+
+        /**
+         * Follows the seek bar for a few seconds after a double tap, reporting anything that
+         * would take it off the screen: its own state, and that of what it sits in, since a
+         * parent put away or slid aside takes its children with it.
+         */
+        private void watchTheBar() {
+            View bar = controlNamed("image_gif_seek_wrapper");
+            if (bar == null) {
+                Logger.printInfo(() -> "controls: no seek bar to watch");
+                return;
+            }
+            for (long at = 200; at <= 3000; at += 200) {
+                long when = at;
+                keepingControls.postDelayed(() -> {
+                    String state = stateOf(bar, "bar");
+                    ViewParent parent = bar.getParent();
+                    if (parent instanceof View) {
+                        state += " " + stateOf((View) parent, "in");
+                    }
+                    if (state.contains("!")) {
+                        String said = state;
+                        Logger.printInfo(() -> "controls: " + when + "ms " + said);
+                    }
+                }, when);
+            }
+        }
+
+        /** What a view is doing, marked where it is anything but plainly on the screen. */
+        private String stateOf(View view, String called) {
+            boolean shown = view.getVisibility() == View.VISIBLE && view.getAlpha() >= 1f
+                    && view.getTranslationY() == 0f && view.getHeight() > 0;
+            return called + (shown ? "=shown" : "!vis=" + view.getVisibility()
+                    + ",alpha=" + view.getAlpha() + ",y=" + view.getTranslationY()
+                    + ",h=" + view.getHeight());
+        }
+
+        private View controlNamed(String named) {
+            try {
+                Context context = player.getContext();
+                int id = context.getResources().getIdentifier(
+                        named, "id", context.getPackageName());
+                return id == 0 ? null : player.getRootView().findViewById(id);
+            } catch (Exception ex) {
+                return null;
             }
         }
 
