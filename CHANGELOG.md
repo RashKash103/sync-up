@@ -1,3 +1,5 @@
+## [1.6.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.8...v1.6.0-dev.9) (2026-09-05)
+
 ## [1.6.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.7...v1.6.0-dev.8) (2026-09-05)
 
 ### 🐛 Bug Fixes
