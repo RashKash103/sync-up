@@ -332,6 +332,16 @@ is in [NOTICE](NOTICE). Two things constrain the code:
 - Semantic commit messages; the release version and changelog are generated from them.
   `feat:` minor, `fix:`/`bump:`/`perf:` patch, `chore:` no release.
 - Work on `dev`. `main` is stable releases only, reached by merging `dev` (not squashing).
+- **Squash the steps of a fix before `main` sees them.** A bug that took several attempts
+  belongs in the stable changelog as the fix that worked, not as the attempts: `main` is merged
+  rather than squashed, so every commit on `dev` reaches the notes. Prefer not creating the
+  noise in the first place — ship an attempt on `build(Needs bump):`, which publishes a
+  prerelease and is hidden from the notes, and keep `fix:`/`feat:` for the version confirmed to
+  work. Where attempts have already gone out under those types, fold them together on `dev`
+  before opening the merge. Rewriting commits that have already been released strands the git
+  notes semantic-release keys by commit SHA (`refs/notes/semantic-release-*`), and the next
+  release fails until they are re-attached, so squash before the prerelease that supersedes
+  them rather than after.
 - **Diagnostics go on `chore:` commits.** Because `main` is merged rather than squashed, every
   commit on `dev` appears in the stable changelog, and a release that reads as six entries about
   a diagnostic that no longer exists is worse than no entry at all. A patch written to answer a
