@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-05T20:15:49",
-  "description": "## [1.6.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.5...v1.6.0-dev.6) (2026-09-05)\n\n### 🐛 Bug Fixes\n\n* Play and pause by pressing Sync's own button ([8fbd324](https://github.com/RashKash103/sync-up/commit/8fbd324cf48ff540bae4c34fe06df6e3fee8059b))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.6.0-dev.6/patches-1.6.0-dev.6.mpp",
+  "created_at": "2026-09-05T20:32:45",
+  "description": "## [1.6.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.6...v1.6.0-dev.7) (2026-09-05)\n\n### 🐛 Bug Fixes\n\n* Read the settings Sync actually wrote, and leave the controls up ([10e014f](https://github.com/RashKash103/sync-up/commit/10e014f42ff64b65ecdb248579e6d84d47c39b6a))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.6.0-dev.7/patches-1.6.0-dev.7.mpp",
   "signature_download_url": "",
-  "version": "1.6.0-dev.6"
+  "version": "1.6.0-dev.7"
 }

@@ -1,3 +1,9 @@
+## [1.6.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.6...v1.6.0-dev.7) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Read the settings Sync actually wrote, and leave the controls up ([10e014f](https://github.com/RashKash103/sync-up/commit/10e014f42ff64b65ecdb248579e6d84d47c39b6a))
+
 ## [1.6.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.5...v1.6.0-dev.6) (2026-09-05)
 
 ### 🐛 Bug Fixes
