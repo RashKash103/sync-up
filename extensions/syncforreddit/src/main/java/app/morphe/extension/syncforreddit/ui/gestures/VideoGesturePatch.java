@@ -53,20 +53,6 @@ public final class VideoGesturePatch {
     /** Sync's own play and pause button, in the viewer the player is opened in. */
     private static final String PLAY_BUTTON = "image_gif_controls";
 
-    /**
-     * What a paused video should not be left without: the whole chrome, which a tap puts away
-     * and brings back as one, and the controls inside it.
-     *
-     * <p>The chrome comes first. Holding the bar up inside a container that has been put away
-     * shows nothing at all, which is what made an earlier attempt at this look like it had
-     * worked while the bar stayed gone.
-     */
-    private static final String[] CONTROLS =
-            {"coordinator", "image_gif_controls", "image_gif_seek_wrapper", "image_gif_time"};
-
-    /** Below this a video is too short for Sync to offer a seek bar for it at all. */
-    private static final int WORTH_SEEKING_MS = 1000;
-
     /** How often the picture is moved while a seek is being dragged out. */
     private static final long SEEK_PREVIEW_MS = 60;
 
@@ -170,8 +156,6 @@ public final class VideoGesturePatch {
         private MotionEvent heldDown;
         private MotionEvent heldUp;
         private final Handler afterTheTap = new Handler(Looper.getMainLooper());
-        /** Kept apart from the tap's own, which a further tap cancels. */
-        private final Handler keepingControls = new Handler(Looper.getMainLooper());
 
         Gestures(CustomExoPlayerView player, View.OnTouchListener behind) {
             this.player = player;
@@ -182,31 +166,16 @@ public final class VideoGesturePatch {
 
         @Override
         public boolean onTouch(View view, MotionEvent event) {
-            int before = doing;
-            Boolean handled = null;
             try {
-                handled = interpret(view, event);
+                Boolean handled = interpret(view, event);
+                if (handled != null) {
+                    return handled;
+                }
             } catch (Exception ex) {
                 Logger.printInfo(() -> "Could not read the gesture: " + ex);
                 doing = PASSED_ON;
             }
-            GestureTrace.touch(event, named(before) + ">" + named(doing),
-                    handled == null ? "handed on" : handled ? "taken" : "declined",
-                    controlNamed("coordinator"));
-            if (handled != null) {
-                return handled;
-            }
             return behind != null && behind.onTouch(view, event);
-        }
-
-        private String named(int gesture) {
-            switch (gesture) {
-                case IDLE: return "idle";
-                case UNDECIDED: return "undecided";
-                case SEEKING: return "seeking";
-                case CHANGING_VOLUME: return "volume";
-                default: return "handedOn";
-            }
         }
 
         /**
@@ -239,7 +208,6 @@ public final class VideoGesturePatch {
             startingVolume = -1;
 
             if (afterDoubleTap && anyDoubleTapGesture()) {
-                GestureTrace.note("second tap, the first is dropped");
                 // The second tap. The first is still held, and now never needs handing on.
                 dropHeldTap();
                 // Up and down after a double tap is ours, and what the player sits in must not
@@ -331,16 +299,19 @@ public final class VideoGesturePatch {
                 } else if (still) {
                     // Play and pause is off, but the bar should still not come and go for a
                     // gesture nothing was asked to do anything about.
-                    keepControlsShowing();
-                }
+                    }
                 // Not a lift to count a further tap from: three taps are two gestures, not three.
                 lastLifted = 0;
                 return Boolean.TRUE;
             }
 
             // A first tap that could still become a double one is held rather than handed on,
-            // and handed on late if no second tap arrives.
-            if (was == PASSED_ON && still && anyDoubleTapGesture()) {
+            // and handed on late if no second tap arrives. A press held long enough to be a long
+            // press is not one of those: it has already been answered as a long press, and
+            // holding its lift back would hand it on later as a tap on top of that.
+            boolean brief = event.getEventTime() - event.getDownTime()
+                    < ViewConfiguration.getLongPressTimeout();
+            if (was == PASSED_ON && still && brief && anyDoubleTapGesture()) {
                 holdTap(view, event);
                 return Boolean.TRUE;
             }
@@ -368,23 +339,29 @@ public final class VideoGesturePatch {
          * and whatever the view sits in is asked to stop taking sideways drags for its own.
          */
         private Boolean claim(View view, int gesture) {
-            GestureTrace.note("claiming " + named(gesture));
             doing = gesture;
             dropHeldTap();
-            if (behind != null) {
-                MotionEvent cancel = MotionEvent.obtain(
-                        0, 0, MotionEvent.ACTION_CANCEL, 0f, 0f, 0);
-                try {
-                    behind.onTouch(view, cancel);
-                } finally {
-                    cancel.recycle();
-                }
-            }
+            cancelBehind(view);
             ViewParent parent = view.getParent();
             if (parent != null) {
                 parent.requestDisallowInterceptTouchEvent(true);
             }
             return Boolean.TRUE;
+        }
+
+        /** Tells the listener behind that the touch it was following is over. */
+        private void cancelBehind(View view) {
+            if (behind == null) {
+                return;
+            }
+            MotionEvent cancel = MotionEvent.obtain(0, 0, MotionEvent.ACTION_CANCEL, 0f, 0f, 0);
+            try {
+                behind.onTouch(view, cancel);
+            } catch (Exception ex) {
+                Logger.printInfo(() -> "Could not end the touch behind: " + ex);
+            } finally {
+                cancel.recycle();
+            }
         }
 
         private boolean anyDoubleTapGesture() {
@@ -520,7 +497,10 @@ public final class VideoGesturePatch {
          * none does, so that a tap meant on its own still reaches the app.
          */
         private void holdTap(View view, MotionEvent up) {
-            GestureTrace.note("holding a tap for " + ViewConfiguration.getDoubleTapTimeout() + "ms");
+            // Holding the lift back without saying so leaves the listener behind believing the
+            // finger is still down, and half a second later it calls that a long press, which
+            // Sync answers by turning the chrome of the viewer off.
+            cancelBehind(view);
             releaseHeldUp();
             heldUp = MotionEvent.obtain(up);
             afterTheTap.removeCallbacksAndMessages(null);
@@ -536,7 +516,6 @@ public final class VideoGesturePatch {
             heldUp = null;
             try {
                 if (behind != null && down != null && up != null) {
-                    GestureTrace.noteWhere("handing a held tap on to " + behind.getClass().getName());
                     behind.onTouch(view, down);
                     behind.onTouch(view, up);
                 }
@@ -589,9 +568,7 @@ public final class VideoGesturePatch {
             if (button != null) {
                 // Selected is Sync's way of saying the video is already stopped.
                 boolean paused = button.isSelected();
-                GestureTrace.note("pressing Sync's button, which says paused=" + paused);
                 button.performClick();
-                keepControlsShowing();
                 overlay.flash(overlay.describePaused(!paused));
                 return;
             }
@@ -604,57 +581,6 @@ public final class VideoGesturePatch {
             boolean playing = playback.isPlaying();
             playback.setPlaying(!playing);
             overlay.flash(overlay.describePaused(playing));
-        }
-
-        /**
-         * Puts the controls back where something has taken them away, so that a video paused by
-         * a double tap can be played again from the bar as well as by another one.
-         */
-        private void keepControlsShowing() {
-            keepControlsShowing(0);
-            // Whatever takes them away has not been found, and does not do it at once: assert it
-            // again across the moment a tap would be answered, and say what was seen each time.
-            keepingControls.removeCallbacksAndMessages(null);
-            for (long delay : new long[]{150, 400}) {
-                keepingControls.postDelayed(() -> keepControlsShowing(delay), delay);
-            }
-        }
-
-        private void keepControlsShowing(long unused) {
-            if (player.getDuration() <= WORTH_SEEKING_MS) {
-                // Too short for Sync to draw a seek bar for, so there is none to put back.
-                return;
-            }
-            try {
-                Context context = player.getContext();
-                View root = player.getRootView();
-                for (String named : CONTROLS) {
-                    int id = context.getResources().getIdentifier(
-                            named, "id", context.getPackageName());
-                    View control = id == 0 ? null : root.findViewById(id);
-                    if (control == null) {
-                        continue;
-                    }
-                    if (control.getVisibility() != View.VISIBLE) {
-                        GestureTrace.note("putting " + named + " back, " + unused + "ms after");
-                    }
-                    control.setVisibility(View.VISIBLE);
-                    control.setAlpha(1f);
-                }
-            } catch (Exception ex) {
-                Logger.printInfo(() -> "Could not put the controls back: " + ex);
-            }
-        }
-
-        private View controlNamed(String named) {
-            try {
-                Context context = player.getContext();
-                int id = context.getResources().getIdentifier(
-                        named, "id", context.getPackageName());
-                return id == 0 ? null : player.getRootView().findViewById(id);
-            } catch (Exception ex) {
-                return null;
-            }
         }
 
         /**
