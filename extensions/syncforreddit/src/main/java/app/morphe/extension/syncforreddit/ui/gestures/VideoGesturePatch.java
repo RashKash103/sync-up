@@ -4,6 +4,7 @@ import static app.morphe.extension.syncforreddit.ui.gestures.VideoGestureSetting
 import static app.morphe.extension.syncforreddit.ui.gestures.VideoGestureSettings.DOUBLE_TAP;
 import static app.morphe.extension.syncforreddit.ui.gestures.VideoGestureSettings.SEEK;
 import static app.morphe.extension.syncforreddit.ui.gestures.VideoGestureSettings.SEEK_NEEDS_DOUBLE_TAP;
+import static app.morphe.extension.syncforreddit.ui.gestures.VideoGestureSettings.SEEK_PRECISION;
 import static app.morphe.extension.syncforreddit.ui.gestures.VideoGestureSettings.SEEK_SPAN;
 import static app.morphe.extension.syncforreddit.ui.gestures.VideoGestureSettings.VOLUME;
 
@@ -449,10 +450,13 @@ public final class VideoGesturePatch {
          * video player is expected to behave.
          */
         private int precisionBand(View view, float upOrDown) {
+            int middleOnly = PRECISION.length / 2;
+            if (!VideoGestureSettings.enabled(view.getContext(), SEEK_PRECISION, true)) {
+                return middleOnly;
+            }
             float band = PRECISION_BAND_DP * view.getResources().getDisplayMetrics().density;
-            int middle = PRECISION.length / 2;
             int steps = Math.round(upOrDown / band);
-            return Math.max(0, Math.min(PRECISION.length - 1, middle + steps));
+            return Math.max(0, Math.min(PRECISION.length - 1, middleOnly + steps));
         }
 
         private void resumePlaying() {

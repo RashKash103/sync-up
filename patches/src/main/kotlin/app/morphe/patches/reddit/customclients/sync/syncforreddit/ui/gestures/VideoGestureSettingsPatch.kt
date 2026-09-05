@@ -95,6 +95,16 @@ internal val videoGestureSettingsPatch = resourcePatch(
             add(
                 CHECK_BOX,
                 mapOf(
+                    "android:key" to "sync_up_video_seek_precision",
+                    "android:title" to "Change seek precision while dragging",
+                    "android:summary" to
+                        "Drag down while seeking for finer steps, up for larger ones",
+                    "android:defaultValue" to "true",
+                ),
+            )
+            add(
+                CHECK_BOX,
+                mapOf(
                     "android:key" to "sync_up_video_seek_double_tap",
                     "android:title" to "Double tap before seeking",
                     "android:summary" to "Seek only after a double tap is held, not on any drag",

@@ -20,6 +20,7 @@ public final class VideoGestureSettings {
     static final String DOUBLE_TAP = "sync_up_video_double_tap";
     static final String SEEK = "sync_up_video_seek";
     static final String SEEK_NEEDS_DOUBLE_TAP = "sync_up_video_seek_double_tap";
+    static final String SEEK_PRECISION = "sync_up_video_seek_precision";
 
     /** Never. */
     static final int SEEK_NEVER = 0;
