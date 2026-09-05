@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-05T20:32:45",
-  "description": "## [1.6.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.6...v1.6.0-dev.7) (2026-09-05)\n\n### 🐛 Bug Fixes\n\n* Read the settings Sync actually wrote, and leave the controls up ([10e014f](https://github.com/RashKash103/sync-up/commit/10e014f42ff64b65ecdb248579e6d84d47c39b6a))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.6.0-dev.7/patches-1.6.0-dev.7.mpp",
+  "created_at": "2026-09-05T20:46:17",
+  "description": "## [1.6.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.7...v1.6.0-dev.8) (2026-09-05)\n\n### 🐛 Bug Fixes\n\n* Hold the controls still across a double tap, and say when they move ([9dda32e](https://github.com/RashKash103/sync-up/commit/9dda32e736f83ee4a3a2be86463151d37f755198))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.6.0-dev.8/patches-1.6.0-dev.8.mpp",
   "signature_download_url": "",
-  "version": "1.6.0-dev.7"
+  "version": "1.6.0-dev.8"
 }

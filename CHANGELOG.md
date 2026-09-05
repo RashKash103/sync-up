@@ -1,3 +1,9 @@
+## [1.6.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.7...v1.6.0-dev.8) (2026-09-05)
+
+### 🐛 Bug Fixes
+
+* Hold the controls still across a double tap, and say when they move ([9dda32e](https://github.com/RashKash103/sync-up/commit/9dda32e736f83ee4a3a2be86463151d37f755198))
+
 ## [1.6.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.6.0-dev.6...v1.6.0-dev.7) (2026-09-05)
 
 ### 🐛 Bug Fixes
