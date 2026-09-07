@@ -124,11 +124,17 @@ public final class TranslateNow {
      */
     static String by(String service, String text, String from, String into,
                      boolean asWritten) throws Exception {
-        if (TranslationSettings.DEEPL.equals(service)
-                || TranslationSettings.GOOGLE.equals(service)) {
-            // Their settings are there; what stands behind them is not written yet, so the
-            // device answers rather than nothing happening at all.
-            Logger.printInfo(() -> service + " cannot translate yet, so this device did");
+        if (TranslationSettings.DEEPL.equals(service)) {
+            Context context = Utils.getContext();
+            return asWritten
+                    ? DeepLTranslator.translateMarkdown(context, text, from, into)
+                    : DeepLTranslator.translate(context, text, from, into);
+        }
+
+        if (TranslationSettings.GOOGLE.equals(service)) {
+            // Its settings are there; what stands behind them is not written yet, so the device
+            // answers rather than nothing happening at all.
+            Logger.printInfo(() -> "Google Cloud cannot translate yet, so this device did");
         }
         return asWritten
                 ? OnDeviceTranslator.translateMarkdown(text, from, into)
