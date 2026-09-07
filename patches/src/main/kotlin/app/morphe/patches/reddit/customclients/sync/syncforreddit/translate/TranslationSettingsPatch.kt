@@ -55,9 +55,9 @@ internal val translationSettingsPatch = resourcePatch(
 
             array(
                 "sync_up_translate_context",
-                "The post it is under", "The post and the comments above it", "Nothing",
+                "None", "The post", "The post and the comments above it",
             )
-            array("sync_up_translate_context_values", "post", "thread", "none")
+            array("sync_up_translate_context_values", "none", "post", "thread")
 
             array(
                 "sync_up_translate_keep",
@@ -106,6 +106,7 @@ internal val translationSettingsPatch = resourcePatch(
                     LIST,
                     mapOf(
                         "android:key" to "sync_up_translate_service",
+                        "android:summary" to "%s",
                         "android:title" to "Translate with",
                         "android:entries" to "@array/sync_up_translate_services",
                         "android:entryValues" to "@array/sync_up_translate_service_values",
@@ -116,6 +117,7 @@ internal val translationSettingsPatch = resourcePatch(
                     LIST,
                     mapOf(
                         "android:key" to "sync_up_translate_language",
+                        "android:summary" to "%s",
                         "android:title" to "Translate into",
                         "android:entries" to "@array/sync_up_translate_languages",
                         "android:entryValues" to "@array/sync_up_translate_language_values",
@@ -142,7 +144,8 @@ internal val translationSettingsPatch = resourcePatch(
                     LIST,
                     mapOf(
                         "android:key" to "sync_up_translate_deepl_context",
-                        "android:title" to "Send along with a comment",
+                        "android:summary" to "%s",
+                        "android:title" to "Context sent with a comment",
                         "android:entries" to "@array/sync_up_translate_context",
                         "android:entryValues" to "@array/sync_up_translate_context_values",
                         "android:defaultValue" to "thread",
@@ -176,6 +179,7 @@ internal val translationSettingsPatch = resourcePatch(
                     LIST,
                     mapOf(
                         "android:key" to "sync_up_translate_keep",
+                        "android:summary" to "%s",
                         "android:title" to "Keep translations for",
                         "android:entries" to "@array/sync_up_translate_keep",
                         "android:entryValues" to "@array/sync_up_translate_keep_values",
