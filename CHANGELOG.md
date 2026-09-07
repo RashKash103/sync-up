@@ -1,3 +1,9 @@
+## [1.7.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.4...v1.7.0-dev.5) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Put the translation settings in a screen Sync already has ([5efb264](https://github.com/RashKash103/sync-up/commit/5efb264a8d7b2e5fdc24aa5113fda6bf418f6387))
+
 ## [1.7.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.3...v1.7.0-dev.4) (2026-09-07)
 
 ### ✨ New Features
