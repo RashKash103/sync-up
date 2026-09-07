@@ -21,6 +21,11 @@ public class Preference {
         throw new UnsupportedOperationException("Stub");
     }
 
+    /** isEnabled: whether the row can be used, its dependencies included. */
+    public boolean I() {
+        throw new UnsupportedOperationException("Stub");
+    }
+
     /** notifyChanged: draw the row again, after something it shows has changed. */
     public void M() {
         throw new UnsupportedOperationException("Stub");

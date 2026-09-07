@@ -1,7 +1,9 @@
 package app.morphe.patches.reddit.customclients.sync.syncforreddit.translate
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -18,6 +20,28 @@ private const val SCREEN_CLASS_DESCRIPTOR =
 private const val SCREEN_FOR_METHOD = "screenFor(I)Lpa/d;"
 
 private const val TITLE_FOR_METHOD = "titleFor(I)Ljava/lang/String;"
+
+private const val ROWS_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/translate/SettingsRows;"
+
+private const val DRAW_ENABLED_METHOD =
+    "drawEnabled(Landroidx/preference/Preference;Landroidx/preference/h;)V"
+
+/** The kinds of row Sync draws itself, each of which sets its own colours as it does. */
+private val rowKinds = listOf(
+    "SyncPreference;",
+    "SyncListPreference;",
+    "SyncCheckBoxPreference;",
+)
+
+/** Where a row of a given kind draws itself. */
+private fun drawsRow(kind: String) = Fingerprint(
+    parameters = listOf("Landroidx/preference/h;"),
+    returnType = "V",
+    custom = { method, classDef ->
+        classDef.type.endsWith(kind) && method.name == "S"
+    },
+)
 
 /** What every screen of the settings is looked up in, and what it says when it does not know. */
 private const val UNKNOWN_SCREEN = "Unsupported preference fragment."
@@ -94,6 +118,18 @@ val translatePatch = bytecodePatch(
                 """,
                 ExternalLabel("not_ours", getInstruction<Instruction>(0)),
             )
+        }
+
+        // A row that cannot be used should look like it. Sync sets the colour of every row's
+        // words as it draws them, whatever state the row is in, so the state is said again
+        // afterwards, over the whole row, once for every kind of row there is.
+        rowKinds.forEach { kind ->
+            drawsRow(kind).method.apply {
+                addInstructions(
+                    instructions.count() - 1,
+                    "invoke-static { p0, p1 }, $ROWS_CLASS_DESCRIPTOR->$DRAW_ENABLED_METHOD"
+                )
+            }
         }
     }
 }
