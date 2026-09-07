@@ -3,12 +3,18 @@ package app.morphe.patches.reddit.customclients.sync.syncforreddit.translate
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstruction
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -28,6 +34,23 @@ private const val NOW_CLASS_DESCRIPTOR =
 
 private const val INSTEAD_METHOD =
     "instead(Lda/d;Ljava/lang/String;Ljava/lang/String;)V"
+
+private const val SETTINGS_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/translate/TranslationSettings;"
+
+private const val OFFERED_METHOD = "offered()Z"
+
+/** What Sync calls the row, naming a service that is no longer necessarily the one used. */
+private const val TRANSLATE_ROW = "Translate comment with Google"
+
+private const val TRANSLATE_ROW_INSTEAD = "Translate comment"
+
+/** Whether the feature has been turned on from afar, which nothing here waits on. */
+private val turnedOnFromAfarFingerprint = Fingerprint(
+    parameters = emptyList(),
+    returnType = "Z",
+    strings = listOf("ultra_translate"),
+)
 
 private const val ROWS_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/translate/SettingsRows;"
@@ -155,6 +178,69 @@ val translatePatch = bytecodePatch(
                 return-void
                 """
             )
+        }
+
+        // Whether translation is offered is ours to answer. Sync asks two things before it
+        // offers it, one after the other: whether the copy is paid for, and whether the feature
+        // was turned on from afar. Neither bears on translating on the device or with one's own
+        // key, so both are answered from the setting instead. The pair is only replaced where
+        // the two questions sit together, which is the two menus that offer translating; the
+        // paid-copy question is asked all over the app and is left alone everywhere else.
+        val offered = "invoke-static { }, $SETTINGS_CLASS_DESCRIPTOR->$OFFERED_METHOD"
+
+        val turnedOnFromAfar = turnedOnFromAfarFingerprint.originalMethod
+        val askedFromAfar = turnedOnFromAfar.name
+        val askedFromAfarBy = turnedOnFromAfar.definingClass
+
+        val gates = mutableListOf<Triple<ClassDef, Method, Pair<Int, Int>>>()
+
+        classDefForEach { candidate ->
+            if (candidate.type == askedFromAfarBy) return@classDefForEach
+
+            candidate.methods.forEach eachMethod@{ method ->
+                val instructions =
+                    method.implementation?.instructions?.toList() ?: return@eachMethod
+
+                val fromAfar = instructions.indexOfFirst {
+                    val called = it.getReference<MethodReference>() ?: return@indexOfFirst false
+                    called.name == askedFromAfar && called.definingClass == askedFromAfarBy
+                }
+                if (fromAfar < 0) return@eachMethod
+
+                // The paid-copy question, asked a few instructions earlier and branched on.
+                val paidFor = (maxOf(0, fromAfar - 4) until fromAfar).lastOrNull { at ->
+                    val called = instructions[at].getReference<MethodReference>()
+                    instructions[at].opcode == Opcode.INVOKE_STATIC &&
+                            called != null &&
+                            called.returnType == "Z" &&
+                            called.parameterTypes.isEmpty() &&
+                            called.definingClass != askedFromAfarBy
+                } ?: return@eachMethod
+
+                gates += Triple(candidate, method, paidFor to fromAfar)
+            }
+        }
+
+        gates.forEach { (candidate, method, asked) ->
+            mutableClassDefBy(candidate).methods.first {
+                it.name == method.name &&
+                        it.parameters.map { parameter -> parameter.type } ==
+                        method.parameters.map { parameter -> parameter.type }
+            }.apply {
+                replaceInstruction(asked.first, offered)
+                replaceInstruction(asked.second, offered)
+
+                // Sync names the service it uses in the row it draws, and it is no longer the
+                // one doing the work.
+                implementation!!.instructions.toList().forEachIndexed { at, instruction ->
+                    if (instruction.opcode != Opcode.CONST_STRING) return@forEachIndexed
+                    val said = instruction.getReference<StringReference>()?.string
+                    if (said != TRANSLATE_ROW) return@forEachIndexed
+
+                    val register = (instruction as OneRegisterInstruction).registerA
+                    replaceInstruction(at, "const-string v$register, \"$TRANSLATE_ROW_INSTEAD\"")
+                }
+            }
         }
 
         // A row that cannot be used should look like it. Sync sets the colour of every row's

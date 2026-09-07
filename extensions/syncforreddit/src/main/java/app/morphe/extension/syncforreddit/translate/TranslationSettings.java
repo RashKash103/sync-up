@@ -37,6 +37,22 @@ public final class TranslationSettings {
         return bool(context, ENABLED, true);
     }
 
+    /**
+     * Whether to offer translation at all, asked where the app asks whether the feature is to be
+     * had. It answers for the two questions the app asks: whether this is a paid copy, and
+     * whether the feature has been turned on from afar. Neither has anything to say about a
+     * translation done on the device or paid for with one's own key, so the setting answers
+     * instead.
+     */
+    public static boolean offered() {
+        try {
+            return enabled(app.morphe.extension.shared.Utils.getContext());
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not tell whether to offer translation: " + ex);
+            return true;
+        }
+    }
+
     /** Which service does the translating. */
     public static String service(Context context) {
         return text(context, SERVICE, ON_DEVICE);
