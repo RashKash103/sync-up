@@ -240,6 +240,31 @@ service being asked.
   - Volume moves the device's own volume, in the steps the device has.
   - A long press still shows and hides the viewer's controls, as it does without the patch.
 
+#### Translation
+
+- **Translate posts and comments** — Translates a post or a comment where it stands, in place
+  of the text rather than under it. Everything about it is set up under *Translation* in Sync's
+  own settings, and nothing is translated until asked for.
+  - **Where it is offered.** Sync's own translation is a paid feature that also waits on a flag
+    it is no longer given, so its *Translate* entries never appear. Both questions are answered
+    from the setting instead, and only where they are asked about translating — the rest of the
+    app is untouched.
+  - **On this device by default.** ML Kit translates without sending the text anywhere, using a
+    model fetched the first time a pair of languages is asked for. The first translation into a
+    new language waits on a few megabytes; the rest are quick.
+  - **What was written is kept**, so asking a second time puts the original back. The line under
+    the author says which language it is being read from while it stands translated, beside the
+    note about restored text where a comment is both.
+  - **Markdown survives.** Sync translates the text as it is drawn, so links come back as their
+    own words and the paragraphs run together. Here the text as written is translated, a line at
+    a time, with everything that is not language — where a link points, an address, the name of
+    a subreddit or a person, code, emotes, spoilers, and the marks that make text bold or
+    italic — held out of the translation and put back after. Where a service does not give one
+    of those back, that line is translated again in pieces, which reads less well and cannot
+    break a link.
+  - Translations are kept for as long as the setting says, so reading a thread again does not
+    pay for it twice. What is being kept, and clearing it, are in the same settings.
+
 #### Other
 
 - **Enable Android debugging** — Inherited from upstream, off by default, and applies to any
