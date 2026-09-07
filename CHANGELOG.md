@@ -1,3 +1,10 @@
+## [1.7.0-dev.26](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.25...v1.7.0-dev.26) (2026-09-07)
+
+### ✨ New Features
+
+* Translate through DeepL with a key of one's own ([37cd69e](https://github.com/RashKash103/sync-up/commit/37cd69e954a0f198b5dec9045fe5b6a08e28044d))
+* Translate through Google Cloud with a key of one's own ([fedf81a](https://github.com/RashKash103/sync-up/commit/fedf81a6b9e65ab54a02d8e1978cb487d12a3c18))
+
 ## [1.7.0-dev.25](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.24...v1.7.0-dev.25) (2026-09-07)
 
 ## [1.7.0-dev.24](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.23...v1.7.0-dev.24) (2026-09-07)
