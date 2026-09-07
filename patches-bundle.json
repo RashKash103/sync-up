@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-07T18:19:07",
-  "description": "## [1.7.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.5...v1.7.0-dev.6) (2026-09-07)\n\n### 🐛 Bug Fixes\n\n* Let a translation setting show what it is set to ([127e0af](https://github.com/RashKash103/sync-up/commit/127e0af16363a63aa8b8f6c1676ea8bf997f7b27))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.6/patches-1.7.0-dev.6.mpp",
+  "created_at": "2026-09-07T18:34:57",
+  "description": "## [1.7.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.6...v1.7.0-dev.7) (2026-09-07)\n\n### 🐛 Bug Fixes\n\n* Show what a translation setting is set to, and say what context means ([80bdc52](https://github.com/RashKash103/sync-up/commit/80bdc52a068e3cb447dfe0b9237d66da5bf1a007))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.7/patches-1.7.0-dev.7.mpp",
   "signature_download_url": "",
-  "version": "1.7.0-dev.6"
+  "version": "1.7.0-dev.7"
 }

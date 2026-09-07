@@ -1,3 +1,9 @@
+## [1.7.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.6...v1.7.0-dev.7) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Show what a translation setting is set to, and say what context means ([80bdc52](https://github.com/RashKash103/sync-up/commit/80bdc52a068e3cb447dfe0b9237d66da5bf1a007))
+
 ## [1.7.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.5...v1.7.0-dev.6) (2026-09-07)
 
 ### 🐛 Bug Fixes
