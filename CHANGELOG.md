@@ -1,3 +1,9 @@
+## [1.7.0-dev.27](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.26...v1.7.0-dev.27) (2026-09-07)
+
+### ✨ New Features
+
+* Offer translation for any post with words in it, title included ([241219d](https://github.com/RashKash103/sync-up/commit/241219de89abd4aac8ec0dff2e6e8ab126c77f4d))
+
 ## [1.7.0-dev.26](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.25...v1.7.0-dev.26) (2026-09-07)
 
 ### ✨ New Features
