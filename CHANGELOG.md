@@ -1,3 +1,9 @@
+## [1.7.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.11...v1.7.0-dev.12) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Fade a row before it draws, while the holder is still the holder ([ec6ca64](https://github.com/RashKash103/sync-up/commit/ec6ca6459095501f99b0d24e9d9e839207542db5))
+
 ## [1.7.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.10...v1.7.0-dev.11) (2026-09-07)
 
 ### 🐛 Bug Fixes
