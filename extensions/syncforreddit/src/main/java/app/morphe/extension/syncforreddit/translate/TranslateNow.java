@@ -132,9 +132,10 @@ public final class TranslateNow {
         }
 
         if (TranslationSettings.GOOGLE.equals(service)) {
-            // Its settings are there; what stands behind them is not written yet, so the device
-            // answers rather than nothing happening at all.
-            Logger.printInfo(() -> "Google Cloud cannot translate yet, so this device did");
+            Context context = Utils.getContext();
+            return asWritten
+                    ? GoogleTranslator.translateMarkdown(context, text, from, into)
+                    : GoogleTranslator.translate(context, text, from, into);
         }
         return asWritten
                 ? OnDeviceTranslator.translateMarkdown(text, from, into)

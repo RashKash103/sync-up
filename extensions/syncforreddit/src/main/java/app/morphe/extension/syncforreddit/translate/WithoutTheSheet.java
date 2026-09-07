@@ -148,7 +148,11 @@ public final class WithoutTheSheet {
                 Originals.remember(id, written, from);
             } catch (Exception ex) {
                 Logger.printInfo(() -> "Could not translate: " + OnDeviceTranslator.because(ex));
-                say("Could not translate");
+                // A service says what was wrong with a key or an allowance, and that is worth
+                // reading; anything with no message of its own is not.
+                String said = ex.getMessage();
+                say(said == null || said.isEmpty()
+                        ? "Could not translate" : "Could not translate: " + said);
             }
         }, "sync-up-translate").start();
     }
