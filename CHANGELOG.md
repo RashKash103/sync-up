@@ -1,3 +1,9 @@
+## [1.7.0-dev.15](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.14...v1.7.0-dev.15) (2026-09-07)
+
+### ✨ New Features
+
+* Offer translating without a paid copy or the remote flag ([8db46d2](https://github.com/RashKash103/sync-up/commit/8db46d29780e92ae3029118d26757945179994ac))
+
 ## [1.7.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.13...v1.7.0-dev.14) (2026-09-07)
 
 ### ✨ New Features
