@@ -115,18 +115,37 @@ public final class WithoutTheSheet {
                     translated = already.text;
                     from = already.from;
                 } else {
-                    say("Translating…");
                     from = language == null || language.isEmpty()
                             || OnDeviceTranslator.UNKNOWN.equals(language)
                             ? OnDeviceTranslator.languageOf(justWords(written))
                             : language;
+
+                    if (OnDeviceTranslator.isTheSameLanguage(from, into)) {
+                        // Asking for English to be put into English wastes a download and ends
+                        // with the same text and a note saying it was translated.
+                        say(already(from, into));
+                        return;
+                    }
+
+                    say("Translating…");
                     translated = TranslateNow.by(service, written, from, into, true);
                     TranslationCache.remember(context, written, service, into,
                             new TranslationCache.Translated(translated, from));
                 }
 
-                Originals.remember(id, written, from);
+                if (translated == null || translated.equals(written)) {
+                    // Nothing came of it: either it was already in the language wanted, or the
+                    // service gave back what it was given. Either way there is nothing to say
+                    // under the author and nothing to put back later.
+                    Logger.printInfo(() -> "The translation says what was written");
+                    say(already(from, into));
+                    return;
+                }
+
+                // Stored first, and only then remembered. What the line under an author says
+                // has to follow what the post says, and it cannot lead it.
                 store(context, id, isAComment, translated);
+                Originals.remember(id, written, from);
             } catch (Exception ex) {
                 Logger.printInfo(() -> "Could not translate: " + OnDeviceTranslator.because(ex));
                 say("Could not translate");
@@ -155,6 +174,12 @@ public final class WithoutTheSheet {
     private static String justWords(String written) {
         String words = NOT_WORDS.matcher(written).replaceAll(" ").trim();
         return words.length() <= ENOUGH_TO_TELL ? words : words.substring(0, ENOUGH_TO_TELL);
+    }
+
+    /** @return What to say where there was nothing to do. */
+    private static String already(String from, String into) {
+        String language = OnDeviceTranslator.nameOf(into);
+        return language == null ? "Already in that language" : "Already in " + language;
     }
 
     private static void say(String what) {

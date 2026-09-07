@@ -42,6 +42,12 @@ public final class InPlace {
             }
 
             String written = content.Y0() == A_COMMENT ? content.o() : content.P0();
+            if (translated == null || translated.equals(written)) {
+                // A translation that says exactly what was written is not one. Keeping it would
+                // put a note under the author about a post that plainly did not change.
+                Logger.printInfo(() -> "The translation says what was written, so it is not one");
+                return translated;
+            }
             Originals.remember(id, written, fromLanguage);
         } catch (Throwable ex) {
             // Whatever else happens, what was asked for is the translation.

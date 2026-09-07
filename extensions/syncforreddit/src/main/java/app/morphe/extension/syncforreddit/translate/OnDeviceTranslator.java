@@ -175,6 +175,26 @@ final class OnDeviceTranslator {
         return said.toString();
     }
 
+    /**
+     * @return Whether these are the same language, whatever else the tags say about them. A
+     *         post written in en-GB is not worth translating into en-US.
+     */
+    static boolean isTheSameLanguage(String one, String other) {
+        String first = named(one);
+        String second = named(other);
+        return first != null && first.equals(second);
+    }
+
+    /** @return What a language is called, for saying so, or null where it has no name here. */
+    static String nameOf(String tag) {
+        String language = named(tag);
+        if (language == null) {
+            return null;
+        }
+        String called = new java.util.Locale(language).getDisplayLanguage();
+        return called.isEmpty() || called.equalsIgnoreCase(language) ? null : called;
+    }
+
     /** @return Whether the library has a name for the language, and so can work with it. */
     static boolean knows(String languageTag) {
         try {

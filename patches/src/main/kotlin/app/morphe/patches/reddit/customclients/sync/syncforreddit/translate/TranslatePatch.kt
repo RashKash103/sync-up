@@ -10,11 +10,14 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstruction
+import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
@@ -39,6 +42,48 @@ private const val INSTEAD_METHOD =
     "instead(Lda/d;Ljava/lang/String;Ljava/lang/String;)V"
 
 private const val SHEET_CLASS_DESCRIPTOR = "Lda/d;"
+
+private const val LABELS_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/translate/Labels;"
+
+private const val FOR_COMMENT_METHOD = "forComment(Lxa/d;)Ljava/lang/String;"
+
+private const val NAME_THE_ROW_METHOD = "nameTheRow(Ljava/lang/Object;)V"
+
+private const val POST_MENU_CLASS =
+    "Lcom/laurencedawson/reddit_sync/ui/fragment_dialogs/bottom/PostMoreBottomSheetFragment;"
+
+/** What Sync calls the row it shows for translating a post. */
+private const val THE_TRANSLATE_ROW = "mTranslate"
+
+/** The model a menu is about, of which each of these sheets holds exactly one. */
+private const val THE_CONTENT = "Lxa/d;"
+
+/**
+ * Where a comment's menu builds its entries, one of which is the one that translates. Found by
+ * what that entry says rather than by the class, which has no name of its own left.
+ */
+private val namesTheCommentRowFingerprint = Fingerprint(
+    parameters = emptyList(),
+    returnType = "V",
+    custom = { method, _ ->
+        method.indexOfFirstInstruction {
+            getReference<StringReference>()?.string?.startsWith(TRANSLATE_ROW_INSTEAD) == true
+        } >= 0
+    },
+)
+
+/** Where a post's menu is made ready, which is where its rows are shown and named. */
+private val postMenuFingerprint = Fingerprint(
+    definingClass = POST_MENU_CLASS,
+    parameters = listOf("Landroid/view/View;", "Landroid/os/Bundle;"),
+    returnType = "V",
+    custom = { method, _ ->
+        method.indexOfFirstInstruction {
+            getReference<FieldReference>()?.name == THE_TRANSLATE_ROW
+        } >= 0
+    },
+)
 
 private const val WITHOUT_THE_SHEET_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/translate/WithoutTheSheet;"
@@ -240,6 +285,50 @@ val translatePatch = bytecodePatch(
                         (AccessFlags.PRIVATE.value or AccessFlags.PROTECTED.value).inv() or
                         AccessFlags.PUBLIC.value
             }
+
+        // Translating something already translated puts back what was written, so neither
+        // entry should still offer to translate it. Sync renames an entry itself where the same
+        // is true of saving, through the method used here.
+        postMenuFingerprint.method.apply {
+            val showsTheRow = indexOfFirstInstructionOrThrow {
+                getReference<FieldReference>()?.name == THE_TRANSLATE_ROW
+            }
+            val shown = indexOfFirstInstructionOrThrow(showsTheRow) {
+                getReference<MethodReference>()?.name == "setVisibility"
+            }
+
+            // Only the sheet is handed over: every register around here is holding something,
+            // one of them an argument the method was called with and reused as a local.
+            val sheet = getInstruction<TwoRegisterInstruction>(showsTheRow).registerB
+
+            addInstructions(
+                shown + 1,
+                "invoke-static { v$sheet }, $LABELS_CLASS_DESCRIPTOR->$NAME_THE_ROW_METHOD"
+            )
+        }
+
+        // A comment's menu is handed what its entry says, so what it says is answered instead.
+        // The register it is handed in carries nothing else, so writing over it is safe where
+        // writing over any other register around here would not be.
+        val commentMenu = namesTheCommentRowFingerprint.originalClassDef
+        val theComment = commentMenu.fields.single { it.type == THE_CONTENT }
+
+        namesTheCommentRowFingerprint.method.apply {
+            val says = indexOfFirstInstructionOrThrow {
+                getReference<StringReference>()?.string?.startsWith(TRANSLATE_ROW_INSTEAD) == true
+            }
+            val saysInto = getInstruction<OneRegisterInstruction>(says).registerA
+            val sheet = implementation!!.registerCount - 1
+
+            addInstructions(
+                says + 1,
+                """
+                iget-object v$saysInto, v$sheet, ${commentMenu.type}->${theComment.name}:$THE_CONTENT
+                invoke-static { v$saysInto }, $LABELS_CLASS_DESCRIPTOR->$FOR_COMMENT_METHOD
+                move-result-object v$saysInto
+                """
+            )
+        }
 
         // Opening a sheet to translate in, only to close it again the moment the translation
         // is one already made, reads as the screen flinching. Everything the sheet is given is
