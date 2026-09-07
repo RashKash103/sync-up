@@ -48,7 +48,7 @@ private const val LABELS_CLASS_DESCRIPTOR =
 
 private const val FOR_COMMENT_METHOD = "forComment(Lxa/d;)Ljava/lang/String;"
 
-private const val NAME_THE_ROW_METHOD = "nameTheRow(Ljava/lang/Object;)V"
+private const val READY_THE_ROW_METHOD = "readyTheRow(Ljava/lang/Object;)V"
 
 private const val POST_MENU_CLASS =
     "Lcom/laurencedawson/reddit_sync/ui/fragment_dialogs/bottom/PostMoreBottomSheetFragment;"
@@ -290,20 +290,21 @@ val translatePatch = bytecodePatch(
         // entry should still offer to translate it. Sync renames an entry itself where the same
         // is true of saving, through the method used here.
         postMenuFingerprint.method.apply {
-            val showsTheRow = indexOfFirstInstructionOrThrow {
-                getReference<FieldReference>()?.name == THE_TRANSLATE_ROW
+            // Sync only reaches the entry down one branch of this method, and a menu opened
+            // over a feed does not go down it. The end of the method is on every path — there
+            // is one way out of it — and the sheet is still in the register it began in there,
+            // which is read off the last thing done to it rather than assumed.
+            val last = implementation!!.instructions.count() - 1
+            val holdingTheSheet = (last downTo 0).first { at ->
+                getInstruction(at).opcode == Opcode.IGET_OBJECT &&
+                        getInstruction(at).getReference<FieldReference>()?.definingClass ==
+                        POST_MENU_CLASS
             }
-            val shown = indexOfFirstInstructionOrThrow(showsTheRow) {
-                getReference<MethodReference>()?.name == "setVisibility"
-            }
-
-            // Only the sheet is handed over: every register around here is holding something,
-            // one of them an argument the method was called with and reused as a local.
-            val sheet = getInstruction<TwoRegisterInstruction>(showsTheRow).registerB
+            val sheet = getInstruction<TwoRegisterInstruction>(holdingTheSheet).registerB
 
             addInstructions(
-                shown + 1,
-                "invoke-static { v$sheet }, $LABELS_CLASS_DESCRIPTOR->$NAME_THE_ROW_METHOD"
+                last,
+                "invoke-static { v$sheet }, $LABELS_CLASS_DESCRIPTOR->$READY_THE_ROW_METHOD"
             )
         }
 

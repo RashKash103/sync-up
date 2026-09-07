@@ -39,10 +39,10 @@ public final class TranslateNow {
 
                 // Asking a second time is asking for it back, since the translation stands
                 // where what was written used to.
-                String wasWritten = Originals.written(idOf(sheet));
-                if (wasWritten != null) {
+                Originals.Written wasWritten = Originals.written(idOf(sheet));
+                if (wasWritten != null && wasWritten.body != null) {
                     Logger.printInfo(() -> "Putting back what was written");
-                    answer(sheet, language, wasWritten);
+                    answer(sheet, language, wasWritten.body);
                     return;
                 }
                 String into = TranslationSettings.language(context);

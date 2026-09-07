@@ -48,7 +48,7 @@ public final class InPlace {
                 Logger.printInfo(() -> "The translation says what was written, so it is not one");
                 return translated;
             }
-            Originals.remember(id, written, fromLanguage);
+            Originals.remember(id, null, written, fromLanguage);
         } catch (Throwable ex) {
             // Whatever else happens, what was asked for is the translation.
             Logger.printInfo(() -> "Could not keep what was written: " + ex);

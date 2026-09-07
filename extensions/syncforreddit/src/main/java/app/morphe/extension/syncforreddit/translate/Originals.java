@@ -42,6 +42,13 @@ import app.morphe.extension.shared.Utils;
 public final class Originals {
     private static final String STORE = "sync-up-translated";
 
+    /** What is written in the file: a post has a title as well as a body. */
+    private static final String TITLE = "title";
+    private static final String BODY = "body";
+
+    /** Between the two, where they are counted as one for telling the text again. */
+    private static final char BETWEEN = '\u0000';
+
     /** What is known about one, beside the text of it. */
     private static final String FROM = "from";
     private static final String HASH = "hash";
@@ -75,19 +82,40 @@ public final class Originals {
 
     private Originals() {}
 
+    /** What a post said before it was translated. Either part may be absent. */
+    static final class Written {
+        final String title;
+        final String body;
+
+        Written(String title, String body) {
+            this.title = title;
+            this.body = body;
+        }
+    }
+
     /** @return What was written, or null where this was never translated. */
     @Nullable
-    static String written(String id) {
+    static Written written(String id) {
         if (id == null || id.isEmpty() || !held().containsKey(id)) {
             return null;
         }
         try {
             File kept = fileFor(id);
-            return kept.exists() ? read(kept) : null;
+            if (!kept.exists()) {
+                return null;
+            }
+            JSONObject says = new JSONObject(read(kept));
+            return new Written(says.has(TITLE) ? says.getString(TITLE) : null,
+                    says.has(BODY) ? says.getString(BODY) : null);
         } catch (Exception ex) {
             Logger.printInfo(() -> "Could not read what was written: " + ex);
             return null;
         }
+    }
+
+    /** @return The parts counted as one, which is how the text is told again. */
+    static String asOne(String title, String body) {
+        return (title == null ? "" : title) + BETWEEN + (body == null ? "" : body);
     }
 
     /**
@@ -96,8 +124,8 @@ public final class Originals {
      * <p>Called only once the translation is where it can be seen. Keeping it before that would
      * leave the line under the author saying a post is translated when it is not.
      */
-    static void remember(String id, String written, String from) {
-        if (id == null || id.isEmpty() || written == null || written.isEmpty()) {
+    static void remember(String id, String title, String body, String from) {
+        if (id == null || id.isEmpty() || (title == null && body == null)) {
             return;
         }
         try {
@@ -106,17 +134,25 @@ public final class Originals {
             if (folder != null && !folder.exists() && !folder.mkdirs()) {
                 return;
             }
-            write(kept, written);
 
+            JSONObject parts = new JSONObject();
+            if (title != null) {
+                parts.put(TITLE, title);
+            }
+            if (body != null) {
+                parts.put(BODY, body);
+            }
+            write(kept, parts.toString());
+
+            String asOne = asOne(title, body);
             JSONObject says = new JSONObject();
             says.put(FROM, from == null ? "" : from);
-            says.put(HASH, written.hashCode());
-            says.put(LENGTH, written.length());
+            says.put(HASH, asOne.hashCode());
+            says.put(LENGTH, asOne.length());
             says.put(AT, System.currentTimeMillis());
             store().edit().putString(id, says.toString()).apply();
 
-            held().put(id, new Held(from == null ? "" : from, written.hashCode(),
-                    written.length()));
+            held().put(id, new Held(from == null ? "" : from, asOne.hashCode(), asOne.length()));
 
             makeRoom();
         } catch (Exception ex) {
@@ -184,13 +220,25 @@ public final class Originals {
      */
     static boolean isTranslated(xa.d content) {
         try {
-            if (content == null) {
-                return false;
-            }
-            return noteFor(content.U(),
-                    content.Y0() == A_COMMENT ? content.o() : content.P0()) != null;
+            return content != null && noteFor(content.U(), saysNow(content)) != null;
         } catch (Exception ex) {
             return false;
+        }
+    }
+
+    /**
+     * @return What this says now, counted the same way as what was written: a comment is its
+     *         text, and a post is its title and its text together, since either may have been
+     *         translated.
+     */
+    @Nullable
+    public static String saysNow(xa.d content) {
+        try {
+            return content.Y0() == A_COMMENT
+                    ? asOne(null, content.o())
+                    : asOne(content.b1(), content.P0());
+        } catch (Exception ex) {
+            return null;
         }
     }
 

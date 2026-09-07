@@ -29,4 +29,9 @@ public abstract class d {
     public String P0() {
         throw new UnsupportedOperationException("Stub");
     }
+
+    /** A post's title, which is text a reader has to read whether or not there is a body. */
+    public String b1() {
+        throw new UnsupportedOperationException("Stub");
+    }
 }

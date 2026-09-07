@@ -52,18 +52,6 @@ public final class Notes {
         append(header, post, false);
     }
 
-    /** What the app calls a comment, where it says which kind of thing it has. */
-    private static final int A_COMMENT = 11;
-
-    /** @return What this says now, as it was written, so a note can be checked against it. */
-    private static String saysNow(xa.d content) {
-        try {
-            return content.Y0() == A_COMMENT ? content.o() : content.P0();
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
     /**
      * @param leadingBullet Whether a separator is wanted before a note. What Sync leaves ahead of
      *                      it differs: a comment's line has a space there and a post's has a
@@ -85,7 +73,7 @@ public final class Notes {
                 coloured.add(RESTORED);
             }
 
-            String translated = Originals.noteFor(id, saysNow(content));
+            String translated = Originals.noteFor(id, Originals.saysNow(content));
             if (translated != null) {
                 said.add(translated);
                 coloured.add(TRANSLATED);
