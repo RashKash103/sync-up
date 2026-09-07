@@ -143,8 +143,6 @@ internal val translationSettingsPatch = resourcePatch(
                     mapOf(
                         "android:key" to "sync_up_translate_deepl_context",
                         "android:title" to "Send along with a comment",
-                        "android:summary" to
-                            "What a comment is translated alongside, so that it reads in context",
                         "android:entries" to "@array/sync_up_translate_context",
                         "android:entryValues" to "@array/sync_up_translate_context_values",
                         "android:defaultValue" to "thread",
