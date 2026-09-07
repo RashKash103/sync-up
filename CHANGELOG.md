@@ -1,3 +1,9 @@
+## [1.7.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.6.0...v1.7.0-dev.1) (2026-09-07)
+
+### ✨ New Features
+
+* Show the volume as a row of cells rather than a number ([303fedb](https://github.com/RashKash103/sync-up/commit/303fedbfa4cd974052047a6a6eac34b6260ea74c))
+
 ## [1.6.0](https://github.com/RashKash103/sync-up/compare/v1.5.0...v1.6.0) (2026-09-05)
 
 ### 🐛 Bug Fixes
