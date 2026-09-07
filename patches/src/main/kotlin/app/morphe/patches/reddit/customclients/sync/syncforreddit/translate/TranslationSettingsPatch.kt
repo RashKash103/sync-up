@@ -22,6 +22,18 @@ private const val ROOT_ROW = "$PREFERENCES.custom.RootPreference"
  * its own screens from so that they are drawn by the app rather than beside it: the same rows,
  * the same headings, the same theme.
  */
+private const val POST_MENU = "res/layout/dialog_bottom_post_more.xml"
+
+private const val MATERIAL_ROW = "com.laurencedawson.reddit_sync.ui.views.core.MaterialRow"
+
+private const val ROW_TITLE = "app:rowTitle"
+
+/**
+ * What the row should say. Sync says this and then names the service it used to use, which is
+ * no longer necessarily the one doing the work.
+ */
+private const val TRANSLATE_ROW = "Translate text"
+
 internal val translationSettingsPatch = resourcePatch(
     description = "Adds a translation screen to Sync's settings.",
 ) {
@@ -264,6 +276,19 @@ internal val translationSettingsPatch = resourcePatch(
             row.setAttribute("app:custom_icon", "@drawable/outline_translate_24")
             row.setAttribute("app:preference_ref", "@integer/SYNC_UP_TRANSLATION")
             content.appendChild(row)
+        }
+
+        // The row in a post's menu names the service Sync used to use, which is no longer
+        // necessarily the one doing the work.
+        document(POST_MENU).use { document ->
+            val rows = document.getElementsByTagName(MATERIAL_ROW)
+            (0 until rows.length)
+                .map { rows.item(it) as Element }
+                .filter { it.getAttribute(ROW_TITLE).startsWith(TRANSLATE_ROW) }
+                .also {
+                    if (it.isEmpty()) throw PatchException("No translate row in a post's menu")
+                }
+                .forEach { it.setAttribute(ROW_TITLE, TRANSLATE_ROW) }
         }
     }
 }

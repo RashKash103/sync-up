@@ -5,10 +5,12 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstruction
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
@@ -34,6 +36,15 @@ private const val NOW_CLASS_DESCRIPTOR =
 
 private const val INSTEAD_METHOD =
     "instead(Lda/d;Ljava/lang/String;Ljava/lang/String;)V"
+
+private const val SHEET_CLASS_DESCRIPTOR = "Lda/d;"
+
+/**
+ * The two ways back into the sheet. They are accessors the compiler wrote so that the sheet
+ * could reach its own private methods from a callback, which leaves them open to the package
+ * and to nothing else. The extension is not in that package, so they are opened here.
+ */
+private val WAYS_BACK_IN = setOf("x4", "v4")
 
 private const val SETTINGS_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/translate/TranslationSettings;"
@@ -179,6 +190,19 @@ val translatePatch = bytecodePatch(
                 """
             )
         }
+
+        mutableClassDefBy(SHEET_CLASS_DESCRIPTOR).methods
+            .filter { it.name in WAYS_BACK_IN }
+            .also {
+                if (it.size != WAYS_BACK_IN.size) {
+                    throw PatchException("The sheet no longer has both ways back into it")
+                }
+            }
+            .forEach { wayBackIn ->
+                wayBackIn.accessFlags = wayBackIn.accessFlags and
+                        (AccessFlags.PRIVATE.value or AccessFlags.PROTECTED.value).inv() or
+                        AccessFlags.PUBLIC.value
+            }
 
         // Whether translation is offered is ours to answer. Sync asks two things before it
         // offers it, one after the other: whether the copy is paid for, and whether the feature
