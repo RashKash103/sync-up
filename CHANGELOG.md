@@ -1,3 +1,9 @@
+## [1.7.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.9...v1.7.0-dev.10) (2026-09-07)
+
+### ✨ New Features
+
+* Fade the settings of a service not in use, and show what DeepL has left ([5d2dac8](https://github.com/RashKash103/sync-up/commit/5d2dac826618bccfabdbdeeeafee201b9569f9a5))
+
 ## [1.7.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.8...v1.7.0-dev.9) (2026-09-07)
 
 ### ✨ New Features
