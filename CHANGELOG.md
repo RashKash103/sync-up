@@ -1,3 +1,9 @@
+## [1.7.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.5...v1.7.0-dev.6) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Let a translation setting show what it is set to ([127e0af](https://github.com/RashKash103/sync-up/commit/127e0af16363a63aa8b8f6c1676ea8bf997f7b27))
+
 ## [1.7.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.4...v1.7.0-dev.5) (2026-09-07)
 
 ### 🐛 Bug Fixes
