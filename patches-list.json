@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0-dev.22",
+  "version": "1.7.0-dev.23",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -39,6 +39,7 @@
       "description": "Restores the text of removed posts and comments, and the names of deleted authors, from Project Arctic Shift.",
       "use": true,
       "dependencies": [
+        "BytecodePatch",
         "BytecodePatch",
         "BytecodePatch"
       ],
@@ -364,7 +365,8 @@
       "use": true,
       "dependencies": [
         "BytecodePatch",
-        "ResourcePatch"
+        "ResourcePatch",
+        "BytecodePatch"
       ],
       "compatiblePackages": {
         "com.laurencedawson.reddit_sync": [
