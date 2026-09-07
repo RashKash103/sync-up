@@ -19,6 +19,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
+import app.morphe.patches.reddit.customclients.sync.syncforreddit.ui.notes.notesInTheHeaderPatch
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 
 private const val WRAPPER_CLASS =
@@ -38,6 +39,22 @@ private const val INSTEAD_METHOD =
     "instead(Lda/d;Ljava/lang/String;Ljava/lang/String;)V"
 
 private const val SHEET_CLASS_DESCRIPTOR = "Lda/d;"
+
+private const val IN_PLACE_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/translate/InPlace;"
+
+private const val INSTEAD_OF_COMPOSING_METHOD =
+    "instead(Lxa/d;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+/** What Sync writes at the end of a translation, and draws as a picture from a dead domain. */
+private const val NAMES_THE_SERVICE = "[Translated by Google](translate)"
+
+/** Where what is stored after a translation is composed, once for a post and once for a comment. */
+private val composesWhatIsStoredFingerprint = Fingerprint(
+    parameters = listOf("Lxa/d;", "Ljava/lang/String;", "Ljava/lang/String;"),
+    returnType = "Ljava/lang/String;",
+    strings = listOf(NAMES_THE_SERVICE),
+)
 
 /**
  * The two ways back into the sheet. They are accessors the compiler wrote so that the sheet
@@ -140,7 +157,7 @@ val translatePatch = bytecodePatch(
             "or Google Cloud. Everything about it is set up under Translation in Sync's settings.",
     default = true
 ) {
-    dependsOn(sharedExtensionPatch, translationSettingsPatch)
+    dependsOn(sharedExtensionPatch, translationSettingsPatch, notesInTheHeaderPatch)
 
     compatibleWith(*SyncForRedditCompatible)
 
@@ -203,6 +220,34 @@ val translatePatch = bytecodePatch(
                         (AccessFlags.PRIVATE.value or AccessFlags.PROTECTED.value).inv() or
                         AccessFlags.PUBLIC.value
             }
+
+        // What is stored after a translation is composed twice over, once for a post and once
+        // for a comment, from the same three things and to the same shape. Both are replaced:
+        // only the translation is stored now, and what was written is kept aside instead of
+        // being left above it under a rule.
+        val composes = composesWhatIsStoredFingerprint.originalClassDef
+        var replaced = 0
+
+        mutableClassDefBy(composes.type).methods.forEach { composing ->
+            val says = composing.implementation?.instructions?.any {
+                it.getReference<StringReference>()?.string == NAMES_THE_SERVICE
+            } ?: false
+            if (!says) return@forEach
+
+            composing.addInstructions(
+                0,
+                """
+                invoke-static { p0, p1, p2 }, $IN_PLACE_CLASS_DESCRIPTOR->$INSTEAD_OF_COMPOSING_METHOD
+                move-result-object p2
+                return-object p2
+                """
+            )
+            replaced++
+        }
+
+        if (replaced != 2) {
+            throw PatchException("Expected a post and a comment to be composed, found $replaced")
+        }
 
         // Whether translation is offered is ours to answer. Sync asks two things before it
         // offers it, one after the other: whether the copy is paid for, and whether the feature

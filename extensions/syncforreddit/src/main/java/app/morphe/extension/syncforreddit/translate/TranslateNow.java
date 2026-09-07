@@ -36,6 +36,15 @@ public final class TranslateNow {
         new Thread(() -> {
             try {
                 Context context = Utils.getContext();
+
+                // Asking a second time is asking for it back, since the translation stands
+                // where what was written used to.
+                String wasWritten = Originals.written(idOf(sheet));
+                if (wasWritten != null) {
+                    Logger.printInfo(() -> "Putting back what was written");
+                    answer(sheet, language, wasWritten);
+                    return;
+                }
                 String into = TranslationSettings.language(context);
                 String service = TranslationSettings.service(context);
 
@@ -76,6 +85,17 @@ public final class TranslateNow {
                 onTheMainThread.post(() -> da.d.v4(sheet, "Could not translate: " + said));
             }
         }, "sync-up-translate").start();
+    }
+
+    /** @return What the sheet is about, by id, or null where it cannot say. */
+    private static String idOf(da.d sheet) {
+        try {
+            xa.d about = sheet.U3();
+            return about == null ? null : about.U();
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not tell what the sheet is about: " + ex);
+            return null;
+        }
     }
 
     /**

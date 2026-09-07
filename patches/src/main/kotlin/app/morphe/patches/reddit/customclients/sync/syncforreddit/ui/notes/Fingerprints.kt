@@ -1,4 +1,4 @@
-package app.morphe.patches.reddit.customclients.sync.syncforreddit.http.undelete
+package app.morphe.patches.reddit.customclients.sync.syncforreddit.ui.notes
 
 import app.morphe.patcher.Fingerprint
 
