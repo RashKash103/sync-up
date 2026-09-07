@@ -17,13 +17,16 @@ public abstract class d {
         throw new UnsupportedOperationException("Stub");
     }
 
-    /** A comment's text, as it was written. */
-    public String n() {
+    /**
+     * A comment's text as it was written. What the app composes back into the written text
+     * when it translates is built from this, so it is the markdown and not the rendering.
+     */
+    public String o() {
         throw new UnsupportedOperationException("Stub");
     }
 
-    /** A post's text, as it was written. */
-    public String N0() {
+    /** A post's text as it was written, for the same reason. */
+    public String P0() {
         throw new UnsupportedOperationException("Stub");
     }
 }

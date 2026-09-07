@@ -39,9 +39,10 @@ public final class TranslateNow {
                 String into = TranslationSettings.language(context);
                 String service = TranslationSettings.service(context);
 
-                // The app asks about the text as it is drawn, which has lost the lines it was
-                // written on and the address behind every link. The text as written is still
-                // there to be had, and is what is worth translating.
+                // The app asks about the text as it is drawn — the rendering, tags and all,
+                // which has lost the lines it was written on. The text as it was written is
+                // still there to be had, and is what the app composes back into afterwards, so
+                // it is what is worth translating.
                 String written = asWritten(sheet);
                 boolean haveWritten = Markdown.worthTranslating(written);
                 String toTranslate = haveWritten ? written : text;
@@ -79,7 +80,9 @@ public final class TranslateNow {
 
     /**
      * @return The text of what the sheet is about as it was written, or null where the sheet
-     *         cannot say what it is about.
+     *         cannot say what it is about. This is the markdown: the other pair of readers on
+     *         the model hand back the rendering of it, which is what the app translates and is
+     *         why its own translations come back as one flat paragraph.
      */
     private static String asWritten(da.d sheet) {
         try {
@@ -87,7 +90,7 @@ public final class TranslateNow {
             if (about == null) {
                 return null;
             }
-            return about.Y0() == A_COMMENT ? about.n() : about.N0();
+            return about.Y0() == A_COMMENT ? about.o() : about.P0();
         } catch (Exception ex) {
             Logger.printInfo(() -> "Could not read the text as it was written: " + ex);
             return null;
