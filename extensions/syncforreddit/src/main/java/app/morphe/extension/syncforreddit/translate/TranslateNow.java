@@ -18,6 +18,9 @@ import app.morphe.extension.shared.Utils;
  * @noinspection unused
  */
 public final class TranslateNow {
+    /** What the app calls a comment, where it says which kind of thing it has. */
+    private static final int A_COMMENT = 11;
+
     private static final Handler onTheMainThread = new Handler(Looper.getMainLooper());
 
     private TranslateNow() {}
@@ -36,8 +39,15 @@ public final class TranslateNow {
                 String into = TranslationSettings.language(context);
                 String service = TranslationSettings.service(context);
 
+                // The app asks about the text as it is drawn, which has lost the lines it was
+                // written on and the address behind every link. The text as written is still
+                // there to be had, and is what is worth translating.
+                String written = asWritten(sheet);
+                boolean haveWritten = Markdown.worthTranslating(written);
+                String toTranslate = haveWritten ? written : text;
+
                 TranslationCache.Translated already =
-                        TranslationCache.remembered(context, text, service, into);
+                        TranslationCache.remembered(context, toTranslate, service, into);
                 if (already != null) {
                     Logger.printInfo(() -> "Translated this before, from " + already.from);
                     answer(sheet, already.from, already.text);
@@ -49,8 +59,12 @@ public final class TranslateNow {
                         ? OnDeviceTranslator.languageOf(text)
                         : language;
 
-                String translated = by(service, text, from, into);
-                TranslationCache.remember(context, text, service, into,
+                String at = from;
+                String translated = haveWritten
+                        ? by(service, written, at, into, true)
+                        : by(service, text, at, into, false);
+
+                TranslationCache.remember(context, toTranslate, service, into,
                         new TranslationCache.Translated(translated, from));
 
                 answer(sheet, from, translated);
@@ -63,16 +77,39 @@ public final class TranslateNow {
         }, "sync-up-translate").start();
     }
 
-    /** @return The text translated by whichever service was chosen. */
-    private static String by(String service, String text, String from, String into)
-            throws Exception {
+    /**
+     * @return The text of what the sheet is about as it was written, or null where the sheet
+     *         cannot say what it is about.
+     */
+    private static String asWritten(da.d sheet) {
+        try {
+            xa.d about = sheet.U3();
+            if (about == null) {
+                return null;
+            }
+            return about.Y0() == A_COMMENT ? about.n() : about.N0();
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not read the text as it was written: " + ex);
+            return null;
+        }
+    }
+
+    /**
+     * @param asWritten Whether the text is markdown, and so has to be translated around what
+     *                  in it is not language.
+     * @return The text translated by whichever service was chosen.
+     */
+    private static String by(String service, String text, String from, String into,
+                             boolean asWritten) throws Exception {
         if (TranslationSettings.DEEPL.equals(service)
                 || TranslationSettings.GOOGLE.equals(service)) {
             // Their settings are there; what stands behind them is not written yet, so the
             // device answers rather than nothing happening at all.
             Logger.printInfo(() -> service + " cannot translate yet, so this device did");
         }
-        return OnDeviceTranslator.translate(text, from, into);
+        return asWritten
+                ? OnDeviceTranslator.translateMarkdown(text, from, into)
+                : OnDeviceTranslator.translate(text, from, into);
     }
 
     private static void answer(da.d sheet, String from, String translated) {

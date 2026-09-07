@@ -9,7 +9,7 @@ package da;
  *
  * <p>Compile only, and named as the app names it.
  */
-public class d {
+public class d extends s9.f {
     /** Where a translation goes: the language it came from, and the text. */
     public static void x4(d sheet, String fromLanguage, String translated) {
         throw new UnsupportedOperationException("Stub");

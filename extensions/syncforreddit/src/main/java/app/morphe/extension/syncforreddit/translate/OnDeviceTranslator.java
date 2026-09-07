@@ -64,6 +64,28 @@ final class OnDeviceTranslator {
      * @return The translated text.
      */
     static String translate(String text, String from, String into) throws Exception {
+        return with(from, into, translator -> said(translator, text));
+    }
+
+    /**
+     * The same, for text written as markdown, where every run of words on every line is asked
+     * for separately. One translator answers all of them: opening one loads a model, and doing
+     * that for each line of a post would cost far more than the translating does.
+     *
+     * @return The text translated, with everything that was not words left as it was.
+     */
+    static String translateMarkdown(String markdown, String from, String into) throws Exception {
+        return with(from, into, translator ->
+                Markdown.translated(markdown, run -> said(translator, run)));
+    }
+
+    /** What is done with a translator once there is one. */
+    private interface Asks<T> {
+        T of(Translator translator) throws Exception;
+    }
+
+    /** Opens a translator for the pair of languages, fetches its model, and closes it after. */
+    private static <T> T with(String from, String into, Asks<T> asked) throws Exception {
         String source = named(from);
         String target = named(into);
         if (source == null || target == null) {
@@ -87,15 +109,19 @@ final class OnDeviceTranslator {
                         "No model for " + source + " into " + target + ": " + because(ex), ex);
             }
 
-            Object translated = Tasks.b(translator.A(text),
-                    TRANSLATE_WAIT_SECONDS, TimeUnit.SECONDS);
-            if (translated == null) {
-                throw new IllegalStateException("Nothing came back");
-            }
-            return translated.toString();
+            return asked.of(translator);
         } finally {
             translator.close();
         }
+    }
+
+    /** @return What the translator makes of one run of words. */
+    private static String said(Translator translator, String text) throws Exception {
+        Object translated = Tasks.b(translator.A(text), TRANSLATE_WAIT_SECONDS, TimeUnit.SECONDS);
+        if (translated == null) {
+            throw new IllegalStateException("Nothing came back");
+        }
+        return translated.toString();
     }
 
     /**
