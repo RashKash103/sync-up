@@ -1,3 +1,9 @@
+## [1.7.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.13...v1.7.0-dev.14) (2026-09-07)
+
+### ✨ New Features
+
+* Translate through the settings rather than always into English ([b3b82ec](https://github.com/RashKash103/sync-up/commit/b3b82ecb371808e4e985c99a6f37b7b325c3134e))
+
 ## [1.7.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.12...v1.7.0-dev.13) (2026-09-07)
 
 ### ✨ New Features
