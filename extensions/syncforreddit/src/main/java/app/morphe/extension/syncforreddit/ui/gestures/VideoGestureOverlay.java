@@ -22,9 +22,17 @@ import java.util.Locale;
 final class VideoGestureOverlay {
     private static final int BACKGROUND = 0xB3000000;
 
-    /** A step of volume that has been reached, and one that has not. */
-    private static final char FILLED = '\uFFED';
-    private static final char EMPTY = '\uFF65';
+    /**
+     * A step of volume that has been reached, and one that has not.
+     *
+     * <p>Both are squares from the same part of Unicode, drawn by the same font wherever they
+     * are drawn at all, so they are the same width and either both appear or neither does. A
+     * halfwidth square and a halfwidth dot read the same way but come from a part that not
+     * every device carries, and a filled square beside an ordinary dot would have the row
+     * changing width as the volume moves.
+     */
+    private static final char FILLED = '\u25A0';
+    private static final char EMPTY = '\u25A1';
 
     /**
      * As many cells as the device has steps of volume, which is usually about fifteen, up to
