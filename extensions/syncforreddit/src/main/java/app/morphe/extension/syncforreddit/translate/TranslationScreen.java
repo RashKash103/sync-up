@@ -50,6 +50,7 @@ public class TranslationScreen extends pa.d {
         showWhatIsInUse();
         watchForAChangeOfService();
         askWhatIsLeft();
+        showWhatIsKept();
     }
 
     /**
@@ -72,6 +73,29 @@ public class TranslationScreen extends pa.d {
             if (row != null) {
                 row.q0(enabled);
             }
+        }
+    }
+
+    /**
+     * Says how much room the kept translations take, and throws them away when asked. Old ones
+     * are tidied away first, so what is shown is what is actually still being kept.
+     */
+    private void showWhatIsKept() {
+        try {
+            Context context = Utils.getContext();
+            Preference row = y(TranslationSettings.CACHE_CLEAR);
+            if (row == null) {
+                return;
+            }
+            TranslationCache.tidy(context);
+            row.D0(TranslationCache.size(context));
+            row.A0(tapped -> {
+                TranslationCache.clear(context);
+                tapped.D0(TranslationCache.size(context));
+                return true;
+            });
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not show what translations are kept: " + ex);
         }
     }
 

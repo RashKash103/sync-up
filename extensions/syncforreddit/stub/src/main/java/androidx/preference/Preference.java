@@ -26,6 +26,17 @@ public class Preference {
         throw new UnsupportedOperationException("Stub");
     }
 
+    /** setOnPreferenceClickListener. */
+    public void A0(d listening) {
+        throw new UnsupportedOperationException("Stub");
+    }
+
+    /** OnPreferenceClickListener, as the library names it here. */
+    public interface d {
+        /** onPreferenceClick: answer true where the tap was dealt with. */
+        boolean a(Preference row);
+    }
+
     /** notifyChanged: draw the row again, after something it shows has changed. */
     public void M() {
         throw new UnsupportedOperationException("Stub");
