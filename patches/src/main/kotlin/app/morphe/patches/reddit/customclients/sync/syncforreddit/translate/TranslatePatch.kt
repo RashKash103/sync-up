@@ -3,7 +3,6 @@ package app.morphe.patches.reddit.customclients.sync.syncforreddit.translate
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
-import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -121,15 +120,17 @@ val translatePatch = bytecodePatch(
         }
 
         // A row that cannot be used should look like it. Sync sets the colour of every row's
-        // words as it draws them, whatever state the row is in, so the state is said again
-        // afterwards, over the whole row, once for every kind of row there is.
+        // words as it draws them, whatever state the row is in, so the whole row is faded
+        // instead, once for every kind of row there is.
+        //
+        // Said before the row draws itself rather than after: by the end of drawing, the
+        // register the holder arrived in has been put to another use and holds a view, and
+        // nothing in the drawing touches what is set here.
         rowKinds.forEach { kind ->
-            drawsRow(kind).method.apply {
-                addInstructions(
-                    instructions.count() - 1,
-                    "invoke-static { p0, p1 }, $ROWS_CLASS_DESCRIPTOR->$DRAW_ENABLED_METHOD"
-                )
-            }
+            drawsRow(kind).method.addInstructions(
+                0,
+                "invoke-static { p0, p1 }, $ROWS_CLASS_DESCRIPTOR->$DRAW_ENABLED_METHOD"
+            )
         }
     }
 }
