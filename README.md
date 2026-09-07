@@ -252,9 +252,19 @@ service being asked.
   - **On this device by default.** ML Kit translates without sending the text anywhere, using a
     model fetched the first time a pair of languages is asked for. The first translation into a
     new language waits on a few megabytes; the rest are quick.
-  - **What was written is kept**, so asking a second time puts the original back. The line under
+  - **DeepL and Google Cloud** translate through a key of your own, entered in the same
+    settings. Every run of words in a post goes in one request rather than one each. DeepL's
+    remaining allowance is shown against the key, and what it is told about how to translate is
+    sent only for the languages that accept it. Neither is used unless chosen.
+  - **Any post with words in it**, from a feed or from the comments screen, and a post's title
+    as well as its body — Sync itself offers this only for a post with a body, opened from the
+    comments screen.
+  - **What was written is kept**, so asking a second time puts the original back — the entry
+    says *Untranslate* while it would. The line under
     the author says which language it is being read from while it stands translated, beside the
-    note about restored text where a comment is both.
+    note about restored text where a comment is both. The note is checked against what the post
+    says rather than remembered from when it was asked for, so a thread read again from Reddit —
+    which quietly undoes a translation — does not leave it claiming otherwise.
   - **Markdown survives.** Sync translates the text as it is drawn, so links come back as their
     own words and the paragraphs run together. Here the text as written is translated, a line at
     a time, with everything that is not language — where a link points, an address, the name of
