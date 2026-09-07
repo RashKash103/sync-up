@@ -1,3 +1,5 @@
+## [1.7.0-dev.25](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.24...v1.7.0-dev.25) (2026-09-07)
+
 ## [1.7.0-dev.24](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.23...v1.7.0-dev.24) (2026-09-07)
 
 ## [1.7.0-dev.23](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.22...v1.7.0-dev.23) (2026-09-07)
