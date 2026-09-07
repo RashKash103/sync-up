@@ -6,6 +6,9 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLa
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.util.getReference
+import app.morphe.util.indexOfFirstInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -20,11 +23,34 @@ private const val SCREEN_FOR_METHOD = "screenFor(I)Lpa/d;"
 
 private const val TITLE_FOR_METHOD = "titleFor(I)Ljava/lang/String;"
 
+private const val NOW_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/translate/TranslateNow;"
+
+private const val INSTEAD_METHOD =
+    "instead(Lda/d;Ljava/lang/String;Ljava/lang/String;)V"
+
 private const val ROWS_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/translate/SettingsRows;"
 
 private const val DRAW_ENABLED_METHOD =
     "drawEnabled(Landroidx/preference/Preference;Landroidx/preference/h;)V"
+
+/**
+ * Where Sync asks for a translation. It has worked out the text and what it is written in by
+ * this point, and what comes back goes on to be written where the app reads its text from, so
+ * this is the one step to answer differently.
+ */
+private val asksForATranslationFingerprint = Fingerprint(
+    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;"),
+    returnType = "V",
+    custom = { method, classDef ->
+        classDef.type == "Lda/d;" && method.indexOfFirstInstruction {
+            getReference<MethodReference>()
+                ?.definingClass
+                ?.startsWith("Lcom/google/mlkit/nl/translate/") == true
+        } >= 0
+    },
+)
 
 /** The kinds of row Sync draws itself, each of which sets its own colours as it does. */
 private val rowKinds = listOf(
@@ -116,6 +142,18 @@ val translatePatch = bytecodePatch(
                 return-object       v0
                 """,
                 ExternalLabel("not_ours", getInstruction<Instruction>(0)),
+            )
+        }
+
+        // Asked of the service that was chosen, into the language that was chosen, and only
+        // once for the same text. What comes back goes back the way it always did.
+        asksForATranslationFingerprint.method.apply {
+            addInstructions(
+                0,
+                """
+                invoke-static       { p0, p1, p2 }, $NOW_CLASS_DESCRIPTOR->$INSTEAD_METHOD
+                return-void
+                """
             )
         }
 
