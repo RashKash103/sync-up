@@ -122,8 +122,8 @@ public final class TranslateNow {
      *                  in it is not language.
      * @return The text translated by whichever service was chosen.
      */
-    private static String by(String service, String text, String from, String into,
-                             boolean asWritten) throws Exception {
+    static String by(String service, String text, String from, String into,
+                     boolean asWritten) throws Exception {
         if (TranslationSettings.DEEPL.equals(service)
                 || TranslationSettings.GOOGLE.equals(service)) {
             // Their settings are there; what stands behind them is not written yet, so the

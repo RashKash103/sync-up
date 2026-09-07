@@ -40,6 +40,26 @@ private const val INSTEAD_METHOD =
 
 private const val SHEET_CLASS_DESCRIPTOR = "Lda/d;"
 
+private const val WITHOUT_THE_SHEET_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/translate/WithoutTheSheet;"
+
+private const val INSTEAD_OF_THE_SHEET_METHOD =
+    "instead(Ljava/lang/Class;Ljava/lang/Object;Landroid/os/Bundle;)Z"
+
+/**
+ * Where a sheet is opened: the kind of it, the manager to open it with, and what to open it
+ * with. Every way into the translating sheet goes through this one.
+ */
+private val opensASheetFingerprint = Fingerprint(
+    parameters = listOf(
+        "Ljava/lang/Class;",
+        "Landroidx/fragment/app/FragmentManager;",
+        "Landroid/os/Bundle;",
+    ),
+    returnType = "V",
+    strings = listOf("Missing arguments: "),
+)
+
 private const val IN_PLACE_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/translate/InPlace;"
 
@@ -220,6 +240,23 @@ val translatePatch = bytecodePatch(
                         (AccessFlags.PRIVATE.value or AccessFlags.PROTECTED.value).inv() or
                         AccessFlags.PUBLIC.value
             }
+
+        // Opening a sheet to translate in, only to close it again the moment the translation
+        // is one already made, reads as the screen flinching. Everything the sheet is given is
+        // in the arguments it would have been opened with, so the opening is taken over. Saying
+        // no leaves the sheet to open exactly as it would have.
+        opensASheetFingerprint.method.apply {
+            addInstructionsWithLabels(
+                0,
+                """
+                invoke-static { p0, p1, p2 }, $WITHOUT_THE_SHEET_CLASS_DESCRIPTOR->$INSTEAD_OF_THE_SHEET_METHOD
+                move-result v0
+                if-eqz v0, :the_sheet_then
+                return-void
+                """,
+                ExternalLabel("the_sheet_then", getInstruction(0))
+            )
+        }
 
         // What is stored after a translation is composed twice over, once for a post and once
         // for a comment, from the same three things and to the same shape. Both are replaced:
