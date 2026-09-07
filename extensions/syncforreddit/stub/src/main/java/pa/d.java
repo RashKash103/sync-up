@@ -25,4 +25,9 @@ public class d {
     public void a3(Bundle arguments) {
         throw new UnsupportedOperationException("Stub");
     }
+
+    /** findPreference: the row with the given key, or null where the screen has no such row. */
+    public androidx.preference.Preference y(CharSequence key) {
+        throw new UnsupportedOperationException("Stub");
+    }
 }
