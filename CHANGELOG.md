@@ -1,3 +1,9 @@
+## [1.7.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.8...v1.7.0-dev.9) (2026-09-07)
+
+### ✨ New Features
+
+* Show only the settings of the service that is in use ([91b57b6](https://github.com/RashKash103/sync-up/commit/91b57b68a873113ed37b7bda51e8b0d3e30b2d69))
+
 ## [1.7.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.7...v1.7.0-dev.8) (2026-09-07)
 
 ### ✨ New Features
