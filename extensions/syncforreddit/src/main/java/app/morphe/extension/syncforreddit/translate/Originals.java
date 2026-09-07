@@ -49,6 +49,15 @@ public final class Originals {
     /** Between the two, where they are counted as one for telling the text again. */
     private static final char BETWEEN = '\u0000';
 
+    /**
+     * Which shape the entry was written in. An earlier build kept one text rather than a title
+     * and a body, and counted the text alone rather than the two as one; an entry left by it
+     * says nothing here, and is read the way it was written.
+     */
+    private static final String VERSION = "version";
+
+    private static final int WITH_PARTS = 2;
+
     /** What is known about one, beside the text of it. */
     private static final String FROM = "from";
     private static final String HASH = "hash";
@@ -60,6 +69,9 @@ public final class Originals {
 
     private static final int DROPPED_AT_ONCE = 50;
 
+    /** What the app calls a comment, where it says which kind of thing it has. */
+    private static final int A_COMMENT = 11;
+
     /** What each translated thing was written in, and how to tell that text again. */
     private static Map<String, Held> held;
 
@@ -68,15 +80,22 @@ public final class Originals {
         final String from;
         final int hash;
         final int length;
+        final int version;
 
-        Held(String from, int hash, int length) {
+        Held(String from, int hash, int length, int version) {
             this.from = from;
             this.hash = hash;
             this.length = length;
+            this.version = version;
         }
 
         boolean is(String text) {
             return text != null && text.length() == length && text.hashCode() == hash;
+        }
+
+        /** @return The parts counted the way this entry counted them when it was written. */
+        String asItWasCounted(String title, String body) {
+            return version >= WITH_PARTS ? asOne(title, body) : body;
         }
     }
 
@@ -104,9 +123,17 @@ public final class Originals {
             if (!kept.exists()) {
                 return null;
             }
-            JSONObject says = new JSONObject(read(kept));
-            return new Written(says.has(TITLE) ? says.getString(TITLE) : null,
-                    says.has(BODY) ? says.getString(BODY) : null);
+            String kept_ = read(kept);
+            try {
+                JSONObject says = new JSONObject(kept_);
+                if (says.has(TITLE) || says.has(BODY)) {
+                    return new Written(says.has(TITLE) ? says.getString(TITLE) : null,
+                            says.has(BODY) ? says.getString(BODY) : null);
+                }
+            } catch (Exception ex) {
+                // Left by a build that kept the text on its own rather than its parts.
+            }
+            return new Written(null, kept_);
         } catch (Exception ex) {
             Logger.printInfo(() -> "Could not read what was written: " + ex);
             return null;
@@ -150,9 +177,11 @@ public final class Originals {
             says.put(HASH, asOne.hashCode());
             says.put(LENGTH, asOne.length());
             says.put(AT, System.currentTimeMillis());
+            says.put(VERSION, WITH_PARTS);
             store().edit().putString(id, says.toString()).apply();
 
-            held().put(id, new Held(from == null ? "" : from, asOne.hashCode(), asOne.length()));
+            held().put(id, new Held(from == null ? "" : from, asOne.hashCode(), asOne.length(),
+                    WITH_PARTS));
 
             makeRoom();
         } catch (Exception ex) {
@@ -178,7 +207,6 @@ public final class Originals {
     }
 
     /**
-     * @param current What the post or the comment says now.
      * @return What the line under the author should say, or null where this is not being read
      *         in translation.
      *
@@ -187,8 +215,12 @@ public final class Originals {
      * told; saying it is translated when it plainly is not is worse than saying nothing.
      */
     @Nullable
-    public static String noteFor(String id, String current) {
+    public static String noteFor(xa.d content) {
         try {
+            if (content == null) {
+                return null;
+            }
+            String id = content.U();
             if (id == null || id.isEmpty()) {
                 return null;
             }
@@ -197,7 +229,11 @@ public final class Originals {
                 return null;
             }
 
-            if (about.is(current)) {
+            boolean isAComment = content.Y0() == A_COMMENT;
+            String body = isAComment ? content.o() : content.P0();
+            String title = isAComment ? null : content.b1();
+
+            if (about.is(about.asItWasCounted(title, body))) {
                 // What it says is what was written, so it is not translated any more.
                 forgetLater(id);
                 return null;
@@ -211,35 +247,12 @@ public final class Originals {
         }
     }
 
-    /** What the app calls a comment, where it says which kind of thing it has. */
-    private static final int A_COMMENT = 11;
-
     /**
      * @return Whether this is standing translated: it was translated, and what it says now is
      *         still not what was written.
      */
     static boolean isTranslated(xa.d content) {
-        try {
-            return content != null && noteFor(content.U(), saysNow(content)) != null;
-        } catch (Exception ex) {
-            return false;
-        }
-    }
-
-    /**
-     * @return What this says now, counted the same way as what was written: a comment is its
-     *         text, and a post is its title and its text together, since either may have been
-     *         translated.
-     */
-    @Nullable
-    public static String saysNow(xa.d content) {
-        try {
-            return content.Y0() == A_COMMENT
-                    ? asOne(null, content.o())
-                    : asOne(content.b1(), content.P0());
-        } catch (Exception ex) {
-            return null;
-        }
+        return noteFor(content) != null;
     }
 
     /** @return What that language is called, in the reader's own language. */
@@ -279,7 +292,7 @@ public final class Originals {
                 for (Map.Entry<String, ?> each : store().getAll().entrySet()) {
                     JSONObject says = new JSONObject(String.valueOf(each.getValue()));
                     held.put(each.getKey(), new Held(says.optString(FROM, ""),
-                            says.optInt(HASH), says.optInt(LENGTH)));
+                            says.optInt(HASH), says.optInt(LENGTH), says.optInt(VERSION, 1)));
                 }
             } catch (Exception ex) {
                 Logger.printInfo(() -> "Could not read what has been translated: " + ex);

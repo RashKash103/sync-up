@@ -73,7 +73,7 @@ public final class Notes {
                 coloured.add(RESTORED);
             }
 
-            String translated = Originals.noteFor(id, Originals.saysNow(content));
+            String translated = Originals.noteFor(content);
             if (translated != null) {
                 said.add(translated);
                 coloured.add(TRANSLATED);
