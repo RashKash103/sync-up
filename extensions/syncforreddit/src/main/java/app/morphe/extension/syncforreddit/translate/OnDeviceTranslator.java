@@ -11,6 +11,7 @@ import com.google.mlkit.nl.translate.TranslatorOptions;
 
 import app.morphe.extension.shared.Logger;
 
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,6 +27,17 @@ import java.util.concurrent.TimeUnit;
 final class OnDeviceTranslator {
     /** What the identifier answers where it cannot tell what it is reading. */
     static final String UNKNOWN = "und";
+
+    /**
+     * The library names its models after a pair of languages and nothing else, so a tag that
+     * says which country it is spoken in is not one it can use.
+     */
+    private static final String A_LANGUAGE_ALONE = "[a-z]{2,3}";
+
+    /** Where the library's name for a language is not the one the settings use. */
+    private static final String NORWEGIAN = "nb";
+
+    private static final String NORWEGIAN_TO_THE_LIBRARY = "no";
 
     private static final long MODEL_WAIT_SECONDS = 120;
     private static final long TRANSLATE_WAIT_SECONDS = 30;
@@ -52,10 +64,11 @@ final class OnDeviceTranslator {
      * @return The translated text.
      */
     static String translate(String text, String from, String into) throws Exception {
-        String source = TranslateLanguage.a(from);
-        String target = TranslateLanguage.a(into);
+        String source = named(from);
+        String target = named(into);
         if (source == null || target == null) {
-            throw new IllegalArgumentException("Cannot translate " + from + " into " + into);
+            throw new IllegalArgumentException("Cannot translate " + from + " into " + into
+                    + " on this device");
         }
 
         Logger.printInfo(() -> "Translating " + source + " into " + target);
@@ -86,6 +99,40 @@ final class OnDeviceTranslator {
     }
 
     /**
+     * The settings hold a language as the services abroad want it, which is a tag that may say
+     * which country speaks it: en-US, pt-BR. The library on the device wants the language on
+     * its own, since that is what it names its models after, and it will not say so — it takes
+     * whatever it is given and fails much later, when the name it built matches nothing.
+     *
+     * @return The library's name for the language, or null if it can have no name for it.
+     */
+    private static String named(String tag) {
+        if (tag == null || tag.isEmpty()) {
+            return null;
+        }
+
+        String language = tag;
+        for (int at = 0; at < tag.length(); at++) {
+            if (tag.charAt(at) == '-' || tag.charAt(at) == '_') {
+                language = tag.substring(0, at);
+                break;
+            }
+        }
+
+        language = language.toLowerCase(Locale.ROOT);
+        if (NORWEGIAN.equals(language)) {
+            language = NORWEGIAN_TO_THE_LIBRARY;
+        }
+        if (!language.matches(A_LANGUAGE_ALONE)) {
+            return null;
+        }
+
+        // Only to have the one language the library knows by an older name, which is the whole
+        // of what this does.
+        return TranslateLanguage.a(language);
+    }
+
+    /**
      * @return Every reason behind a failure, outermost first. A failure from the library is
      *         wrapped in as many as three layers, and only the innermost one says anything.
      */
@@ -105,7 +152,7 @@ final class OnDeviceTranslator {
     /** @return Whether the library has a name for the language, and so can work with it. */
     static boolean knows(String languageTag) {
         try {
-            return languageTag != null && TranslateLanguage.a(languageTag) != null;
+            return named(languageTag) != null;
         } catch (Exception ex) {
             return false;
         }
