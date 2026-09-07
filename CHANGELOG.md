@@ -1,3 +1,9 @@
+## [1.7.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.7...v1.7.0-dev.8) (2026-09-07)
+
+### ✨ New Features
+
+* Give translation a screen of its own, beside the other content screens ([4019da9](https://github.com/RashKash103/sync-up/commit/4019da99a9110fd70c2ec08313c1af2573371868))
+
 ## [1.7.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.6...v1.7.0-dev.7) (2026-09-07)
 
 ### 🐛 Bug Fixes
