@@ -2,6 +2,9 @@ package app.morphe.extension.syncforreddit.ui.gestures;
 
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.TypedValue;
@@ -23,16 +26,17 @@ final class VideoGestureOverlay {
     private static final int BACKGROUND = 0xB3000000;
 
     /**
-     * A step of volume that has been reached, and one that has not.
+     * One step of volume.
      *
-     * <p>Both are squares from the same part of Unicode, drawn by the same font wherever they
-     * are drawn at all, so they are the same width and either both appear or neither does. A
-     * halfwidth square and a halfwidth dot read the same way but come from a part that not
-     * every device carries, and a filled square beside an ordinary dot would have the row
-     * changing width as the volume moves.
+     * <p>Every cell is this same character, and the ones not reached yet are dimmed rather than
+     * drawn as a different one. Two characters are two shapes, which a font is free to draw at
+     * different widths and heights, and a device that has one of them and not the other draws
+     * the row half in boxes. The same character can only be the same size as itself.
      */
-    private static final char FILLED = '\u25A0';
-    private static final char EMPTY = '\u25A1';
+    private static final char CELL = '\u25A0';
+
+    /** How much of a cell is left showing where the volume has not reached it. */
+    private static final int NOT_REACHED = 0x59FFFFFF;
 
     /**
      * As many cells as the device has steps of volume, which is usually about fifteen, up to
@@ -52,7 +56,7 @@ final class VideoGestureOverlay {
         this.over = over;
     }
 
-    void show(String what) {
+    void show(CharSequence what) {
         TextView view = view();
         if (view == null) {
             return;
@@ -63,7 +67,7 @@ final class VideoGestureOverlay {
     }
 
     /** Shown for a moment rather than until a finger is lifted, for a gesture already finished. */
-    void flash(String what) {
+    void flash(CharSequence what) {
         show(what);
         onTheMainThread.postDelayed(this::hide, FLASH_MS);
     }
@@ -83,17 +87,24 @@ final class VideoGestureOverlay {
 
     /**
      * The volume as a row of cells rather than a number, so that how loud it is can be seen at a
-     * glance while the finger is still moving.
+     * glance while the finger is still moving, said above so that it is clear what is moving.
      */
-    String describeVolume(int level, int steps) {
+    CharSequence describeVolume(int level, int steps) {
         int cells = Math.max(1, Math.min(MOST_CELLS, steps));
         int filled = Math.round(level * (float) cells / Math.max(steps, 1));
 
-        StringBuilder bar = new StringBuilder("[ ");
+        StringBuilder row = new StringBuilder("Volume\n");
+        int from = row.length();
         for (int cell = 0; cell < cells; cell++) {
-            bar.append(cell < filled ? FILLED : EMPTY);
+            row.append(CELL);
         }
-        return bar.append(" ]").toString();
+
+        SpannableString said = new SpannableString(row);
+        if (filled < cells) {
+            said.setSpan(new ForegroundColorSpan(NOT_REACHED), from + filled, said.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        return said;
     }
 
     /** How much of the video a drag is covering, said as people say it rather than as a decimal. */
