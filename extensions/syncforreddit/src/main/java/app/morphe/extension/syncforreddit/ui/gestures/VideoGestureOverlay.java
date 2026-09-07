@@ -31,6 +31,7 @@ final class VideoGestureOverlay {
      * what still reads as a row rather than a wall.
      */
     private static final int MOST_CELLS = 20;
+
     /** Left a little see through, so that the video is not lost behind what is said about it. */
     private static final float OPACITY = 0.8f;
     private static final long FLASH_MS = 550;
