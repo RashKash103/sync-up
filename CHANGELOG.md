@@ -1,3 +1,5 @@
+## [1.7.0-dev.16](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.15...v1.7.0-dev.16) (2026-09-07)
+
 ## [1.7.0-dev.15](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.14...v1.7.0-dev.15) (2026-09-07)
 
 ### ✨ New Features
