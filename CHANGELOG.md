@@ -1,3 +1,9 @@
+## [1.7.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.3...v1.7.0-dev.4) (2026-09-07)
+
+### ✨ New Features
+
+* Give translation a screen in Sync's own settings ([77d8839](https://github.com/RashKash103/sync-up/commit/77d883906124257794c080ff5e6afd038a36a76f))
+
 ## [1.7.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.2...v1.7.0-dev.3) (2026-09-07)
 
 ### 🐛 Bug Fixes

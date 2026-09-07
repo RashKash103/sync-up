@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0-dev.3",
+  "version": "1.7.0-dev.4",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -357,6 +357,23 @@
           "values": null
         }
       ]
+    },
+    {
+      "name": "Translate posts and comments",
+      "description": "Translates a post or comment where it sits, on this device or through DeepL or Google Cloud. Everything about it is set up under Translation in Sync's settings.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "ResourcePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
     },
     {
       "name": "Use /user/ endpoint",
