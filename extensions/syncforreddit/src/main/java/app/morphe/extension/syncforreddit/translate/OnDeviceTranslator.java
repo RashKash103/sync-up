@@ -9,6 +9,8 @@ import com.google.mlkit.nl.translate.Translation;
 import com.google.mlkit.nl.translate.Translator;
 import com.google.mlkit.nl.translate.TranslatorOptions;
 
+import app.morphe.extension.shared.Logger;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -56,12 +58,21 @@ final class OnDeviceTranslator {
             throw new IllegalArgumentException("Cannot translate " + from + " into " + into);
         }
 
+        Logger.printInfo(() -> "Translating " + source + " into " + target);
+
         Translator translator = Translation.a(
                 new TranslatorOptions.Builder().b(source).c(target).a());
         try {
             // Nothing is asked of the connection: a model is wanted now, not when there is wifi.
-            Tasks.b(translator.G(new DownloadConditions.Builder().a()),
-                    MODEL_WAIT_SECONDS, TimeUnit.SECONDS);
+            try {
+                Tasks.b(translator.G(new DownloadConditions.Builder().a()),
+                        MODEL_WAIT_SECONDS, TimeUnit.SECONDS);
+            } catch (Exception ex) {
+                // What comes back is a pair of failures wrapped twice over, and the message on
+                // the outside of it says only how many of them there were.
+                throw new IllegalStateException(
+                        "No model for " + source + " into " + target + ": " + because(ex), ex);
+            }
 
             Object translated = Tasks.b(translator.A(text),
                     TRANSLATE_WAIT_SECONDS, TimeUnit.SECONDS);
@@ -72,6 +83,23 @@ final class OnDeviceTranslator {
         } finally {
             translator.close();
         }
+    }
+
+    /**
+     * @return Every reason behind a failure, outermost first. A failure from the library is
+     *         wrapped in as many as three layers, and only the innermost one says anything.
+     */
+    static String because(Throwable ex) {
+        StringBuilder said = new StringBuilder();
+        Throwable at = ex;
+        while (at != null && said.length() < 600) {
+            if (said.length() > 0) said.append(" <- ");
+            said.append(at.getClass().getSimpleName());
+            if (at.getMessage() != null) said.append(": ").append(at.getMessage());
+            if (at.getCause() == at) break;
+            at = at.getCause();
+        }
+        return said.toString();
     }
 
     /** @return Whether the library has a name for the language, and so can work with it. */

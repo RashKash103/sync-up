@@ -55,7 +55,7 @@ public final class TranslateNow {
 
                 answer(sheet, from, translated);
             } catch (Exception ex) {
-                Logger.printInfo(() -> "Could not translate: " + ex);
+                Logger.printInfo(() -> "Could not translate: " + OnDeviceTranslator.because(ex));
                 String said = ex.getMessage() == null
                         ? ex.getClass().getSimpleName() : ex.getMessage();
                 onTheMainThread.post(() -> da.d.v4(sheet, "Could not translate: " + said));
