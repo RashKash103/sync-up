@@ -1,3 +1,9 @@
+## [1.7.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.12...v1.7.0-dev.13) (2026-09-07)
+
+### ✨ New Features
+
+* Translate on the device, and keep what has been translated ([123c1a5](https://github.com/RashKash103/sync-up/commit/123c1a5ff4767e36f5ec998892184bf8e8e5ae42))
+
 ## [1.7.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.11...v1.7.0-dev.12) (2026-09-07)
 
 ### 🐛 Bug Fixes
