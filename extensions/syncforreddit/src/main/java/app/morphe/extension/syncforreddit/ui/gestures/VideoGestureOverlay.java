@@ -21,6 +21,16 @@ import java.util.Locale;
  */
 final class VideoGestureOverlay {
     private static final int BACKGROUND = 0xB3000000;
+
+    /** A step of volume that has been reached, and one that has not. */
+    private static final char FILLED = '\uFFED';
+    private static final char EMPTY = '\uFF65';
+
+    /**
+     * As many cells as the device has steps of volume, which is usually about fifteen, up to
+     * what still reads as a row rather than a wall.
+     */
+    private static final int MOST_CELLS = 20;
     /** Left a little see through, so that the video is not lost behind what is said about it. */
     private static final float OPACITY = 0.8f;
     private static final long FLASH_MS = 550;
@@ -62,9 +72,19 @@ final class VideoGestureOverlay {
                 clock(to), clock(duration), by < 0 ? "−" : "+", clock(Math.abs(by)), scale);
     }
 
+    /**
+     * The volume as a row of cells rather than a number, so that how loud it is can be seen at a
+     * glance while the finger is still moving.
+     */
     String describeVolume(int level, int steps) {
-        return String.format(Locale.US, "Volume %d%%",
-                Math.round(level * 100f / Math.max(steps, 1)));
+        int cells = Math.max(1, Math.min(MOST_CELLS, steps));
+        int filled = Math.round(level * (float) cells / Math.max(steps, 1));
+
+        StringBuilder bar = new StringBuilder("[ ");
+        for (int cell = 0; cell < cells; cell++) {
+            bar.append(cell < filled ? FILLED : EMPTY);
+        }
+        return bar.append(" ]").toString();
     }
 
     /** How much of the video a drag is covering, said as people say it rather than as a decimal. */
