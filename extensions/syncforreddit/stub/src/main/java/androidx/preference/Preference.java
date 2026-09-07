@@ -13,8 +13,16 @@ public class Preference {
         throw new UnsupportedOperationException("Stub");
     }
 
-    /** Whether the row is there at all. */
-    public void H0(boolean shown) {
+    /**
+     * setEnabled: whether the row can be used. A row that cannot is drawn faded and does not
+     * answer a tap, which is how a setting that does not apply is shown.
+     */
+    public void q0(boolean enabled) {
+        throw new UnsupportedOperationException("Stub");
+    }
+
+    /** notifyChanged: draw the row again, after something it shows has changed. */
+    public void M() {
         throw new UnsupportedOperationException("Stub");
     }
 

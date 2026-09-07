@@ -49,25 +49,56 @@ public class TranslationScreen extends pa.d {
 
         showWhatIsInUse();
         watchForAChangeOfService();
+        askWhatIsLeft();
     }
 
-    /** Only the service in use has anything to set up, so only its rows are shown. */
+    /**
+     * A service's settings stay where they are whichever service is chosen, so that what the
+     * others offer can still be seen, but only the one in use can be set: the rest are faded.
+     */
     private void showWhatIsInUse() {
         try {
             String service = TranslationSettings.service(Utils.getContext());
-            show(DEEPL_ROWS, TranslationSettings.DEEPL.equals(service));
-            show(GOOGLE_ROWS, TranslationSettings.GOOGLE.equals(service));
+            enable(DEEPL_ROWS, TranslationSettings.DEEPL.equals(service));
+            enable(GOOGLE_ROWS, TranslationSettings.GOOGLE.equals(service));
         } catch (Exception ex) {
-            Logger.printInfo(() -> "Could not settle which translation rows to show: " + ex);
+            Logger.printInfo(() -> "Could not settle which translation rows apply: " + ex);
         }
     }
 
-    private void show(String[] keys, boolean shown) {
+    private void enable(String[] keys, boolean enabled) {
         for (String key : keys) {
             Preference row = y(key);
             if (row != null) {
-                row.H0(shown);
+                row.q0(enabled);
             }
+        }
+    }
+
+    /**
+     * Asks DeepL what is left of the key's allowance as the screen opens, so that it is simply
+     * there to be read rather than something to go and check.
+     */
+    private void askWhatIsLeft() {
+        try {
+            Preference row = y(TranslationSettings.DEEPL_USAGE);
+            if (!(row instanceof UsagePreference)) {
+                return;
+            }
+            UsagePreference usage = (UsagePreference) row;
+
+            // What was heard last time, until this time's answer arrives.
+            String before = DeepLUsage.lastSaid();
+            usage.D0(before == null ? "Checking\u2026" : before);
+
+            DeepLUsage.ask(
+                    TranslationSettings.text(Utils.getContext(), TranslationSettings.DEEPL_KEY, ""),
+                    (described, used, allowed) -> {
+                        usage.D0(described);
+                        UsagePreference.say(usage, used, allowed);
+                    });
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not ask what allowance is left: " + ex);
         }
     }
 

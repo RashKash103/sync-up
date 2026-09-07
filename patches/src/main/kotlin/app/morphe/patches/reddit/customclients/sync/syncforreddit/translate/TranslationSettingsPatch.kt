@@ -10,6 +10,10 @@ private const val CATEGORY = "$PREFERENCES.defaults.CategoryHeaderPreference"
 private const val CHECK_BOX = "$PREFERENCES.defaults.SyncCheckBoxPreference"
 private const val LIST = "$PREFERENCES.defaults.SyncListPreference"
 private const val ROW = "$PREFERENCES.defaults.SyncPreference"
+
+/** A row of Sync's own kind that draws how much of an allowance is gone. */
+private const val USAGE_ROW =
+    "app.morphe.extension.syncforreddit.translate.UsagePreference"
 private const val HEADER = "$PREFERENCES.HeaderPreference"
 private const val ROOT_ROW = "$PREFERENCES.custom.RootPreference"
 
@@ -77,6 +81,28 @@ internal val translationSettingsPatch = resourcePatch(
             id.appendChild(document.createTextNode("8100"))
             resources.appendChild(id)
         }
+
+        // The space to the side of the usage row, which holds a bar of the platform's own kind.
+        get("res/layout/sync_up_usage.xml").writeText(
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="96dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp">
+                <ProgressBar
+                    android:id="@+id/sync_up_usage_bar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="96dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:max="100"
+                    android:progress="0" />
+            </FrameLayout>
+            """.trimIndent()
+        )
 
         // A screen of its own, written where Sync keeps its own.
         get("res/xml/cat_translation.xml").writeText(
@@ -151,11 +177,13 @@ internal val translationSettingsPatch = resourcePatch(
                     ),
                 )
                 row(
-                    ROW,
+                    USAGE_ROW,
                     mapOf(
                         "android:key" to "sync_up_translate_deepl_usage",
                         "android:title" to "DeepL usage",
-                        "android:summary" to "Tap to check",
+                        "android:summary" to "Checking\u2026",
+                        "android:widgetLayout" to "@layout/sync_up_usage",
+                        "android:selectable" to "false",
                     ),
                 )
                 row(
