@@ -1,3 +1,9 @@
+## [1.7.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.2...v1.7.0-dev.3) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Draw every volume cell with the same character, and say Volume above it ([acfcb01](https://github.com/RashKash103/sync-up/commit/acfcb01ad21b7953caf878ef2abac0766ae1166d))
+
 ## [1.7.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.1...v1.7.0-dev.2) (2026-09-07)
 
 ### 🐛 Bug Fixes
