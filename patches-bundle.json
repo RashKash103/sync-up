@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-07T19:06:06",
-  "description": "## [1.7.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.9...v1.7.0-dev.10) (2026-09-07)\n\n### ✨ New Features\n\n* Fade the settings of a service not in use, and show what DeepL has left ([5d2dac8](https://github.com/RashKash103/sync-up/commit/5d2dac826618bccfabdbdeeeafee201b9569f9a5))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.10/patches-1.7.0-dev.10.mpp",
+  "created_at": "2026-09-07T19:17:00",
+  "description": "## [1.7.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.10...v1.7.0-dev.11) (2026-09-07)\n\n### 🐛 Bug Fixes\n\n* Make a settings row that cannot be used look like it ([0b6d467](https://github.com/RashKash103/sync-up/commit/0b6d467b27dc239754f821195e0541d0711761b8))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.11/patches-1.7.0-dev.11.mpp",
   "signature_download_url": "",
-  "version": "1.7.0-dev.10"
+  "version": "1.7.0-dev.11"
 }

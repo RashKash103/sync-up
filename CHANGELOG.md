@@ -1,3 +1,9 @@
+## [1.7.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.10...v1.7.0-dev.11) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Make a settings row that cannot be used look like it ([0b6d467](https://github.com/RashKash103/sync-up/commit/0b6d467b27dc239754f821195e0541d0711761b8))
+
 ## [1.7.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.9...v1.7.0-dev.10) (2026-09-07)
 
 ### ✨ New Features
