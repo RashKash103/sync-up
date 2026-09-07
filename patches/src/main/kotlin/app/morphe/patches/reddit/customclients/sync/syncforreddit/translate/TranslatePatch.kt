@@ -56,6 +56,28 @@ private const val POST_MENU_CLASS =
 /** What Sync calls the row it shows for translating a post. */
 private const val THE_TRANSLATE_ROW = "mTranslate"
 
+/** What Sync calls the setting for the translate entry in a comment's quick actions. */
+private const val THE_QUICK_ACTION = "comment_action_translate"
+
+/**
+ * Where each quick action is asked whether it is to be offered. The translate one is asked two
+ * things, as the menus are: whether it is switched on, and whether the copy is paid for.
+ */
+private val offersTheQuickActionFingerprint = Fingerprint(
+    parameters = listOf("I"),
+    returnType = "Z",
+    custom = { method, _ ->
+        val instructions = method.implementation?.instructions?.toList() ?: emptyList()
+        val asked = instructions.indexOfFirst {
+            it.getReference<FieldReference>()?.name == THE_QUICK_ACTION
+        }
+        asked >= 0 && (asked until minOf(asked + 5, instructions.size)).any { at ->
+            val called = instructions[at].getReference<MethodReference>()
+            called != null && called.returnType == "Z" && called.parameterTypes.isEmpty()
+        }
+    },
+)
+
 /** The model a menu is about, of which each of these sheets holds exactly one. */
 private const val THE_CONTENT = "Lxa/d;"
 
@@ -285,6 +307,24 @@ val translatePatch = bytecodePatch(
                         (AccessFlags.PRIVATE.value or AccessFlags.PROTECTED.value).inv() or
                         AccessFlags.PUBLIC.value
             }
+
+        // The quick action under a comment is asked the same pair of questions the menus are,
+        // and the paid-copy one is answered here too. Whether the action is offered at all
+        // stays Sync's own setting for it.
+        offersTheQuickActionFingerprint.method.apply {
+            val switchedOn = indexOfFirstInstructionOrThrow {
+                getReference<FieldReference>()?.name == THE_QUICK_ACTION
+            }
+            val paidFor = indexOfFirstInstructionOrThrow(switchedOn) {
+                opcode == Opcode.INVOKE_STATIC &&
+                        getReference<MethodReference>()?.returnType == "Z" &&
+                        getReference<MethodReference>()?.parameterTypes?.isEmpty() == true
+            }
+            replaceInstruction(
+                paidFor,
+                "invoke-static { }, $SETTINGS_CLASS_DESCRIPTOR->$OFFERED_METHOD"
+            )
+        }
 
         // Translating something already translated puts back what was written, so neither
         // entry should still offer to translate it. Sync renames an entry itself where the same
