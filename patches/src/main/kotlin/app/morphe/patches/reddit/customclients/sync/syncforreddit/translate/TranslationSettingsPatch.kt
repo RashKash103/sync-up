@@ -10,6 +10,8 @@ private const val CATEGORY = "$PREFERENCES.defaults.CategoryHeaderPreference"
 private const val CHECK_BOX = "$PREFERENCES.defaults.SyncCheckBoxPreference"
 private const val LIST = "$PREFERENCES.defaults.SyncListPreference"
 private const val ROW = "$PREFERENCES.defaults.SyncPreference"
+private const val HEADER = "$PREFERENCES.HeaderPreference"
+private const val ROOT_ROW = "$PREFERENCES.custom.RootPreference"
 
 /**
  * Puts the translation settings among Sync's own, built from the same preferences Sync builds
@@ -66,16 +68,29 @@ internal val translationSettingsPatch = resourcePatch(
             array("sync_up_translate_keep_values", "1", "7", "30", "90", "0")
         }
 
-        // Added to a screen Sync already has rather than given one of its own. A screen of
-        // its own is reached by an id that Sync maps to a fragment of its own, and nothing that
-        // is not in that map can be reached at all; the row for one only crashed the settings.
-        document("res/xml/cat_general.xml").use { document ->
-            val headers = document.getElementsByTagName(CATEGORY)
-            val screen = (0 until headers.length)
-                .map { headers.item(it) as Element }
-                .firstOrNull()
-                ?.parentNode?.parentNode as? Element
-                ?: throw PatchException("No screen to add the translation settings to")
+        // An id for the screen, which is how Sync tells its screens apart. It has to be one no
+        // screen of Sync's own uses, and the same one the extension answers to.
+        document("res/values/integers.xml").use { document ->
+            val resources = document.getElementsByTagName("resources").item(0) as Element
+            val id = document.createElement("integer")
+            id.setAttribute("name", "SYNC_UP_TRANSLATION")
+            id.appendChild(document.createTextNode("8100"))
+            resources.appendChild(id)
+        }
+
+        // A screen of its own, written where Sync keeps its own.
+        get("res/xml/cat_translation.xml").writeText(
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto">
+                <$HEADER app:title="Translation" />
+            </PreferenceScreen>
+            """.trimIndent()
+        )
+
+        document("res/xml/cat_translation.xml").use { document ->
+            val screen = document.getElementsByTagName("PreferenceScreen").item(0) as Element
 
             fun category(title: String): Element {
                 val category = document.createElement("PreferenceCategory")
@@ -92,7 +107,7 @@ internal val translationSettingsPatch = resourcePatch(
                 appendChild(preference)
             }
 
-            category("Translation").apply {
+            category("General").apply {
                 row(
                     CHECK_BOX,
                     mapOf(
@@ -124,6 +139,9 @@ internal val translationSettingsPatch = resourcePatch(
                         "android:defaultValue" to "en-US",
                     ),
                 )
+            }
+
+            category("DeepL").apply {
                 row(
                     ROW,
                     mapOf(
@@ -167,6 +185,9 @@ internal val translationSettingsPatch = resourcePatch(
                         "android:summary" to "Not set",
                     ),
                 )
+            }
+
+            category("Google Cloud").apply {
                 row(
                     ROW,
                     mapOf(
@@ -175,6 +196,9 @@ internal val translationSettingsPatch = resourcePatch(
                         "android:summary" to "Not set",
                     ),
                 )
+            }
+
+            category("Cache").apply {
                 row(
                     LIST,
                     mapOf(
@@ -195,6 +219,23 @@ internal val translationSettingsPatch = resourcePatch(
                     ),
                 )
             }
+        }
+
+        // The way in, beside the other screens about what is read.
+        document("res/xml/cat_root.xml").use { document ->
+            val headers = document.getElementsByTagName(CATEGORY)
+            val content = (0 until headers.length)
+                .map { headers.item(it) as Element }
+                .firstOrNull { it.getAttribute("app:categoryTitle") == "Content" }
+                ?.parentNode as? Element
+                ?: throw PatchException("No Content section to put the translation screen in")
+
+            val row = document.createElement(ROOT_ROW)
+            row.setAttribute("android:title", "Translation")
+            row.setAttribute("android:summary", "Read posts and comments in your own language")
+            row.setAttribute("app:custom_icon", "@drawable/outline_translate_24")
+            row.setAttribute("app:preference_ref", "@integer/SYNC_UP_TRANSLATION")
+            content.appendChild(row)
         }
     }
 }
