@@ -1,3 +1,16 @@
+## [1.7.0-dev.28](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.27...v1.7.0-dev.28) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Let an API key and what a service is told be typed in ([d9d057e](https://github.com/RashKash103/sync-up/commit/d9d057e14df77492c378b112dabf5a5067612540))
+* Let the note about a translation carry less weight than the one beside it ([7a404e4](https://github.com/RashKash103/sync-up/commit/7a404e4391e6eb0c55c67991e5b08a54325db704))
+* Read what an earlier build wrote about a translation ([01133db](https://github.com/RashKash103/sync-up/commit/01133db9d5e999bdbf3f6673d24f468393029cae))
+
+### ✨ New Features
+
+* Keep a translation in place, in a feed as well as in a thread ([b161c37](https://github.com/RashKash103/sync-up/commit/b161c3797132886251202eae9d70b77ea1398b3f))
+* Offer translating from the actions under a comment ([b6e9faf](https://github.com/RashKash103/sync-up/commit/b6e9faf8061ae23056d9d622e60d3b89416ebec3))
+
 ## [1.7.0-dev.27](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.26...v1.7.0-dev.27) (2026-09-07)
 
 ### ✨ New Features
