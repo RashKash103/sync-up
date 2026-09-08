@@ -2,7 +2,12 @@ package app.morphe.extension.syncforreddit.http.posts;
 
 import androidx.annotation.NonNull;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -11,7 +16,6 @@ import java.util.regex.Pattern;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.requests.PatchedditInterceptor;
-import app.morphe.extension.syncforreddit.http.ArchiveRequests;
 
 import okhttp3.HttpUrl;
 import okhttp3.Request;
@@ -52,6 +56,20 @@ public class WebsitePreviewImagePatch extends PatchedditInterceptor {
 
     /** Only the head is worth reading, and some pages are very large. */
     private static final int ENOUGH_OF_THE_PAGE = 200_000;
+
+    /**
+     * Said to be a browser, because a great many sites refuse anything that does not say so.
+     * Asking as the app does by default is answered 403 by publishers often enough to matter,
+     * and a page that will not be read is a preview with a broken picture on it.
+     */
+    private static final String AS_A_BROWSER = "Mozilla/5.0 (Linux; Android 13) "
+            + "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36";
+
+    private static final String WANTING_A_PAGE =
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+
+    private static final int CONNECT_TIMEOUT_MS = 8_000;
+    private static final int READ_TIMEOUT_MS = 10_000;
 
     /** What each page named, so a thread full of links to one place asks it once. */
     private static final int REMEMBERED = 128;
@@ -114,11 +132,8 @@ public class WebsitePreviewImagePatch extends PatchedditInterceptor {
 
         String found = null;
         try {
-            String html = ArchiveRequests.get(page, "text/html");
-            if (html != null) {
-                String head = html.length() <= ENOUGH_OF_THE_PAGE
-                        ? html : html.substring(0, ENOUGH_OF_THE_PAGE);
-
+            String head = headOf(page);
+            if (head != null) {
                 Matcher names = NAMES_A_PICTURE.matcher(head);
                 if (names.find()) {
                     found = names.group(1);
@@ -133,17 +148,101 @@ public class WebsitePreviewImagePatch extends PatchedditInterceptor {
             Logger.printInfo(() -> "Could not read " + page + " for a picture: " + ex);
         }
 
-        if (found != null) {
-            found = found.trim();
-            if (found.startsWith("//")) {
-                found = "https:" + found;
+        String picture = whereThatPoints(page, found);
+        named.put(page, picture == null ? NAMED_NONE : picture);
+        return picture;
+    }
+
+    /** What closes the head of a page, after which nothing wanted here can appear. */
+    private static final byte[] CLOSES_THE_HEAD = "</head".getBytes(StandardCharsets.US_ASCII);
+
+    /** @return Whether the head ends within this block. Tags are plain letters in any encoding. */
+    private static boolean endsTheHead(byte[] block, int read) {
+        for (int at = 0; at + CLOSES_THE_HEAD.length <= read; at++) {
+            int same = 0;
+            while (same < CLOSES_THE_HEAD.length
+                    && (block[at + same] | 0x20) == CLOSES_THE_HEAD[same]) {
+                same++;
             }
-            if (!found.startsWith("http")) {
-                found = null;
+            if (same == CLOSES_THE_HEAD.length) {
+                return true;
             }
         }
+        return false;
+    }
 
-        named.put(page, found == null ? NAMED_NONE : found);
-        return found;
+    /**
+     * @return What the page named, made into an address that can be asked for: written as it is
+     *         in a page rather than as it is in a request, and often given relative to the page
+     *         it was found on.
+     */
+    private static String whereThatPoints(String page, String named) {
+        if (named == null) {
+            return null;
+        }
+
+        // A page is written as text, so an address in one carries its ampersands written out.
+        String where = named.trim()
+                .replace("&amp;", "&")
+                .replace("&#38;", "&")
+                .replace("&quot;", "\"")
+                .replace("&#39;", "'");
+
+        if (where.startsWith("//")) {
+            where = "https:" + where;
+        }
+        if (where.startsWith("http")) {
+            return where;
+        }
+
+        HttpUrl from = HttpUrl.parse(page);
+        HttpUrl resolved = from == null ? null : from.resolve(where);
+        return resolved == null ? null : resolved.toString();
+    }
+
+    /**
+     * @return As much of the page as its head can be in, or null where it would not be given.
+     *
+     * <p>Read here rather than through what asks the archive for things: that waits its turn and
+     * spaces its calls, which is right for one service being asked a great deal and wrong for a
+     * page being read once.
+     */
+    private static String headOf(String page) throws IOException {
+        HttpURLConnection asking = (HttpURLConnection) new URL(page).openConnection();
+        try {
+            asking.setRequestMethod("GET");
+            asking.setInstanceFollowRedirects(true);
+            asking.setConnectTimeout(CONNECT_TIMEOUT_MS);
+            asking.setReadTimeout(READ_TIMEOUT_MS);
+            asking.setRequestProperty("User-Agent", AS_A_BROWSER);
+            asking.setRequestProperty("Accept", WANTING_A_PAGE);
+            asking.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
+
+            int said = asking.getResponseCode();
+            if (said != HttpURLConnection.HTTP_OK) {
+                Logger.printInfo(() -> page + " answered " + said + " rather than a page");
+                return null;
+            }
+
+            try (InputStream reading = asking.getInputStream()) {
+                ByteArrayOutputStream head = new ByteArrayOutputStream();
+                byte[] block = new byte[8192];
+                int read;
+                boolean done = false;
+
+                while (!done && head.size() < ENOUGH_OF_THE_PAGE
+                        && (read = reading.read(block)) > 0) {
+                    head.write(block, 0, read);
+                    // Everything wanted is in the head, and some pages run to megabytes. The
+                    // block just read is what is looked at, since looking at the whole of what
+                    // has been read so far would cost more each time round.
+                    done = endsTheHead(block, read);
+                }
+
+                return head.toString(StandardCharsets.UTF_8.name());
+            }
+        } finally {
+            asking.disconnect();
+        }
     }
 }
