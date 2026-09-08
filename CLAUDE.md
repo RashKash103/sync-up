@@ -198,6 +198,13 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   a call placed in front of that return is never reached by the path that matters, and nothing
   is logged at all. Anchor on an instruction every path executes — the one that reads the value
   being passed around is usually it — and resolve the branch targets before choosing an index.
+- **An injected call cannot go into a method that takes an array.** What assembles inline smali
+  builds a method around the instruction out of the target method's own parameters, and does not
+  read an array among them. It fails as `NoSuchElementException: Collection is empty` from
+  `InlineSmaliCompiler.compile` — nothing about arrays, and nothing about the line at fault
+  beyond the patch's own stack frame. Naming the register by number rather than as `pN` does not
+  help, since the signature is built either way. `RedditProvider.bulkInsert(Uri, ContentValues[])`
+  cannot be hooked; its callers, which take no arrays, can.
 - **Two methods on a class can have the same signature.** `Loc/c;` has both `u()V` and `p()V`,
   so a predicate matching "no parameters, returns void, on `Loc/c;`" finds the wrong one. Anchor
   on what guards or surrounds the call instead.

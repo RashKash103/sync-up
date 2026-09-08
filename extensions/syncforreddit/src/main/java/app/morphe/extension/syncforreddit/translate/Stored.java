@@ -19,6 +19,10 @@ final class Stored {
     /** What the app calls a comment, where it says which kind of thing it has. */
     static final int A_COMMENT = 11;
 
+    /** Which post or comment a row is, and which kind. */
+    static final String THE_ID = "_id";
+    static final String THE_KIND = "sync_type";
+
     /** Where the text of each is kept. */
     private static final String COMMENT_WRITTEN = "body_raw";
     private static final String COMMENT_DRAWN = "body_processed";
@@ -42,6 +46,17 @@ final class Stored {
     static void write(Context context, String id, boolean isAComment, String title,
                               String body) {
         ContentValues values = new ContentValues();
+        into(values, isAComment, title, body);
+        if (values.size() == 0) {
+            return;
+        }
+
+        context.getContentResolver().update(RedditProvider.q, values, id, null);
+        context.getContentResolver().notifyChange(RedditProvider.B, null);
+    }
+
+    /** Fills in every column the text of a post or a comment is kept across. */
+    static void into(ContentValues values, boolean isAComment, String title, String body) {
         if (body != null) {
             String drawn = d7.f.r(null, body);
             values.put(isAComment ? COMMENT_WRITTEN : POST_WRITTEN, body);
@@ -54,12 +69,46 @@ final class Stored {
         if (title != null) {
             values.put(THE_TITLE, title);
         }
-        if (values.size() == 0) {
-            return;
-        }
+    }
 
-        context.getContentResolver().update(RedditProvider.q, values, id, null);
-        context.getContentResolver().notifyChange(RedditProvider.B, null);
+    /** What the app reads back out of a row it is about to store. */
+    static String writtenIn(ContentValues row, boolean isAComment) {
+        return row.getAsString(isAComment ? COMMENT_WRITTEN : POST_WRITTEN);
+    }
+
+    static String titleIn(ContentValues row) {
+        return row.getAsString(THE_TITLE);
+    }
+
+    /**
+     * Called with everything the app is about to store.
+     *
+     * <p>Reading a thread again writes what an author wrote over a translation, and the reader
+     * sees the post they translated turn back for as long as it takes to notice and undo it.
+     * Caught here instead, before any of it is stored, so there is nothing to see.
+     *
+     * @param rows What is about to be stored, taken as an object because a row of them cannot
+     *             be written into a call at patch time: the compiler that assembles one does
+     *             not read an array in what it is asked to call.
+     * @noinspection unused
+     */
+    public static void beforeStoring(Object rows) {
+        try {
+            if (!(rows instanceof ContentValues[]) || !Originals.anyKept()) {
+                return;
+            }
+            for (ContentValues row : (ContentValues[]) rows) {
+                Originals.putTheTranslationBackInto(row);
+            }
+        } catch (Throwable ex) {
+            // Whatever else, the app's own writing must go through.
+            Logger.printInfo(() -> "Could not keep a translation through a read: " + ex);
+        }
+    }
+
+    /** The same where the app stores one row on its own. */
+    public static void beforeStoringOne(ContentValues row) {
+        beforeStoring((Object) new ContentValues[]{row});
     }
 
     /**

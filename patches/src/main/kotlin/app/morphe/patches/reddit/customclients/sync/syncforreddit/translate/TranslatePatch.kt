@@ -15,6 +15,7 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
@@ -42,6 +43,19 @@ private const val INSTEAD_METHOD =
     "instead(Lda/d;Ljava/lang/String;Ljava/lang/String;)V"
 
 private const val SHEET_CLASS_DESCRIPTOR = "Lda/d;"
+
+private const val STORED_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/translate/Stored;"
+
+private const val BEFORE_STORING_METHOD = "beforeStoring(Ljava/lang/Object;)V"
+
+private const val BEFORE_STORING_ONE_METHOD =
+    "beforeStoringOne(Landroid/content/ContentValues;)V"
+
+private const val EXTENSION_PACKAGE = "Lapp/morphe/extension/"
+
+private const val PROVIDER_CLASS =
+    "Lcom/laurencedawson/reddit_sync/provider/RedditProvider;"
 
 private const val LABELS_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/translate/Labels;"
@@ -307,6 +321,62 @@ val translatePatch = bytecodePatch(
                         (AccessFlags.PRIVATE.value or AccessFlags.PROTECTED.value).inv() or
                         AccessFlags.PUBLIC.value
             }
+
+        // Reading a thread again writes what an author wrote over a translation, and the post
+        // turns back for as long as it takes to notice and undo it. Every row the app stores
+        // passes through here first, so a translation still standing is put back into the row
+        // before any of it is written and there is nothing to see.
+        // A row on its own is caught where it is stored.
+        var storesRows = 0
+        mutableClassDefBy(PROVIDER_CLASS).methods.forEach { storing ->
+            if (storing.name != "insert" || storing.implementation == null
+                    || storing.parameters.size != 2) {
+                return@forEach
+            }
+            storing.addInstructions(
+                0,
+                "invoke-static { p2 }, $STORED_CLASS_DESCRIPTOR->$BEFORE_STORING_ONE_METHOD"
+            )
+            storesRows++
+        }
+
+        // A thread's worth of them arrives together, and cannot be caught where they are
+        // stored: what assembles an injected call builds a method around it out of the
+        // parameters of the method it is going into, and will not read an array among them —
+        // which is exactly what storing many rows takes. So they are caught on the way in
+        // instead, at each place that hands them over.
+        classDefForEach { candidate ->
+            candidate.methods.forEach eachMethod@{ method ->
+                val instructions = method.implementation?.instructions?.toList()
+                    ?: return@eachMethod
+                if (candidate.type.startsWith(EXTENSION_PACKAGE)) {
+                    return@eachMethod
+                }
+
+                val handedOver = instructions.indexOfFirst {
+                    val called = it.getReference<MethodReference>() ?: return@indexOfFirst false
+                    called.name == "bulkInsert" &&
+                            called.definingClass == "Landroid/content/ContentResolver;"
+                }
+                if (handedOver < 0) return@eachMethod
+
+                val rows = (instructions[handedOver] as FiveRegisterInstruction).registerE
+
+                mutableClassDefBy(candidate.type).methods.first {
+                    it.name == method.name &&
+                            it.parameters.map { each -> each.type } ==
+                            method.parameters.map { each -> each.type }
+                }.addInstructions(
+                    handedOver,
+                    "invoke-static { v$rows }, $STORED_CLASS_DESCRIPTOR->$BEFORE_STORING_METHOD"
+                )
+                storesRows++
+            }
+        }
+
+        if (storesRows < 2) {
+            throw PatchException("Rows are not stored the way they were, found $storesRows")
+        }
 
         // The quick action under a comment is asked the same pair of questions the menus are,
         // and the paid-copy one is answered here too. Whether the action is offered at all

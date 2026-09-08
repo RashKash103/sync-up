@@ -137,6 +137,48 @@ public final class Originals {
     /** Which posts are having their translation written back, so it is done once at a time. */
     private static final java.util.Set<String> beingPutBack = new java.util.HashSet<>();
 
+    /** @return Whether anything at all has been translated, asked before every row is read. */
+    static boolean anyKept() {
+        return !held().isEmpty();
+    }
+
+    /**
+     * Puts the translation into a row the app is about to store, where that row is carrying
+     * what its author wrote over a translation that is standing.
+     */
+    static void putTheTranslationBackInto(android.content.ContentValues row) {
+        if (row == null) {
+            return;
+        }
+        String id = row.getAsString(Stored.THE_ID);
+        Held about = id == null ? null : held().get(id);
+        if (about == null) {
+            return;
+        }
+
+        Integer kind = row.getAsInteger(Stored.THE_KIND);
+        boolean isAComment = kind != null && kind == Stored.A_COMMENT;
+        String body = Stored.writtenIn(row, isAComment);
+        String title = isAComment ? null : Stored.titleIn(row);
+        if (body == null && title == null) {
+            return;
+        }
+
+        if (!about.isWhatWasWritten(about.asItWasCounted(title, body))) {
+            // Either it is already the translation, or the text has moved on since.
+            return;
+        }
+
+        Written was = written(id);
+        if (was == null || (was.translatedTitle == null && was.translatedBody == null)) {
+            return;
+        }
+
+        Logger.printInfo(() -> "Keeping " + id + " translated through a read");
+        Stored.into(row, isAComment, isAComment ? null : was.translatedTitle,
+                was.translatedBody);
+    }
+
     /** @return What was written, or null where this was never translated. */
     @Nullable
     static Written written(String id) {

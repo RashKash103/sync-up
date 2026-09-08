@@ -46,6 +46,9 @@ final class DeepLTranslator {
 
     private static final int TIMEOUT_MS = 20_000;
 
+    /** Said where a key was not accepted, and what a second host is tried on. */
+    private static final String REFUSED_THE_KEY = "DeepL refused the key";
+
     /** How many runs go in one request. */
     private static final int AT_ONCE = 50;
 
@@ -124,7 +127,7 @@ final class DeepLTranslator {
             asking.put("custom_instructions", told);
         }
 
-        JSONObject answered = new JSONObject(post(where(key), key, asking.toString()));
+        JSONObject answered = new JSONObject(asked(key, asking.toString()));
         JSONArray translations = answered.optJSONArray("translations");
         if (translations == null) {
             throw new IllegalStateException("DeepL answered with no translations");
@@ -163,9 +166,24 @@ final class DeepLTranslator {
         return told.length() == 0 ? null : told;
     }
 
-    /** @return Where to ask. A key given away free is answered by a host of its own. */
-    private static String where(String key) {
-        return key.endsWith(FREE_KEY_ENDS) ? FREE : PAID;
+    /**
+     * @return What the service answered. Which host answers a key is told from the key itself,
+     *         which is how the service says to tell them apart. Where that is refused the other
+     *         is tried once, since a key sent to the wrong one is refused exactly as a key that
+     *         is not a key would be, and the difference is worth not making someone guess at.
+     */
+    private static String asked(String key, String asking) throws Exception {
+        boolean free = key.endsWith(FREE_KEY_ENDS);
+        try {
+            return post(free ? FREE : PAID, key, asking);
+        } catch (Exception ex) {
+            if (!(ex instanceof IllegalStateException) || !String.valueOf(ex.getMessage())
+                    .contains(REFUSED_THE_KEY)) {
+                throw ex;
+            }
+            Logger.printInfo(() -> "DeepL refused that key, trying the other host");
+            return post(free ? PAID : FREE, key, asking);
+        }
     }
 
     /** @return A target as the service writes them, which keeps the country where there is one. */
@@ -225,7 +243,7 @@ final class DeepLTranslator {
     private static String whatThatMeans(int said, String body) {
         switch (said) {
             case 403:
-                return "DeepL refused the key";
+                return REFUSED_THE_KEY;
             case 429:
                 return "DeepL is being asked too often";
             case 456:
