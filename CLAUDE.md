@@ -300,7 +300,15 @@ The patch logic is a faithful port. Where this repository intentionally differs:
   the shared code only those used, are dropped.
 - Patches with no Patcheddit equivalent, written for problems specific to Sync: the RedGifs
   `/info` emulation and the Gfycat to RedGifs redirect. Both came out of endpoints Sync depends
-  on that no longer exist.
+  on that no longer exist. Also the translation patch, and `Unlock Sync Ultra`.
+- **Sync Ultra is asked about in three ways**, and a feature kept back may be behind any or all
+  of them: `uc.b.j()` (paid for, asked in 43 places), `t7.d0.*` (flags set from afar, all off),
+  and an account name containing `.AO-` (the developer's own). Where all three are asked
+  together the feature was finished and never given out, and needs nothing but the device —
+  website previews, reading text out of an image, tagging a user. Where only the first is asked
+  it is usually a small local thing. What is kept on Sync's own servers — paints, tags, cloud
+  backup, its own restoring of removed comments — is left gated, since those services answer
+  401 or nothing at all.
 - The Boost patches that were worth porting are reworked rather than copied, because Sync
   differs at every hook point: no JRAW, a different thread URL shape, raw markdown instead of
   the `_html` fields, Glide on its own client, and a layout driven menu. `org.json` is used

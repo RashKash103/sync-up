@@ -288,6 +288,24 @@ service being asked.
   - Translations are kept for as long as the setting says, so reading a thread again does not
     pay for it twice. What is being kept, and clearing it, are in the same settings.
 
+#### Sync Ultra
+
+- **Unlock Sync Ultra** — Turns on the parts of Sync's subscription that need nothing but the
+  device they run on, and takes away what can no longer be had.
+  - **Website previews** in comments, **reading text out of an image**, **tagging a user**,
+    **following a link past Google's copy of a page**, **opening the app logged out**, and the
+    joke-link bypass. Each still obeys its own setting; the patch only answers the questions
+    asked before that setting is reached.
+  - Those questions were three: whether the copy is paid for, whether a flag was turned on from
+    afar, and — for several of them — whether the account reading it is one of the developer's
+    own. The last two mean some of these were finished and then never given to anyone.
+  - **What is left alone**: paints, tags and settings kept on Sync's own servers, its cloud
+    backup, and its own restoring of removed comments. Those need services that no longer
+    answer, and a button that can only fail is worse than no button. Sync's own translating is
+    replaced rather than unlocked — see *Translation* above.
+  - The **Sync Ultra screen is removed** from settings, along with the cloud backup section that
+    needed it and the offer to buy it in the account switcher.
+
 #### Other
 
 - **Enable Android debugging** — Inherited from upstream, off by default, and applies to any
