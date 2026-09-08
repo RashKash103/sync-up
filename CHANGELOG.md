@@ -1,3 +1,9 @@
+## [1.7.0-dev.41](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.40...v1.7.0-dev.41) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Make the reader for a thread where something can be told of a change ([0dde7fd](https://github.com/RashKash103/sync-up/commit/0dde7fdf1401f47f6e6c8f9e00c5dda7e6dd90d5))
+
 ## [1.7.0-dev.40](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.39...v1.7.0-dev.40) (2026-09-08)
 
 ### 🐛 Bug Fixes

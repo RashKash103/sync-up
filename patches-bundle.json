@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-08T03:29:30",
-  "description": "## [1.7.0-dev.40](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.39...v1.7.0-dev.40) (2026-09-08)\n\n### 🐛 Bug Fixes\n\n* Put the thread entry where the menu will reach it ([ad2a986](https://github.com/RashKash103/sync-up/commit/ad2a986154a4eb75cba8225ae3ac80471a85519e))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.40/patches-1.7.0-dev.40.mpp",
+  "created_at": "2026-09-08T03:37:45",
+  "description": "## [1.7.0-dev.41](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.40...v1.7.0-dev.41) (2026-09-08)\n\n### 🐛 Bug Fixes\n\n* Make the reader for a thread where something can be told of a change ([0dde7fd](https://github.com/RashKash103/sync-up/commit/0dde7fdf1401f47f6e6c8f9e00c5dda7e6dd90d5))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.41/patches-1.7.0-dev.41.mpp",
   "signature_download_url": "",
-  "version": "1.7.0-dev.40"
+  "version": "1.7.0-dev.41"
 }
