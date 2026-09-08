@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-08T04:47:27",
-  "description": "## [1.7.0-dev.44](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.43...v1.7.0-dev.44) (2026-09-08)\n\n### 🐛 Bug Fixes\n\n* Show a website preview with the picture the page names ([7717b7c](https://github.com/RashKash103/sync-up/commit/7717b7c266a71c8b21313b188c7c8970e482ef8c))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.44/patches-1.7.0-dev.44.mpp",
+  "created_at": "2026-09-08T04:56:33",
+  "description": "## [1.7.0-dev.45](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.44...v1.7.0-dev.45) (2026-09-08)\n\n### 🐛 Bug Fixes\n\n* Ask a page for its picture the way a browser would ([1327818](https://github.com/RashKash103/sync-up/commit/1327818f62d29ccb77f8dd1fb194a6f55e4688fd))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.45/patches-1.7.0-dev.45.mpp",
   "signature_download_url": "",
-  "version": "1.7.0-dev.44"
+  "version": "1.7.0-dev.45"
 }

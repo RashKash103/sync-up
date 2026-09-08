@@ -1,3 +1,9 @@
+## [1.7.0-dev.45](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.44...v1.7.0-dev.45) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Ask a page for its picture the way a browser would ([1327818](https://github.com/RashKash103/sync-up/commit/1327818f62d29ccb77f8dd1fb194a6f55e4688fd))
+
 ## [1.7.0-dev.44](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.43...v1.7.0-dev.44) (2026-09-08)
 
 ### 🐛 Bug Fixes
