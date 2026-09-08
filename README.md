@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.7.0-dev.42](https://github.com/RashKash103/sync-up/releases/tag/v1.7.0-dev.42)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;23 patches total
+> **[v1.7.0-dev.43](https://github.com/RashKash103/sync-up/releases/tag/v1.7.0-dev.43)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;24 patches total
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;22 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;23 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -68,12 +68,13 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Show videos posted in comments](#show-videos-posted-in-comments) | Draws a video posted in a comment in the comment, and plays it when tapped. |  |
 | [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent |
 | [Translate posts and comments](#translate-posts-and-comments) | Translates a post or comment where it sits, on this device or through DeepL or Google Cloud. Everything about it is set up under Translation in Sync's settings. |  |
+| [Unlock Sync Ultra](#unlock-sync-ultra) | Turns on the parts of Sync Ultra that need nothing but this device: website previews, reading text out of an image, tagging a user, and others. What Sync kept on its own servers is left alone, and every offer to buy it is removed. |  |
 | [Use /user/ endpoint](#use-user-endpoint) | Replaces the deprecated /u profile endpoint with /user. |  |
 
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;21 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;22 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -98,12 +99,13 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Show videos posted in comments](#show-videos-posted-in-comments) | Draws a video posted in a comment in the comment, and plays it when tapped. |  |
 | [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent |
 | [Translate posts and comments](#translate-posts-and-comments) | Translates a post or comment where it sits, on this device or through DeepL or Google Cloud. Everything about it is set up under Translation in Sync's settings. |  |
+| [Unlock Sync Ultra](#unlock-sync-ultra) | Turns on the parts of Sync Ultra that need nothing but this device: website previews, reading text out of an image, tagging a user, and others. What Sync kept on its own servers is left alone, and every offer to buy it is removed. |  |
 | [Use /user/ endpoint](#use-user-endpoint) | Replaces the deprecated /u profile endpoint with /user. |  |
 
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;21 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;22 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -128,6 +130,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Show videos posted in comments](#show-videos-posted-in-comments) | Draws a video posted in a comment in the comment, and plays it when tapped. |  |
 | [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent |
 | [Translate posts and comments](#translate-posts-and-comments) | Translates a post or comment where it sits, on this device or through DeepL or Google Cloud. Everything about it is set up under Translation in Sync's settings. |  |
+| [Unlock Sync Ultra](#unlock-sync-ultra) | Turns on the parts of Sync Ultra that need nothing but this device: website previews, reading text out of an image, tagging a user, and others. What Sync kept on its own servers is left alone, and every offer to buy it is removed. |  |
 | [Use /user/ endpoint](#use-user-endpoint) | Replaces the deprecated /u profile endpoint with /user. |  |
 
 </details>

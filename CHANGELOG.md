@@ -1,3 +1,9 @@
+## [1.7.0-dev.43](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.42...v1.7.0-dev.43) (2026-09-08)
+
+### ✨ New Features
+
+* Unlock what Sync Ultra kept back and needs nothing to run ([e61f4d0](https://github.com/RashKash103/sync-up/commit/e61f4d0f79e1496341762a3d1556d2b655da1384))
+
 ## [1.7.0-dev.42](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.41...v1.7.0-dev.42) (2026-09-08)
 
 ### ✨ New Features

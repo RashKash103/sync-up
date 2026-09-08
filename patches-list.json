@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0-dev.42",
+  "version": "1.7.0-dev.43",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -367,6 +367,23 @@
         "BytecodePatch",
         "ResourcePatch",
         "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Unlock Sync Ultra",
+      "description": "Turns on the parts of Sync Ultra that need nothing but this device: website previews, reading text out of an image, tagging a user, and others. What Sync kept on its own servers is left alone, and every offer to buy it is removed.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "ResourcePatch"
       ],
       "compatiblePackages": {
         "com.laurencedawson.reddit_sync": [
