@@ -1,6 +1,7 @@
 package app.morphe.extension.syncforreddit.translate;
 
 import android.content.Context;
+import android.content.CursorLoader;
 import android.database.Cursor;
 
 import java.util.ArrayList;
@@ -26,31 +27,51 @@ final class EveryComment {
 
     /**
      * @param about The post the thread belongs to.
+     * @return A reader for that thread, or null where there can be none.
+     *
+     * <p>Must be made on the thread that draws. What Sync hands back watches the store for
+     * changes, and a thing that watches has to be made where there is something to be told on
+     * — which a thread of one's own has not.
+     */
+    static CursorLoader readerFor(Context context, String about) {
+        if (context == null || about == null || about.isEmpty()) {
+            return null;
+        }
+        try {
+            String asking = t7.l.a(about, null);
+            Logger.printInfo(() -> "Reading the thread of " + about + " with " + asking);
+            return q8.c.a(context, asking, false, null);
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "Could not ask about the thread: "
+                    + OnDeviceTranslator.because(ex));
+            return null;
+        }
+    }
+
+    /**
+     * @param reader What was made on the thread that draws.
      * @return Every comment Sync has read of that thread.
      *
      * <p>Asked of Sync's own store, the way Sync asks it when translating a thread itself. The
      * comments are not held in a list anywhere — what is drawn is drawn straight from a cursor
      * — and reading the one the screen is using would move it under the screen's feet.
      */
-    static List<xa.d> of(Context context, String about) {
+    static List<xa.d> of(CursorLoader reader) {
         List<xa.d> comments = new ArrayList<>();
-        if (context == null || about == null || about.isEmpty()) {
+        if (reader == null) {
             return comments;
         }
 
         Cursor rows = null;
         try {
-            String asking = t7.l.a(about, null);
-            Logger.printInfo(() -> "Reading the thread of " + about + " with " + asking);
-
-            rows = q8.c.a(context, asking, false, null).loadInBackground();
+            rows = reader.loadInBackground();
             if (rows == null) {
-                Logger.printInfo(() -> "Nothing came back for the thread of " + about);
+                Logger.printInfo(() -> "Nothing came back for the thread");
                 return comments;
             }
 
             int held = rows.getCount();
-            Logger.printInfo(() -> "The thread of " + about + " holds " + held);
+            Logger.printInfo(() -> "The thread holds " + held);
             for (int row = 0; row < rows.getCount(); row++) {
                 xa.d each = xa.d.z(rows, row);
                 if (each != null) {

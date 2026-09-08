@@ -1,6 +1,7 @@
 package app.morphe.extension.syncforreddit.translate;
 
 import android.content.Context;
+import android.content.CursorLoader;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -107,9 +108,12 @@ public final class WithoutTheSheet {
                 return false;
             }
 
-            // Reading the thread waits on the store, which the thread that draws must not.
+            // Made here, where there is a thread that can be told of a change, and read on one
+            // of our own, since waiting on the store is not for the thread that draws.
+            CursorLoader reader = EveryComment.readerFor(Utils.getContext(), about);
+
             new Thread(() -> {
-                List<xa.d> comments = EveryComment.of(Utils.getContext(), about);
+                List<xa.d> comments = EveryComment.of(reader);
                 if (comments.isEmpty()) {
                     say("No comments to translate");
                     return;
@@ -130,9 +134,10 @@ public final class WithoutTheSheet {
      * @param about The post the thread belongs to, which is how its comments are asked for.
      */
     public static void forThisAndUnder(xa.d one, String about) {
+        CursorLoader reader = EveryComment.readerFor(Utils.getContext(), about);
+
         new Thread(() -> {
-            List<xa.d> thread = EveryComment.under(
-                    EveryComment.of(Utils.getContext(), about), one);
+            List<xa.d> thread = EveryComment.under(EveryComment.of(reader), one);
             if (thread.isEmpty()) {
                 say("Nothing under that comment");
                 return;
