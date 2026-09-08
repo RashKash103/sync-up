@@ -28,10 +28,11 @@ public final class Notes {
     private static final int RESTORED = 0xFFD1373A;
 
     /**
-     * A blue chosen the same way, and far enough from the red that the two are told apart at a
-     * glance where a comment was both put back and translated.
+     * A blue chosen the same way, but deeper, so that it carries less weight than the red
+     * beside it: text that was put back is worth noticing, and text being read in translation
+     * is worth knowing.
      */
-    private static final int TRANSLATED = 0xFF2E8BC4;
+    private static final int TRANSLATED = 0xFF1B5E86;
 
     private Notes() {}
 
