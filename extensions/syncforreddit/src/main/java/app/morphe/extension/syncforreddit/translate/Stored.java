@@ -23,9 +23,10 @@ public final class Stored {
     /** What the app calls a comment, where it says which kind of thing it has. */
     static final int A_COMMENT = 11;
 
-    /** Which post or comment a row is, and which kind. */
+    /** Which post or comment a row is, which kind, and which thread it belongs to. */
     static final String THE_ID = "_id";
     static final String THE_KIND = "sync_type";
+    static final String THE_THREAD = "link_id";
 
     /** Where the text of each is kept. */
     private static final String COMMENT_WRITTEN = "body_raw";
@@ -98,15 +99,41 @@ public final class Stored {
      */
     public static void beforeStoring(Object rows) {
         try {
-            if (!(rows instanceof ContentValues[]) || !Originals.anyKept()) {
+            // Every row the app stores comes through here, so the question asked first is the
+            // cheapest one: whether anything at all has been translated.
+            if (!(rows instanceof ContentValues[])
+                    || (!Originals.anyKept() && !Wholesale.anyWanted())) {
                 return;
             }
             for (ContentValues row : (ContentValues[]) rows) {
                 Originals.putTheTranslationBackInto(row);
+                arrivedIn(row);
             }
         } catch (Throwable ex) {
             // Whatever else, the app's own writing must go through.
             Logger.printInfo(() -> "Could not keep a translation through a read: " + ex);
+        }
+    }
+
+    /**
+     * Notices a comment arriving in a thread that was asked for whole, so that what loads after
+     * the rest were translated is translated too.
+     */
+    private static void arrivedIn(ContentValues row) {
+        try {
+            Integer kind = row.getAsInteger(THE_KIND);
+            if (kind == null || kind != A_COMMENT) {
+                return;
+            }
+            String thread = row.getAsString(THE_THREAD);
+            if (thread == null) {
+                return;
+            }
+            // A thread is named with the kind in front of it, and asked for without.
+            int names = thread.indexOf('_');
+            Wholesale.somethingArrivedIn(names < 0 ? thread : thread.substring(names + 1));
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not tell what arrived: " + ex);
         }
     }
 

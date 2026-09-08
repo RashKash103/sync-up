@@ -63,8 +63,8 @@ final class DeepLTranslator {
     private DeepLTranslator() {}
 
     /** @return The text translated, with everything that was not words left as it was. */
-    static String translateMarkdown(Context context, String markdown, String from, String into)
-            throws Exception {
+    static String translateMarkdown(Context context, String markdown, String from, String into,
+                                    String about) throws Exception {
         // Twice through: once to find every run of words, and once to put back what came of
         // them. The same text gives the same runs both times.
         Set<String> runs = new LinkedHashSet<>();
@@ -73,16 +73,16 @@ final class DeepLTranslator {
             return run;
         });
 
-        Map<String, String> answered = ask(context, new ArrayList<>(runs), from, into);
+        Map<String, String> answered = ask(context, new ArrayList<>(runs), from, into, about);
         return Markdown.translated(markdown, answered::get);
     }
 
     /** @return One piece of text translated. */
-    static String translate(Context context, String text, String from, String into)
+    static String translate(Context context, String text, String from, String into, String about)
             throws Exception {
         Map<String, String> answered =
                 ask(context, new ArrayList<>(java.util.Collections.singletonList(text)),
-                        from, into);
+                        from, into, about);
         String said = answered.get(text);
         if (said == null) {
             throw new IllegalStateException("Nothing came back");
@@ -92,7 +92,7 @@ final class DeepLTranslator {
 
     /** @return What each run was translated to, by the run it came from. */
     private static Map<String, String> ask(Context context, List<String> runs, String from,
-                                           String into) throws Exception {
+                                           String into, String about) throws Exception {
         String key = TranslationSettings.text(context, TranslationSettings.DEEPL_KEY, "").trim();
         if (key.isEmpty()) {
             throw new IllegalStateException("No DeepL key set");
@@ -101,7 +101,7 @@ final class DeepLTranslator {
         Map<String, String> answered = new HashMap<>();
         for (int at = 0; at < runs.size(); at += AT_ONCE) {
             List<String> some = runs.subList(at, Math.min(at + AT_ONCE, runs.size()));
-            JSONArray said = translated(context, key, some, from, into);
+            JSONArray said = translated(context, key, some, from, into, about);
 
             for (int each = 0; each < some.size() && each < said.length(); each++) {
                 answered.put(some.get(each), said.getJSONObject(each).optString("text", null));
@@ -112,7 +112,8 @@ final class DeepLTranslator {
 
     /** @return What the service answered, in the order it was asked. */
     private static JSONArray translated(Context context, String key, List<String> runs,
-                                        String from, String into) throws Exception {
+                                        String from, String into, String about)
+            throws Exception {
         JSONObject asking = new JSONObject();
         asking.put("text", new JSONArray(runs));
         asking.put("target_lang", asDeepLWantsATarget(into));
@@ -120,6 +121,11 @@ final class DeepLTranslator {
         String source = asDeepLWantsASource(from);
         if (source != null) {
             asking.put("source_lang", source);
+        }
+
+        if (about != null && !about.isEmpty()) {
+            // Translated against, never translated.
+            asking.put("context", about);
         }
 
         JSONArray told = whatToTellIt(context, into);

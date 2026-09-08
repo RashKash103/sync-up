@@ -5,8 +5,10 @@ import android.content.CursorLoader;
 import android.database.Cursor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import app.morphe.extension.shared.Logger;
@@ -23,6 +25,9 @@ import app.morphe.extension.shared.Logger;
  * is one comment and one question, rather than a question in the middle of forty.
  */
 final class EveryComment {
+    /** How far up a conversation is worth going for something to say about one comment. */
+    private static final int AS_FAR_AS_IS_USEFUL = 8;
+
     private EveryComment() {}
 
     /**
@@ -38,9 +43,7 @@ final class EveryComment {
             return null;
         }
         try {
-            String asking = t7.l.a(about, null);
-            Logger.printInfo(() -> "Reading the thread of " + about + " with " + asking);
-            return q8.c.a(context, asking, false, null);
+            return q8.c.a(context, t7.l.a(about, null), false, null);
         } catch (Throwable ex) {
             Logger.printInfo(() -> "Could not ask about the thread: "
                     + OnDeviceTranslator.because(ex));
@@ -66,12 +69,8 @@ final class EveryComment {
         try {
             rows = reader.loadInBackground();
             if (rows == null) {
-                Logger.printInfo(() -> "Nothing came back for the thread");
                 return comments;
             }
-
-            int held = rows.getCount();
-            Logger.printInfo(() -> "The thread holds " + held);
             for (int row = 0; row < rows.getCount(); row++) {
                 xa.d each = xa.d.z(rows, row);
                 if (each != null) {
@@ -132,6 +131,58 @@ final class EveryComment {
         return thread;
     }
 
+    /**
+     * @return The post the thread is about, where the reading of it turned one up. A thread is
+     *         read as rows of what it holds, and the post is among them.
+     */
+    static xa.d thePostAmong(List<xa.d> comments) {
+        for (xa.d each : comments) {
+            try {
+                if (each.Y0() != Stored.A_COMMENT) {
+                    return each;
+                }
+            } catch (Exception ex) {
+                // Something that will not say what it is, is not the post.
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return The comments this one is a reply to, oldest first, up to the top of the
+     *         conversation. What a comment means often depends on what it answers.
+     */
+    static List<xa.d> above(List<xa.d> comments, xa.d one) {
+        List<xa.d> ancestors = new ArrayList<>();
+        try {
+            Map<String, xa.d> byId = new HashMap<>();
+            for (xa.d each : comments) {
+                String id = each.U();
+                if (id != null) {
+                    byId.put(id, each);
+                }
+            }
+
+            xa.d at = one;
+            while (ancestors.size() < AS_FAR_AS_IS_USEFUL) {
+                String parent = at.t0();
+                if (parent == null) {
+                    break;
+                }
+                int names = parent.indexOf('_');
+                xa.d above = byId.get(names < 0 ? parent : parent.substring(names + 1));
+                if (above == null) {
+                    break;
+                }
+                ancestors.add(0, above);
+                at = above;
+            }
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not follow the thread up: " + ex);
+        }
+        return ancestors;
+    }
+
     /** @return How many of them are standing translated. */
     static int translatedAmong(List<xa.d> comments) {
         int translated = 0;
@@ -148,7 +199,7 @@ final class EveryComment {
      *
      * @param back Whether to put them back rather than translate them.
      */
-    static void translate(List<xa.d> comments, boolean back, Said tell) {
+    static void translate(List<xa.d> comments, boolean back, CursorLoader reader, Said tell) {
         new Thread(() -> {
             int done = 0;
             int skipped = 0;
@@ -162,7 +213,7 @@ final class EveryComment {
                         continue;
                     }
 
-                    switch (WithoutTheSheet.of(each, null, false)) {
+                    switch (WithoutTheSheet.of(each, null, false, reader)) {
                         case TRANSLATED:
                         case PUT_BACK:
                             done++;

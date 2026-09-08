@@ -276,6 +276,15 @@ service being asked.
     italic — held out of the translation and put back after. Where a service does not give one
     of those back, that line is translated again in pieces, which reads less well and cannot
     break a link.
+  - **A whole thread, or one conversation in it.** Sync's own *Translate all* is taken over so
+    that it translates the way everything else here does, and a comment's menu offers the
+    conversation under it. Each comment's language is judged on its own, since a thread holds
+    several; one whose language cannot be told is left alone and counted, and asking about that
+    one on its own offers to choose a language. A thread asked for whole keeps up: what loads
+    into it afterwards is translated as it arrives.
+  - **DeepL is told what a comment is answering** — the post, or the post and the comments above
+    it, as the setting says. It translates against that without translating it, which is what a
+    reply that is a fragment needs. Nothing is sent for a post, which answers nothing.
   - Translations are kept for as long as the setting says, so reading a thread again does not
     pay for it twice. What is being kept, and clearing it, are in the same settings.
 

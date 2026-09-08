@@ -71,8 +71,8 @@ public final class TranslateNow {
 
                 String at = from;
                 String translated = haveWritten
-                        ? by(service, written, at, into, true)
-                        : by(service, text, at, into, false);
+                        ? by(service, written, at, into, true, null)
+                        : by(service, text, at, into, false, null);
 
                 TranslationCache.remember(context, toTranslate, service, into,
                         new TranslationCache.Translated(translated, from));
@@ -122,13 +122,13 @@ public final class TranslateNow {
      *                  in it is not language.
      * @return The text translated by whichever service was chosen.
      */
-    static String by(String service, String text, String from, String into,
-                     boolean asWritten) throws Exception {
+    static String by(String service, String text, String from, String into, boolean asWritten,
+                     String about) throws Exception {
         if (TranslationSettings.DEEPL.equals(service)) {
             Context context = Utils.getContext();
             return asWritten
-                    ? DeepLTranslator.translateMarkdown(context, text, from, into)
-                    : DeepLTranslator.translate(context, text, from, into);
+                    ? DeepLTranslator.translateMarkdown(context, text, from, into, about)
+                    : DeepLTranslator.translate(context, text, from, into, about);
         }
 
         if (TranslationSettings.GOOGLE.equals(service)) {

@@ -64,7 +64,9 @@ public final class WithoutTheSheet {
                 return false;
             }
 
-            translate((xa.d) about, arguments.getString(THE_LANGUAGE), manager);
+            // Made here, on the thread that draws, so what a comment answers can be read.
+            translate((xa.d) about, arguments.getString(THE_LANGUAGE), manager,
+                    readerFor((xa.d) about));
             return true;
         } catch (Throwable ex) {
             // Let Sync open its sheet and do it the long way.
@@ -81,7 +83,29 @@ public final class WithoutTheSheet {
      *                about, or null where there is nothing to open one with.
      */
     public static void forThis(xa.d content, Object manager) {
-        translate(content, null, manager);
+        translate(content, null, manager, readerFor(content));
+    }
+
+    /**
+     * @return A reader for the thread the content belongs to, made here because it must be made
+     *         on the thread that draws, or null for a post, which answers nothing.
+     */
+    private static CursorLoader readerFor(xa.d content) {
+        try {
+            if (content.Y0() != Stored.A_COMMENT) {
+                return null;
+            }
+            String post = content.j0();
+            if (post == null) {
+                return null;
+            }
+            int names = post.indexOf('_');
+            return EveryComment.readerFor(Utils.getContext(),
+                    names < 0 ? post : post.substring(names + 1));
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "Could not make a reader for what it answers: " + ex);
+            return null;
+        }
     }
 
     /** What came of asking for one thing to be translated. */
@@ -119,7 +143,14 @@ public final class WithoutTheSheet {
                     return;
                 }
                 boolean back = EveryComment.translatedAmong(comments) > 0;
-                EveryComment.translate(comments, back, WithoutTheSheet::say);
+                if (back) {
+                    Wholesale.enough(about);
+                } else {
+                    // Whatever else arrives in this thread is wanted translated as well.
+                    Wholesale.asked(about);
+                }
+
+                EveryComment.translate(comments, back, reader, WithoutTheSheet::say);
             }, "sync-up-read-thread").start();
             return true;
         } catch (Throwable ex) {
@@ -143,15 +174,16 @@ public final class WithoutTheSheet {
                 return;
             }
             boolean back = EveryComment.translatedAmong(thread) > 0;
-            EveryComment.translate(thread, back, WithoutTheSheet::say);
+            EveryComment.translate(thread, back, reader, WithoutTheSheet::say);
         }, "sync-up-read-thread").start();
     }
 
     /** Does what the sheet would have done, off the thread that draws. */
-    private static void translate(xa.d content, String language, Object manager) {
+    private static void translate(xa.d content, String language, Object manager,
+                                  CursorLoader reader) {
         new Thread(() -> {
             try {
-                Came came = of(content, language, true);
+                Came came = of(content, language, true, reader);
                 if (came == Came.NO_LANGUAGE) {
                     // Nothing can be translated out of a language nobody can name. Sync has a
                     // sheet for choosing one, and choosing one comes back through here.
@@ -175,7 +207,8 @@ public final class WithoutTheSheet {
      *                 about all of them rather than one about each.
      * @return What came of it.
      */
-    static Came of(xa.d content, String language, boolean announce) throws Exception {
+    static Came of(xa.d content, String language, boolean announce, CursorLoader reader)
+            throws Exception {
         Context context = Utils.getContext();
         String id = content.U();
         boolean isAComment = content.Y0() == Stored.A_COMMENT;
@@ -229,10 +262,14 @@ public final class WithoutTheSheet {
             say("Translating…");
         }
 
-        String saidBody = hasBody ? translated(context, service, body, from, into, true)
-                : null;
+        // What the comment is answering, where the service takes such a thing and the settings
+        // say to send it.
+        String about = WhatItIsAbout.forThis(context, content, reader);
+
+        String saidBody = hasBody
+                ? translated(context, service, body, from, into, true, about) : null;
         String saidTitle = hasTitle
-                ? translated(context, service, title, from, into, false) : null;
+                ? translated(context, service, title, from, into, false, about) : null;
 
         boolean bodyChanged = saidBody != null && !saidBody.equals(body);
         boolean titleChanged = saidTitle != null && !saidTitle.equals(title);
@@ -272,7 +309,8 @@ public final class WithoutTheSheet {
      *         again.
      */
     private static String translated(Context context, String service, String text, String from,
-                                     String into, boolean asWritten) throws Exception {
+                                     String into, boolean asWritten, String about)
+            throws Exception {
         TranslationCache.Translated already =
                 TranslationCache.remembered(context, text, service, into);
         if (already != null) {
@@ -280,7 +318,7 @@ public final class WithoutTheSheet {
             return already.text;
         }
 
-        String said = TranslateNow.by(service, text, from, into, asWritten);
+        String said = TranslateNow.by(service, text, from, into, asWritten, about);
         TranslationCache.remember(context, text, service, into,
                 new TranslationCache.Translated(said, from));
         return said;
