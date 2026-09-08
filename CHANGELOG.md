@@ -1,3 +1,9 @@
+## [1.7.0-dev.32](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.31...v1.7.0-dev.32) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Leave room for the buttons the translate button was put beside ([f289a03](https://github.com/RashKash103/sync-up/commit/f289a03a242206a8857c1057f9ee7a9dacc14377))
+
 ## [1.7.0-dev.31](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.30...v1.7.0-dev.31) (2026-09-08)
 
 ### ✨ New Features
