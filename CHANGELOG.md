@@ -1,3 +1,9 @@
+## [1.7.0-dev.31](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.30...v1.7.0-dev.31) (2026-09-08)
+
+### ✨ New Features
+
+* Put a translate button in the row under a comment ([7283e3c](https://github.com/RashKash103/sync-up/commit/7283e3ce2a9fa1ef909941638492b2220fa31d5b))
+
 ## [1.7.0-dev.30](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.29...v1.7.0-dev.30) (2026-09-08)
 
 ### 🐛 Bug Fixes
