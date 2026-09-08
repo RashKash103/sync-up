@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-08T02:14:44",
-  "description": "## [1.7.0-dev.34](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.33...v1.7.0-dev.34) (2026-09-08)\n\n### ✨ New Features\n\n* Mark what is standing translated the way a saved comment is marked ([f615731](https://github.com/RashKash103/sync-up/commit/f615731ccf209db5d591674d4803267d1fd810ef))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.34/patches-1.7.0-dev.34.mpp",
+  "created_at": "2026-09-08T02:28:06",
+  "description": "## [1.7.0-dev.35](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.34...v1.7.0-dev.35) (2026-09-08)\n\n### ✨ New Features\n\n* Translate a whole thread, judging each comment on its own ([16a8bc1](https://github.com/RashKash103/sync-up/commit/16a8bc15e93079a78ffc61c23afed4e8464d1384))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.35/patches-1.7.0-dev.35.mpp",
   "signature_download_url": "",
-  "version": "1.7.0-dev.34"
+  "version": "1.7.0-dev.35"
 }

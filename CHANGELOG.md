@@ -1,3 +1,9 @@
+## [1.7.0-dev.35](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.34...v1.7.0-dev.35) (2026-09-08)
+
+### ✨ New Features
+
+* Translate a whole thread, judging each comment on its own ([16a8bc1](https://github.com/RashKash103/sync-up/commit/16a8bc15e93079a78ffc61c23afed4e8464d1384))
+
 ## [1.7.0-dev.34](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.33...v1.7.0-dev.34) (2026-09-08)
 
 ### ✨ New Features
