@@ -1,16 +1,12 @@
 package app.morphe.extension.syncforreddit.translate;
 
 import android.view.View;
-import android.view.ViewGroup;
 
 import com.laurencedawson.reddit_sync.ui.views.core.MaterialRow;
 
 import java.lang.reflect.Field;
-import java.util.List;
 
 import app.morphe.extension.shared.Logger;
-import app.morphe.extension.shared.ResourceType;
-import app.morphe.extension.shared.ResourceUtils;
 import app.morphe.extension.shared.Utils;
 
 /**
@@ -27,11 +23,6 @@ public final class Labels {
     private static final String UNTRANSLATE_A_COMMENT = "Untranslate comment";
     private static final String TRANSLATE_TEXT = "Translate text";
     private static final String UNTRANSLATE_TEXT = "Untranslate text";
-    private static final String TRANSLATE_EVERY = "Translate all comments";
-    private static final String UNTRANSLATE_EVERY = "Untranslate all comments";
-
-    /** How the row for all of them is told from the one Sync put there. */
-    private static final String OURS = "sync-up-translate-all";
 
     /**
      * What marks a button as standing translated: a blue as bright against the rest as the
@@ -43,66 +34,9 @@ public final class Labels {
     /** What the row is called on the sheet, which Sync keeps its own name for. */
     private static final String THE_ROW = "mTranslate";
 
-    /** What Sync's own settings row for translating is drawn with. */
-    private static final String THE_PICTURE = "outline_translate_24";
 
     private Labels() {}
 
-    /**
-     * Puts a row for all the comments of a thread under the one for the post, where there is a
-     * thread to translate. A menu opened over a feed has no comments read yet, so it gets none.
-     */
-    private static void forAllOfThem(Object sheet, MaterialRow beside) {
-        try {
-            if (!(beside.getParent() instanceof ViewGroup)) {
-                return;
-            }
-            ViewGroup menu = (ViewGroup) beside.getParent();
-
-            List<xa.d> comments = EveryComment.of(sheet);
-            View found = menu.findViewWithTag(OURS);
-            if (comments.isEmpty()) {
-                if (found != null) {
-                    found.setVisibility(View.GONE);
-                }
-                return;
-            }
-
-            int translated = EveryComment.translatedAmong(comments);
-            boolean back = translated > 0;
-
-            MaterialRow ours;
-            if (found instanceof MaterialRow) {
-                ours = (MaterialRow) found;
-            } else {
-                ours = new MaterialRow(menu.getContext());
-                ours.setTag(OURS);
-                ours.d(ResourceUtils.getIdentifier(ResourceType.DRAWABLE, THE_PICTURE));
-                menu.addView(ours, menu.indexOfChild(beside) + 1);
-            }
-
-            ours.setVisibility(View.VISIBLE);
-            ours.k(back ? UNTRANSLATE_EVERY : TRANSLATE_EVERY);
-            ours.setOnClickListener(tapped -> {
-                EveryComment.translate(comments, back, what -> Utils.showToastShort(what));
-                // Every row of Sync's own closes the sheet once it has done what it does.
-                closed(sheet);
-            });
-        } catch (Throwable ex) {
-            Logger.printInfo(() -> "Could not offer to translate all of them: " + ex);
-        }
-    }
-
-    /** Closes the sheet, as tapping any of the rows Sync put there does. */
-    private static void closed(Object sheet) {
-        try {
-            if (sheet instanceof s9.f) {
-                ((s9.f) sheet).x3();
-            }
-        } catch (Throwable ex) {
-            Logger.printInfo(() -> "Could not close the menu: " + ex);
-        }
-    }
 
     /**
      * @return Whether there is anything about this post worth translating: a title always,
@@ -168,8 +102,6 @@ public final class Labels {
             }
             // Only the wording changes, as Sync's own Save row changes to Unsave.
             row.k(translated ? UNTRANSLATE_TEXT : TRANSLATE_TEXT);
-
-            forAllOfThem(sheet, row);
         } catch (Throwable ex) {
             // A menu that opens saying the wrong thing beats one that does not open.
             Logger.printInfo(() -> "Could not name the translate row: " + ex);

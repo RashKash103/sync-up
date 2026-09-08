@@ -143,10 +143,31 @@ private const val WITHOUT_THE_SHEET_CLASS_DESCRIPTOR =
 private const val INSTEAD_OF_THE_SHEET_METHOD =
     "instead(Ljava/lang/Class;Ljava/lang/Object;Landroid/os/Bundle;)Z"
 
+private const val INSTEAD_OF_ALL_METHOD =
+    "insteadOfAll(Ljava/lang/Class;Ljava/lang/Object;Ljava/lang/String;)Z"
+
+/**
+ * Where a sheet about one post or comment is opened, given its id rather than a bundle. The
+ * sheet that translates a whole thread is opened this way.
+ */
+private val opensASheetAboutOneFingerprint = Fingerprint(
+    parameters = listOf(
+        "Ljava/lang/Class;",
+        "Landroidx/fragment/app/FragmentManager;",
+        "Ljava/lang/String;",
+    ),
+    returnType = "V",
+    custom = { method, classDef ->
+        classDef.type == SHOWS_A_SHEET_CLASS && method.implementation != null
+    },
+)
+
 /**
  * Where a sheet is opened: the kind of it, the manager to open it with, and what to open it
  * with. Every way into the translating sheet goes through this one.
  */
+private const val SHOWS_A_SHEET_CLASS = "Ls9/g;"
+
 private val opensASheetFingerprint = Fingerprint(
     parameters = listOf(
         "Ljava/lang/Class;",
@@ -497,6 +518,23 @@ val translatePatch = bytecodePatch(
                 0,
                 """
                 invoke-static { p0, p1, p2 }, $WITHOUT_THE_SHEET_CLASS_DESCRIPTOR->$INSTEAD_OF_THE_SHEET_METHOD
+                move-result v0
+                if-eqz v0, :the_sheet_then
+                return-void
+                """,
+                ExternalLabel("the_sheet_then", getInstruction(0))
+            )
+        }
+
+        // Sync has a sheet of its own for translating a whole thread, and it is opened by the
+        // id of the post rather than with a bundle. What it does is what was replaced for one
+        // comment — English whatever was asked for, wifi before a model, and the text as drawn
+        // — so the opening of that one is taken over as well.
+        opensASheetAboutOneFingerprint.method.apply {
+            addInstructionsWithLabels(
+                0,
+                """
+                invoke-static { p0, p1, p2 }, $WITHOUT_THE_SHEET_CLASS_DESCRIPTOR->$INSTEAD_OF_ALL_METHOD
                 move-result v0
                 if-eqz v0, :the_sheet_then
                 return-void

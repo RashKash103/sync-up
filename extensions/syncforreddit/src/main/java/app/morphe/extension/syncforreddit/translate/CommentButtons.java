@@ -44,6 +44,8 @@ public final class CommentButtons {
      */
     public static void onBind(Object holder, xa.d comment) {
         try {
+            rememberTheThread(holder);
+
             ViewGroup row = rowOf(holder);
             if (row == null || comment == null) {
                 return;
@@ -161,6 +163,24 @@ public final class CommentButtons {
                     && Markdown.worthTranslating(comment.o());
         } catch (Exception ex) {
             return false;
+        }
+    }
+
+    /**
+     * Keeps the thread this comment belongs to, which is what translating all of them needs and
+     * what draws a comment is given.
+     */
+    private static void rememberTheThread(Object holder) {
+        try {
+            for (Field each : holder.getClass().getDeclaredFields()) {
+                if (ya.c.class.isAssignableFrom(each.getType())) {
+                    each.setAccessible(true);
+                    EveryComment.beingRead((ya.c) each.get(holder));
+                    return;
+                }
+            }
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not tell which thread this is: " + ex);
         }
     }
 

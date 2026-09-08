@@ -389,9 +389,8 @@ Current, from this project's own patches:
 
 - Tapping an archive row in the post menu opens the browser but does not dismiss the sheet.
   That patch is handed the sheet's root view rather than the sheet, so it has nothing to close.
-  The translation row beside it does close the sheet: it is handed the sheet itself and calls
-  `x3()` through the `s9/f` stub, which the extension can now do — an androidx stub of its own
-  costs nothing, since the stubs are compile only.
+  Closing one is possible where the sheet itself is to hand: `x3()` resolves through a stub on
+  `s9/f`, and an androidx stub costs nothing since the stubs are compile only.
 - The undelete patches call Arctic Shift and the Wayback Machine, both free community
   services. Results are cached and only fetched when a thread actually contains removed
   content. Keep it that way; do not add speculative prefetching.

@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import androidx.fragment.app.FragmentManager;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 import app.morphe.extension.shared.Logger;
@@ -89,6 +90,36 @@ public final class WithoutTheSheet {
         ALREADY_IN_IT,
         NO_LANGUAGE,
         NOTHING_TO_DO,
+    }
+
+    /**
+     * Called where Sync would have opened the sheet that translates a whole thread.
+     *
+     * <p>That sheet translates into English whatever was asked for, waits for wifi before it
+     * will fetch a model, and translates the text as it is drawn rather than as it was written
+     * — the same three things that were replaced for one comment. So it is replaced here too.
+     *
+     * @return Whether this has been dealt with, and the sheet should not open.
+     */
+    public static boolean insteadOfAll(Class<?> what, Object unusedManager, String unusedId) {
+        try {
+            if (what != da.b.class) {
+                return false;
+            }
+
+            List<xa.d> comments = EveryComment.of();
+            if (comments.isEmpty()) {
+                say("No comments to translate");
+                return true;
+            }
+
+            boolean back = EveryComment.translatedAmong(comments) > 0;
+            EveryComment.translate(comments, back, WithoutTheSheet::say);
+            return true;
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "Leaving translating them all to the sheet: " + ex);
+            return false;
+        }
     }
 
     /** Does what the sheet would have done, off the thread that draws. */

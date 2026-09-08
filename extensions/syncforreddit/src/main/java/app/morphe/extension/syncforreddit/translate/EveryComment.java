@@ -1,5 +1,6 @@
 package app.morphe.extension.syncforreddit.translate;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,24 +18,29 @@ import app.morphe.extension.shared.Logger;
  * is one comment and one question, rather than a question in the middle of forty.
  */
 final class EveryComment {
+    /**
+     * The thread being read, kept from the last comment drawn.
+     *
+     * <p>What draws a comment is handed the thread it belongs to, and a thread cannot be
+     * translated without having been read, so by the time this is wanted one has been seen.
+     * Weakly, since holding a thread open after it is closed would hold everything in it.
+     */
+    private static WeakReference<ya.c> beingRead = new WeakReference<>(null);
+
     private EveryComment() {}
 
-    /** @return Every comment a thread is holding, or nothing where none can be reached. */
-    static List<xa.d> of(Object sheet) {
+    /** Remembers the thread a comment belongs to, as it is drawn. */
+    static void beingRead(ya.c thread) {
+        if (thread != null && thread != beingRead.get()) {
+            beingRead = new WeakReference<>(thread);
+        }
+    }
+
+    /** @return Every comment the thread is holding, or nothing where none can be reached. */
+    static List<xa.d> of() {
         List<xa.d> comments = new ArrayList<>();
         try {
-            if (!(sheet instanceof s9.f)) {
-                return comments;
-            }
-            Object screen = ((s9.f) sheet).B0();
-            if (!(screen instanceof com.laurencedawson.reddit_sync.ui.activities.CommentsActivity)) {
-                // The menu was opened over a feed, where there is no thread to translate.
-                return comments;
-            }
-
-            com.laurencedawson.reddit_sync.ui.fragments.CommentsFragment showing =
-                    ((com.laurencedawson.reddit_sync.ui.activities.CommentsActivity) screen).L0();
-            ya.c thread = showing == null ? null : showing.A3();
+            ya.c thread = beingRead.get();
             va.a held = thread == null ? null : thread.t();
             ArrayList<?> everything = held == null ? null : held.k();
             if (everything == null) {
