@@ -40,10 +40,17 @@ final class EveryComment {
 
         Cursor rows = null;
         try {
-            rows = q8.c.a(context, t7.l.a(about, null), false, null).loadInBackground();
+            String asking = t7.l.a(about, null);
+            Logger.printInfo(() -> "Reading the thread of " + about + " with " + asking);
+
+            rows = q8.c.a(context, asking, false, null).loadInBackground();
             if (rows == null) {
+                Logger.printInfo(() -> "Nothing came back for the thread of " + about);
                 return comments;
             }
+
+            int held = rows.getCount();
+            Logger.printInfo(() -> "The thread of " + about + " holds " + held);
             for (int row = 0; row < rows.getCount(); row++) {
                 xa.d each = xa.d.z(rows, row);
                 if (each != null) {
@@ -51,7 +58,8 @@ final class EveryComment {
                 }
             }
         } catch (Throwable ex) {
-            Logger.printInfo(() -> "Could not read the thread: " + ex);
+            Logger.printInfo(() -> "Could not read the thread: "
+                    + OnDeviceTranslator.because(ex));
         } finally {
             if (rows != null) {
                 try {

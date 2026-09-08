@@ -539,15 +539,20 @@ val translatePatch = bytecodePatch(
         // A comment's menu offers the comment and the whole thread and nothing between, so an
         // entry for the conversation under this one goes in after the app's own are built.
         namesTheCommentRowFingerprint.method.apply {
-            val theEnd = implementation!!.instructions.count() - 1
-            val holdingTheSheet = (theEnd downTo 0).first { at ->
-                getInstruction(at).getReference<FieldReference>()?.definingClass ==
-                        COMMENT_MENU_SHEET
+            // Beside the entry for the comment itself, and not at the end of the method: the
+            // way out of it is jumped to directly, so anything put in front of the way out is
+            // reached only by the path that failed.
+            val says = indexOfFirstInstructionOrThrow {
+                getReference<StringReference>()?.string?.startsWith(TRANSLATE_ROW_INSTEAD) == true
             }
-            val sheet = getInstruction<TwoRegisterInstruction>(holdingTheSheet).registerB
+            val kept = indexOfFirstInstructionOrThrow(says) {
+                opcode == Opcode.IPUT_OBJECT &&
+                        getReference<FieldReference>()?.definingClass == COMMENT_MENU_SHEET
+            }
+            val sheet = getInstruction<TwoRegisterInstruction>(kept).registerB
 
             addInstructions(
-                theEnd,
+                kept + 1,
                 "invoke-static { v$sheet }, $COMMENT_MENU_CLASS_DESCRIPTOR->$ADD_THREAD_METHOD"
             )
         }
