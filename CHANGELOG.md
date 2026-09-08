@@ -1,3 +1,9 @@
+## [1.7.0-dev.37](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.36...v1.7.0-dev.37) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Let a menu row say what it does and nothing more ([53abe17](https://github.com/RashKash103/sync-up/commit/53abe17c553ea510931be7588871c1ffa8656fdc))
+
 ## [1.7.0-dev.36](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.35...v1.7.0-dev.36) (2026-09-08)
 
 ### 🐛 Bug Fixes
