@@ -1,3 +1,9 @@
+## [1.7.0-dev.40](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.39...v1.7.0-dev.40) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Put the thread entry where the menu will reach it ([ad2a986](https://github.com/RashKash103/sync-up/commit/ad2a986154a4eb75cba8225ae3ac80471a85519e))
+
 ## [1.7.0-dev.39](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.38...v1.7.0-dev.39) (2026-09-08)
 
 ### 🐛 Bug Fixes
