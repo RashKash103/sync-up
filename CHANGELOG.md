@@ -1,3 +1,9 @@
+## [1.7.0-dev.29](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.28...v1.7.0-dev.29) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Keep a post translated without it turning back first ([ce33d4a](https://github.com/RashKash103/sync-up/commit/ce33d4a8fc5e8ff7349e1ba059a48d7f7795184a))
+
 ## [1.7.0-dev.28](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.27...v1.7.0-dev.28) (2026-09-08)
 
 ### 🐛 Bug Fixes
