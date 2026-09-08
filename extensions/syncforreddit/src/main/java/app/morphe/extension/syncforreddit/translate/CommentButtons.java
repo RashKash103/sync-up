@@ -2,6 +2,7 @@ package app.morphe.extension.syncforreddit.translate;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import java.lang.reflect.Field;
 
@@ -100,9 +101,12 @@ public final class CommentButtons {
     }
 
     /**
-     * @return A button added to the end of the row, sized as the buttons beside it are. Their
-     *         size is given in the layout rather than by the button, so it is taken from one of
-     *         them rather than guessed at.
+     * @return A button added to the end of the row, sized as the buttons beside it are.
+     *
+     * <p>Every one of them is as wide as the whole row and carries a weight of one, which is how
+     * a row of buttons is made to share the width evenly. The weight is the part that does that:
+     * a button as wide as the row without one takes the whole of it and leaves the others
+     * nothing, so it has to be carried across rather than the width alone.
      */
     private static TranslateButton added(ViewGroup row) {
         if (row.getChildCount() == 0) {
@@ -112,12 +116,19 @@ public final class CommentButtons {
         TranslateButton ours = new TranslateButton(row.getContext());
         ours.setTag(OURS);
 
-        View beside = row.getChildAt(row.getChildCount() - 1);
-        ViewGroup.LayoutParams like = beside.getLayoutParams();
-        if (like == null) {
-            row.addView(ours);
+        ViewGroup.LayoutParams like = row.getChildAt(row.getChildCount() - 1).getLayoutParams();
+        if (like instanceof LinearLayout.LayoutParams) {
+            LinearLayout.LayoutParams beside = (LinearLayout.LayoutParams) like;
+            LinearLayout.LayoutParams mine =
+                    new LinearLayout.LayoutParams(beside.width, beside.height, beside.weight);
+            mine.setMargins(beside.leftMargin, beside.topMargin, beside.rightMargin,
+                    beside.bottomMargin);
+            mine.gravity = beside.gravity;
+            row.addView(ours, mine);
+        } else if (like != null) {
+            row.addView(ours, new ViewGroup.LayoutParams(like));
         } else {
-            row.addView(ours, new ViewGroup.MarginLayoutParams(like));
+            row.addView(ours);
         }
         return ours;
     }
