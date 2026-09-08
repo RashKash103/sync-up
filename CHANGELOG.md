@@ -1,3 +1,9 @@
+## [1.7.0-dev.39](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.38...v1.7.0-dev.39) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Read a thread from where Sync keeps it, and offer one comment's own ([a974723](https://github.com/RashKash103/sync-up/commit/a974723694794d3f133e50a05172f8ec75120d3e))
+
 ## [1.7.0-dev.38](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.37...v1.7.0-dev.38) (2026-09-08)
 
 ### 🐛 Bug Fixes
