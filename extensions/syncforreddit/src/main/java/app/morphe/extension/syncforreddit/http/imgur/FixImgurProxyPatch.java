@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.List;
+import java.util.Locale;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.requests.PatchedditInterceptor;
@@ -28,6 +29,11 @@ import okhttp3.ResponseBody;
  * tile loads through. The second is why an album post showed a blank thumbnail even once the
  * album itself opened: the tile never asked Imgur for anything.
  *
+ * <p>That second proxy served the picture beside a website preview as well, where what it is
+ * asked for is a page rather than a picture. Those are left alone here and handled further down
+ * the chain: asking for the page directly gets HTML where a picture is expected, which is what
+ * a preview drew before this told the two apart.
+ *
  * <p>The proxy answered with Imgur's own API shape, and the only field Sync needs from it is
  * the link. Since the id is right there in the request path, the response can be answered
  * locally with the ordinary Imgur URL for that id. Sync then loads that URL directly, and if
@@ -43,9 +49,40 @@ public class FixImgurProxyPatch extends PatchedditInterceptor {
     private static final String IMAGE_PATH = "image";
     private static final String ALBUM_PATH = "a";
 
+    /** Hosts that serve nothing but pictures, whatever a path on them looks like. */
+    private static final String[] PICTURE_HOSTS = {
+            "imgur.com", "redd.it", "redditmedia.com", "redditstatic.com",
+    };
+
+    /** What a path ends with when it is a picture rather than a page. */
+    private static final String[] PICTURE_ENDINGS = {
+            ".jpg", ".jpeg", ".png", ".gif", ".gifv", ".webp", ".bmp", ".apng",
+    };
+
     @Override
     public boolean isPatchIncluded() {
         // Overridden by patch.
+        return false;
+    }
+
+    /**
+     * @return Whether what the proxy was asked for is a picture, rather than a page with a
+     *         picture somewhere on it. Sync used the one proxy for both.
+     */
+    private static boolean isAPicture(HttpUrl direct) {
+        String host = direct.host();
+        for (String known : PICTURE_HOSTS) {
+            if (host.equals(known) || host.endsWith("." + known)) {
+                return true;
+            }
+        }
+
+        String path = direct.encodedPath().toLowerCase(Locale.ROOT);
+        for (String ending : PICTURE_ENDINGS) {
+            if (path.endsWith(ending)) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -127,6 +164,17 @@ public class FixImgurProxyPatch extends PatchedditInterceptor {
                     + ", which is not an address this can fetch");
             return gone(request);
         }
+
+        if (!isAPicture(direct)) {
+            // The same proxy served the picture beside a website preview, where what it is
+            // asked for is a page rather than a picture. Asking for that page directly gets
+            // HTML where a picture is expected, which draws as a broken one. Whatever handles
+            // previews is further down the chain and knows what to do with it.
+            Logger.printDebug(() -> "Leaving the image proxy request for " + target
+                    + " to whatever handles a page");
+            return chain.proceed(request);
+        }
+
         return chain.proceed(request.newBuilder().url(direct).build());
     }
 
