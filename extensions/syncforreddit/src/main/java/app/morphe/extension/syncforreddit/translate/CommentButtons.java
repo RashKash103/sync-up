@@ -1,5 +1,7 @@
 package app.morphe.extension.syncforreddit.translate;
 
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,9 +61,10 @@ public final class CommentButtons {
                 }
             }
 
+            boolean translated = Originals.isTranslated(comment);
             ours.setVisibility(View.VISIBLE);
-            drawnLike(ours, row);
-            ours.setContentDescription(Originals.isTranslated(comment)
+            drawnLike(ours, row, translated);
+            ours.setContentDescription(translated
                     ? "Undo the translation" : "Translate this comment");
 
             // A row is drawn again for another comment, so what it does is set every time.
@@ -83,14 +86,18 @@ public final class CommentButtons {
      * follows the theme wherever the others do, since this is done every time a comment is
      * drawn.
      */
-    private static void drawnLike(TranslateButton ours, ViewGroup row) {
+    private static void drawnLike(TranslateButton ours, ViewGroup row, boolean translated) {
         try {
             View beside = neighbour(row, ours);
             if (!(beside instanceof ImageView)) {
                 return;
             }
 
-            ours.setColorFilter(((ImageView) beside).getColorFilter());
+            // Standing translated is marked the way a saved comment is: the button keeps its
+            // shape and takes a colour of its own.
+            ours.setColorFilter(translated
+                    ? new PorterDuffColorFilter(Labels.WHILE_TRANSLATED, PorterDuff.Mode.SRC_IN)
+                    : ((ImageView) beside).getColorFilter());
 
             Drawable background = beside.getBackground();
             if (background != null && background.getConstantState() != null) {

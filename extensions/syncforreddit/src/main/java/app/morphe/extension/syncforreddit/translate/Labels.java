@@ -2,6 +2,10 @@ package app.morphe.extension.syncforreddit.translate;
 
 import android.view.View;
 
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+
 import com.laurencedawson.reddit_sync.ui.views.core.MaterialRow;
 
 import java.lang.reflect.Field;
@@ -24,10 +28,25 @@ public final class Labels {
     private static final String TRANSLATE_TEXT = "Translate text";
     private static final String UNTRANSLATE_TEXT = "Untranslate text";
 
+    /**
+     * What marks something as standing translated, wherever that is worth showing: a blue as
+     * bright against the rest as the amber Sync gives a saved comment, and the same wherever it
+     * appears.
+     */
+    static final int WHILE_TRANSLATED = 0xFF4FB0F5;
+
     /** What the row is called on the sheet, which Sync keeps its own name for. */
     private static final String THE_ROW = "mTranslate";
 
     private Labels() {}
+
+    /** @return The words, marked as standing translated. */
+    private static CharSequence marked(String words) {
+        SpannableString said = new SpannableString(words);
+        said.setSpan(new ForegroundColorSpan(WHILE_TRANSLATED), 0, words.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return said;
+    }
 
     /**
      * @return Whether there is anything about this post worth translating: a title always,
@@ -91,7 +110,9 @@ public final class Labels {
             if (translated || worthOffering(content)) {
                 row.setVisibility(View.VISIBLE);
             }
-            row.k(translated ? UNTRANSLATE_TEXT : TRANSLATE_TEXT);
+            // The row takes what it is told to say as it is given, so what it says can be
+            // coloured where it is worth marking, as a saved comment is marked.
+            row.k(translated ? marked(UNTRANSLATE_TEXT) : TRANSLATE_TEXT);
         } catch (Throwable ex) {
             // A menu that opens saying the wrong thing beats one that does not open.
             Logger.printInfo(() -> "Could not name the translate row: " + ex);
