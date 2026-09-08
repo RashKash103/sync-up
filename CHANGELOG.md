@@ -1,3 +1,9 @@
+## [1.7.0-dev.36](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.35...v1.7.0-dev.36) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Close the menu when the row for all the comments is tapped ([321c621](https://github.com/RashKash103/sync-up/commit/321c621e7194dc19fa63ea00b798087ac832d864))
+
 ## [1.7.0-dev.35](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.34...v1.7.0-dev.35) (2026-09-08)
 
 ### ✨ New Features
