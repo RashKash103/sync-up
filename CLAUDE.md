@@ -388,8 +388,10 @@ Inherited from upstream, deliberately left alone in the initial import:
 Current, from this project's own patches:
 
 - Tapping an archive row in the post menu opens the browser but does not dismiss the sheet.
-  Dismissing needs a reference to the fragment and an androidx.fragment dependency the
-  extension does not currently have.
+  That patch is handed the sheet's root view rather than the sheet, so it has nothing to close.
+  The translation row beside it does close the sheet: it is handed the sheet itself and calls
+  `x3()` through the `s9/f` stub, which the extension can now do — an androidx stub of its own
+  costs nothing, since the stubs are compile only.
 - The undelete patches call Arctic Shift and the Wayback Machine, both free community
   services. Results are cached and only fetched when a thread actually contains removed
   content. Keep it that way; do not add speculative prefetching.

@@ -87,10 +87,24 @@ public final class Labels {
 
             ours.setVisibility(View.VISIBLE);
             ours.k(back ? marked(UNTRANSLATE_EVERY) : TRANSLATE_EVERY);
-            ours.setOnClickListener(tapped -> EveryComment.translate(comments, back,
-                    what -> Utils.showToastShort(what)));
+            ours.setOnClickListener(tapped -> {
+                EveryComment.translate(comments, back, what -> Utils.showToastShort(what));
+                // Every row of Sync's own closes the sheet once it has done what it does.
+                closed(sheet);
+            });
         } catch (Throwable ex) {
             Logger.printInfo(() -> "Could not offer to translate all of them: " + ex);
+        }
+    }
+
+    /** Closes the sheet, as tapping any of the rows Sync put there does. */
+    private static void closed(Object sheet) {
+        try {
+            if (sheet instanceof s9.f) {
+                ((s9.f) sheet).x3();
+            }
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "Could not close the menu: " + ex);
         }
     }
 
