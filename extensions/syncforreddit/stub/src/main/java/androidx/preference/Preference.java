@@ -9,6 +9,11 @@ package androidx.preference;
  */
 public class Preference {
     /** setSummary: the line under the title. */
+    /** getContext: the context the row is drawn in, which is themed as the screen is. */
+    public android.content.Context k() {
+        throw new UnsupportedOperationException("Stub");
+    }
+
     public void D0(CharSequence summary) {
         throw new UnsupportedOperationException("Stub");
     }

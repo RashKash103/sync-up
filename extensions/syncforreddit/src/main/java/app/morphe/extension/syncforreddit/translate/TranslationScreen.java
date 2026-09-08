@@ -1,8 +1,12 @@
 package app.morphe.extension.syncforreddit.translate;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputType;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 
 import androidx.preference.Preference;
 
@@ -22,6 +26,12 @@ import app.morphe.extension.shared.ResourceUtils;
  * @noinspection unused
  */
 public class TranslationScreen extends pa.d {
+    /** How tall a field for more than one line starts out. */
+    private static final int MANY_LINES = 3;
+
+    /** How far a typed field is held off the edges of its dialog, before the screen's density. */
+    private static final int AN_EDGE = 20;
+
     /**
      * What the row on the front page of the settings points at. It matches the integer the patch
      * adds to the app's resources, and has to be a number no screen of Sync's own uses.
@@ -51,6 +61,7 @@ public class TranslationScreen extends pa.d {
         watchForAChangeOfService();
         askWhatIsLeft();
         showWhatIsKept();
+        letThemTypeThings();
     }
 
     /**
@@ -130,6 +141,99 @@ public class TranslationScreen extends pa.d {
      * Choosing a service shows its rows there and then, rather than the next time the screen is
      * opened. Watched through the settings themselves, which says when any of them is written.
      */
+    /**
+     * A key and what a service is told are typed rather than chosen, and Sync's own screens have
+     * no row for typing into. So the row asks for it: tapped, it opens the same kind of dialog
+     * the app uses elsewhere, and says whether something is set rather than showing it.
+     */
+    private void letThemTypeThings() {
+        typedInto(TranslationSettings.DEEPL_KEY, "DeepL API key", false);
+        typedInto(TranslationSettings.GOOGLE_KEY, "Google Cloud API key", false);
+        typedInto(TranslationSettings.DEEPL_INSTRUCTIONS, "Custom instructions", true);
+    }
+
+    /**
+     * @param overLines Whether what is typed runs to more than one line, as instructions do:
+     *                  one to a line, since that is how the service is given them.
+     */
+    private void typedInto(String key, String title, boolean overLines) {
+        try {
+            Preference row = y(key);
+            if (row == null) {
+                return;
+            }
+
+            sayWhetherItIsSet(row, key, overLines);
+            row.A0(tapped -> {
+                ask(tapped, key, title, overLines);
+                return true;
+            });
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not make " + key + " something to type into: " + ex);
+        }
+    }
+
+    private void ask(Preference row, String key, String title, boolean overLines) {
+        Context context = row.k();
+        EditText typing = new EditText(context);
+        typing.setText(TranslationSettings.text(context, key, ""));
+        typing.setSelection(typing.getText().length());
+        typing.setHint(overLines ? "One instruction to a line" : "Paste the key");
+
+        if (overLines) {
+            typing.setInputType(InputType.TYPE_CLASS_TEXT
+                    | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+            typing.setMinLines(MANY_LINES);
+        } else {
+            typing.setInputType(InputType.TYPE_CLASS_TEXT
+                    | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+            typing.setSingleLine(true);
+        }
+
+        // Held off the edges of the dialog, which a bare field is not.
+        FrameLayout around = new FrameLayout(context);
+        int edge = Math.round(AN_EDGE * context.getResources().getDisplayMetrics().density);
+        around.setPadding(edge, edge / 2, edge, 0);
+        around.addView(typing);
+
+        new AlertDialog.Builder(context)
+                .setTitle(title)
+                .setView(around)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    TranslationSettings.store(context).edit()
+                            .putString(key, typing.getText().toString().trim())
+                            .apply();
+                    sayWhetherItIsSet(row, key, overLines);
+                    if (TranslationSettings.DEEPL_KEY.equals(key)) {
+                        // A new key has an allowance of its own to report.
+                        askWhatIsLeft();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /** Says whether there is something there, never what it is: a key is not for showing. */
+    private void sayWhetherItIsSet(Preference row, String key, boolean overLines) {
+        String held = TranslationSettings.text(Utils.getContext(), key, "").trim();
+        if (held.isEmpty()) {
+            row.D0("Not set");
+            return;
+        }
+        if (!overLines) {
+            row.D0("Set");
+            return;
+        }
+
+        int lines = 0;
+        for (String line : held.split("\n")) {
+            if (!line.trim().isEmpty()) {
+                lines++;
+            }
+        }
+        row.D0(lines == 1 ? "1 instruction" : lines + " instructions");
+    }
+
     private void watchForAChangeOfService() {
         try {
             Context context = Utils.getContext();
