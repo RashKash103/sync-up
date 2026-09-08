@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-08T02:04:43",
-  "description": "## [1.7.0-dev.33](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.32...v1.7.0-dev.33) (2026-09-08)\n\n### 🐛 Bug Fixes\n\n* Draw the translate button as the buttons beside it are drawn ([fd4041d](https://github.com/RashKash103/sync-up/commit/fd4041d9eeb184d0ed11c0c7369bc012b04253b3))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.33/patches-1.7.0-dev.33.mpp",
+  "created_at": "2026-09-08T02:14:44",
+  "description": "## [1.7.0-dev.34](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.33...v1.7.0-dev.34) (2026-09-08)\n\n### ✨ New Features\n\n* Mark what is standing translated the way a saved comment is marked ([f615731](https://github.com/RashKash103/sync-up/commit/f615731ccf209db5d591674d4803267d1fd810ef))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.34/patches-1.7.0-dev.34.mpp",
   "signature_download_url": "",
-  "version": "1.7.0-dev.33"
+  "version": "1.7.0-dev.34"
 }

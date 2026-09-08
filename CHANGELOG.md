@@ -1,3 +1,9 @@
+## [1.7.0-dev.34](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.33...v1.7.0-dev.34) (2026-09-08)
+
+### ✨ New Features
+
+* Mark what is standing translated the way a saved comment is marked ([f615731](https://github.com/RashKash103/sync-up/commit/f615731ccf209db5d591674d4803267d1fd810ef))
+
 ## [1.7.0-dev.33](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.32...v1.7.0-dev.33) (2026-09-08)
 
 ### 🐛 Bug Fixes
