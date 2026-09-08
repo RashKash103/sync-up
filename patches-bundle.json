@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-08T00:28:16",
-  "description": "## [1.7.0-dev.29](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.28...v1.7.0-dev.29) (2026-09-08)\n\n### 🐛 Bug Fixes\n\n* Keep a post translated without it turning back first ([ce33d4a](https://github.com/RashKash103/sync-up/commit/ce33d4a8fc5e8ff7349e1ba059a48d7f7795184a))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.29/patches-1.7.0-dev.29.mpp",
+  "created_at": "2026-09-08T00:54:24",
+  "description": "## [1.7.0-dev.30](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.29...v1.7.0-dev.30) (2026-09-08)\n\n### 🐛 Bug Fixes\n\n* Let the app reach the class it is now made to call ([46e32eb](https://github.com/RashKash103/sync-up/commit/46e32eb1363c9a2df2a512648515aa1eb5630973))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.30/patches-1.7.0-dev.30.mpp",
   "signature_download_url": "",
-  "version": "1.7.0-dev.29"
+  "version": "1.7.0-dev.30"
 }

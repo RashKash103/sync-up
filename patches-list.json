@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0-dev.29",
+  "version": "1.7.0-dev.30",
   "patches": [
     {
       "name": "Add archive links to menus",

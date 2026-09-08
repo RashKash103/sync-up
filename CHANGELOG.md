@@ -1,3 +1,9 @@
+## [1.7.0-dev.30](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.29...v1.7.0-dev.30) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Let the app reach the class it is now made to call ([46e32eb](https://github.com/RashKash103/sync-up/commit/46e32eb1363c9a2df2a512648515aa1eb5630973))
+
 ## [1.7.0-dev.29](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.28...v1.7.0-dev.29) (2026-09-08)
 
 ### 🐛 Bug Fixes
