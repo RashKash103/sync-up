@@ -73,6 +73,28 @@ private val drawsACommentFingerprint = Fingerprint(
     custom = { method, _ -> method.implementation != null },
 )
 
+private const val COMMENT_MENU_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/translate/CommentMenu;"
+
+private const val ADD_THREAD_METHOD = "addTranslateThread(Ljava/lang/Object;)V"
+
+private const val TAPPED_METHOD = "tapped(Ljava/lang/Object;Ljava/lang/Object;)Z"
+
+/** One entry of such a sheet, which is what the menu is handed when one is tapped. */
+private const val AN_ENTRY = "Lcom/laurencedawson/reddit_sync/ui/fragment_dialogs/bottom/" +
+    "material_dialogs/base/AbstractSelectionDialogBottomSheet${'$'}h;"
+
+/** Where a comment's menu is told which of its entries was tapped. */
+private val commentMenuTappedFingerprint = Fingerprint(
+    parameters = listOf(
+        AN_ENTRY,
+    ),
+    returnType = "V",
+    custom = { method, classDef ->
+        classDef.type == COMMENT_MENU_SHEET && method.name == "r0"
+    },
+)
+
 private const val LABELS_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/translate/Labels;"
 
@@ -110,6 +132,9 @@ private val offersTheQuickActionFingerprint = Fingerprint(
 
 /** The model a menu is about, of which each of these sheets holds exactly one. */
 private const val THE_CONTENT = "Lxa/d;"
+
+/** The sheet a comment's own menu is, found by what one of its entries says. */
+private lateinit var COMMENT_MENU_SHEET: String
 
 /**
  * Where a comment's menu builds its entries, one of which is the one that translates. Found by
@@ -311,6 +336,7 @@ val translatePatch = bytecodePatch(
             STORED_CLASS_DESCRIPTOR,
             LABELS_CLASS_DESCRIPTOR,
             COMMENT_BUTTONS_CLASS_DESCRIPTOR,
+            COMMENT_MENU_CLASS_DESCRIPTOR,
             ROWS_CLASS_DESCRIPTOR,
             SCREEN_CLASS_DESCRIPTOR,
         ).forEach { reached ->
@@ -490,6 +516,7 @@ val translatePatch = bytecodePatch(
         // The register it is handed in carries nothing else, so writing over it is safe where
         // writing over any other register around here would not be.
         val commentMenu = namesTheCommentRowFingerprint.originalClassDef
+        COMMENT_MENU_SHEET = commentMenu.type
         val theComment = commentMenu.fields.single { it.type == THE_CONTENT }
 
         namesTheCommentRowFingerprint.method.apply {
@@ -506,6 +533,35 @@ val translatePatch = bytecodePatch(
                 invoke-static { v$saysInto }, $LABELS_CLASS_DESCRIPTOR->$FOR_COMMENT_METHOD
                 move-result-object v$saysInto
                 """
+            )
+        }
+
+        // A comment's menu offers the comment and the whole thread and nothing between, so an
+        // entry for the conversation under this one goes in after the app's own are built.
+        namesTheCommentRowFingerprint.method.apply {
+            val theEnd = implementation!!.instructions.count() - 1
+            val holdingTheSheet = (theEnd downTo 0).first { at ->
+                getInstruction(at).getReference<FieldReference>()?.definingClass ==
+                        COMMENT_MENU_SHEET
+            }
+            val sheet = getInstruction<TwoRegisterInstruction>(holdingTheSheet).registerB
+
+            addInstructions(
+                theEnd,
+                "invoke-static { v$sheet }, $COMMENT_MENU_CLASS_DESCRIPTOR->$ADD_THREAD_METHOD"
+            )
+        }
+
+        commentMenuTappedFingerprint.method.apply {
+            addInstructionsWithLabels(
+                0,
+                """
+                invoke-static { p0, p1 }, $COMMENT_MENU_CLASS_DESCRIPTOR->$TAPPED_METHOD
+                move-result v0
+                if-eqz v0, :not_ours
+                return-void
+                """,
+                ExternalLabel("not_ours", getInstruction(0))
             )
         }
 

@@ -7,6 +7,21 @@ package xa;
  * <p>Compile only, and named as the app names it. Only what is read is declared.
  */
 public abstract class d {
+    /** @return What a row of a cursor over Sync's own store is about. */
+    public static d z(android.database.Cursor from, int row) {
+        throw new UnsupportedOperationException("Stub");
+    }
+
+    /** The id of the post this comment belongs to, with its type prefix. */
+    public String j0() {
+        throw new UnsupportedOperationException("Stub");
+    }
+
+    /** The id of the comment this one is a reply to, with its type prefix. */
+    public String t0() {
+        throw new UnsupportedOperationException("Stub");
+    }
+
     /** The Reddit id of this comment or post, without its type prefix. */
     public String U() {
         throw new UnsupportedOperationException("Stub");

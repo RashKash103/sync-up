@@ -1,8 +1,12 @@
 package app.morphe.extension.syncforreddit.translate;
 
-import java.lang.ref.WeakReference;
+import android.content.Context;
+import android.database.Cursor;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import app.morphe.extension.shared.Logger;
 
@@ -18,44 +22,85 @@ import app.morphe.extension.shared.Logger;
  * is one comment and one question, rather than a question in the middle of forty.
  */
 final class EveryComment {
-    /**
-     * The thread being read, kept from the last comment drawn.
-     *
-     * <p>What draws a comment is handed the thread it belongs to, and a thread cannot be
-     * translated without having been read, so by the time this is wanted one has been seen.
-     * Weakly, since holding a thread open after it is closed would hold everything in it.
-     */
-    private static WeakReference<ya.c> beingRead = new WeakReference<>(null);
-
     private EveryComment() {}
 
-    /** Remembers the thread a comment belongs to, as it is drawn. */
-    static void beingRead(ya.c thread) {
-        if (thread != null && thread != beingRead.get()) {
-            beingRead = new WeakReference<>(thread);
-        }
-    }
-
-    /** @return Every comment the thread is holding, or nothing where none can be reached. */
-    static List<xa.d> of() {
+    /**
+     * @param about The post the thread belongs to.
+     * @return Every comment Sync has read of that thread.
+     *
+     * <p>Asked of Sync's own store, the way Sync asks it when translating a thread itself. The
+     * comments are not held in a list anywhere — what is drawn is drawn straight from a cursor
+     * — and reading the one the screen is using would move it under the screen's feet.
+     */
+    static List<xa.d> of(Context context, String about) {
         List<xa.d> comments = new ArrayList<>();
+        if (context == null || about == null || about.isEmpty()) {
+            return comments;
+        }
+
+        Cursor rows = null;
         try {
-            ya.c thread = beingRead.get();
-            va.a held = thread == null ? null : thread.t();
-            ArrayList<?> everything = held == null ? null : held.k();
-            if (everything == null) {
+            rows = q8.c.a(context, t7.l.a(about, null), false, null).loadInBackground();
+            if (rows == null) {
                 return comments;
             }
-
-            for (Object each : everything) {
-                if (each instanceof xa.d) {
-                    comments.add((xa.d) each);
+            for (int row = 0; row < rows.getCount(); row++) {
+                xa.d each = xa.d.z(rows, row);
+                if (each != null) {
+                    comments.add(each);
                 }
             }
         } catch (Throwable ex) {
-            Logger.printInfo(() -> "Could not reach the comments of the thread: " + ex);
+            Logger.printInfo(() -> "Could not read the thread: " + ex);
+        } finally {
+            if (rows != null) {
+                try {
+                    rows.close();
+                } catch (Exception ex) {
+                    Logger.printInfo(() -> "Could not close the thread: " + ex);
+                }
+            }
         }
         return comments;
+    }
+
+    /**
+     * @return The comment given and everything under it, which is what a thread means where one
+     *         comment is asked about rather than all of them.
+     *
+     * <p>Everything under it and nothing above: the replies to a comment are what is read after
+     * it, and what it was itself replying to is a conversation of its own.
+     */
+    static List<xa.d> under(List<xa.d> comments, xa.d one) {
+        List<xa.d> thread = new ArrayList<>();
+        try {
+            String id = one.U();
+            if (id == null) {
+                return thread;
+            }
+
+            Set<String> below = new HashSet<>();
+            below.add(id);
+            thread.add(one);
+
+            // The comments come in the order they are shown, so a reply is always read after
+            // the comment it answers and one pass is enough to find all of them.
+            for (xa.d each : comments) {
+                String parent = each.t0();
+                if (parent == null) {
+                    continue;
+                }
+                // A parent is named with the kind in front of it, which an id is not.
+                int names = parent.indexOf('_');
+                if (below.contains(names < 0 ? parent : parent.substring(names + 1))
+                        && each.U() != null && below.add(each.U())) {
+                    thread.add(each);
+                }
+            }
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not follow the thread down: " + ex);
+        }
+        return thread;
     }
 
     /** @return How many of them are standing translated. */

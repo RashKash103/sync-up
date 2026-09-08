@@ -101,25 +101,45 @@ public final class WithoutTheSheet {
      *
      * @return Whether this has been dealt with, and the sheet should not open.
      */
-    public static boolean insteadOfAll(Class<?> what, Object unusedManager, String unusedId) {
+    public static boolean insteadOfAll(Class<?> what, Object unusedManager, String about) {
         try {
             if (what != da.b.class) {
                 return false;
             }
 
-            List<xa.d> comments = EveryComment.of();
-            if (comments.isEmpty()) {
-                say("No comments to translate");
-                return true;
-            }
-
-            boolean back = EveryComment.translatedAmong(comments) > 0;
-            EveryComment.translate(comments, back, WithoutTheSheet::say);
+            // Reading the thread waits on the store, which the thread that draws must not.
+            new Thread(() -> {
+                List<xa.d> comments = EveryComment.of(Utils.getContext(), about);
+                if (comments.isEmpty()) {
+                    say("No comments to translate");
+                    return;
+                }
+                boolean back = EveryComment.translatedAmong(comments) > 0;
+                EveryComment.translate(comments, back, WithoutTheSheet::say);
+            }, "sync-up-read-thread").start();
             return true;
         } catch (Throwable ex) {
             Logger.printInfo(() -> "Leaving translating them all to the sheet: " + ex);
             return false;
         }
+    }
+
+    /**
+     * Translates the comment given and everything under it, or puts that much back.
+     *
+     * @param about The post the thread belongs to, which is how its comments are asked for.
+     */
+    public static void forThisAndUnder(xa.d one, String about) {
+        new Thread(() -> {
+            List<xa.d> thread = EveryComment.under(
+                    EveryComment.of(Utils.getContext(), about), one);
+            if (thread.isEmpty()) {
+                say("Nothing under that comment");
+                return;
+            }
+            boolean back = EveryComment.translatedAmong(thread) > 0;
+            EveryComment.translate(thread, back, WithoutTheSheet::say);
+        }, "sync-up-read-thread").start();
     }
 
     /** Does what the sheet would have done, off the thread that draws. */
