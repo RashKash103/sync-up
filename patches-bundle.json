@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-08T01:56:58",
-  "description": "## [1.7.0-dev.32](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.31...v1.7.0-dev.32) (2026-09-08)\n\n### 🐛 Bug Fixes\n\n* Leave room for the buttons the translate button was put beside ([f289a03](https://github.com/RashKash103/sync-up/commit/f289a03a242206a8857c1057f9ee7a9dacc14377))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.32/patches-1.7.0-dev.32.mpp",
+  "created_at": "2026-09-08T02:04:43",
+  "description": "## [1.7.0-dev.33](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.32...v1.7.0-dev.33) (2026-09-08)\n\n### 🐛 Bug Fixes\n\n* Draw the translate button as the buttons beside it are drawn ([fd4041d](https://github.com/RashKash103/sync-up/commit/fd4041d9eeb184d0ed11c0c7369bc012b04253b3))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.33/patches-1.7.0-dev.33.mpp",
   "signature_download_url": "",
-  "version": "1.7.0-dev.32"
+  "version": "1.7.0-dev.33"
 }

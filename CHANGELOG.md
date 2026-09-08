@@ -1,3 +1,9 @@
+## [1.7.0-dev.33](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.32...v1.7.0-dev.33) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Draw the translate button as the buttons beside it are drawn ([fd4041d](https://github.com/RashKash103/sync-up/commit/fd4041d9eeb184d0ed11c0c7369bc012b04253b3))
+
 ## [1.7.0-dev.32](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.31...v1.7.0-dev.32) (2026-09-08)
 
 ### 🐛 Bug Fixes
