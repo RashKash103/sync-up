@@ -1,3 +1,9 @@
+## [1.7.0-dev.42](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.41...v1.7.0-dev.42) (2026-09-08)
+
+### ✨ New Features
+
+* Tell DeepL what a comment is answering, and keep up with a thread ([c3a0042](https://github.com/RashKash103/sync-up/commit/c3a0042d8908e88686ce6802a96c055a411e82e7))
+
 ## [1.7.0-dev.41](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.40...v1.7.0-dev.41) (2026-09-08)
 
 ### 🐛 Bug Fixes
