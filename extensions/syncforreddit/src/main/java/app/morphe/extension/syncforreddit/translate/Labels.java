@@ -3,10 +3,6 @@ package app.morphe.extension.syncforreddit.translate;
 import android.view.View;
 import android.view.ViewGroup;
 
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.ForegroundColorSpan;
-
 import com.laurencedawson.reddit_sync.ui.views.core.MaterialRow;
 
 import java.lang.reflect.Field;
@@ -38,9 +34,9 @@ public final class Labels {
     private static final String OURS = "sync-up-translate-all";
 
     /**
-     * What marks something as standing translated, wherever that is worth showing: a blue as
-     * bright against the rest as the amber Sync gives a saved comment, and the same wherever it
-     * appears.
+     * What marks a button as standing translated: a blue as bright against the rest as the
+     * amber Sync gives a saved comment. Only a button is marked this way — a row in a menu says
+     * what it will do and nothing more, which is what Sync's own Save row does.
      */
     static final int WHILE_TRANSLATED = 0xFF4FB0F5;
 
@@ -86,7 +82,7 @@ public final class Labels {
             }
 
             ours.setVisibility(View.VISIBLE);
-            ours.k(back ? marked(UNTRANSLATE_EVERY) : TRANSLATE_EVERY);
+            ours.k(back ? UNTRANSLATE_EVERY : TRANSLATE_EVERY);
             ours.setOnClickListener(tapped -> {
                 EveryComment.translate(comments, back, what -> Utils.showToastShort(what));
                 // Every row of Sync's own closes the sheet once it has done what it does.
@@ -106,14 +102,6 @@ public final class Labels {
         } catch (Throwable ex) {
             Logger.printInfo(() -> "Could not close the menu: " + ex);
         }
-    }
-
-    /** @return The words, marked as standing translated. */
-    private static CharSequence marked(String words) {
-        SpannableString said = new SpannableString(words);
-        said.setSpan(new ForegroundColorSpan(WHILE_TRANSLATED), 0, words.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        return said;
     }
 
     /**
@@ -178,9 +166,8 @@ public final class Labels {
             if (translated || worthOffering(content)) {
                 row.setVisibility(View.VISIBLE);
             }
-            // The row takes what it is told to say as it is given, so what it says can be
-            // coloured where it is worth marking, as a saved comment is marked.
-            row.k(translated ? marked(UNTRANSLATE_TEXT) : TRANSLATE_TEXT);
+            // Only the wording changes, as Sync's own Save row changes to Unsave.
+            row.k(translated ? UNTRANSLATE_TEXT : TRANSLATE_TEXT);
 
             forAllOfThem(sheet, row);
         } catch (Throwable ex) {
