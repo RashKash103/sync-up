@@ -259,6 +259,10 @@ service being asked.
   - **Any post with words in it**, from a feed or from the comments screen, and a post's title
     as well as its body — Sync itself offers this only for a post with a body, opened from the
     comments screen.
+  - **A button in the row under a comment**, beside reply and the rest. Sync has no such button:
+    its own translating is offered from the menu at the top of a thread and from a comment's own
+    menu. This one is made as each comment is drawn and themed as one of the app's own buttons,
+    and the row is left exactly as it was where translation is turned off.
   - **What was written is kept**, so asking a second time puts the original back — the entry
     says *Untranslate* while it would. The line under
     the author says which language it is being read from while it stands translated, beside the

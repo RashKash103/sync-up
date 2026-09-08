@@ -71,6 +71,17 @@ public final class WithoutTheSheet {
         }
     }
 
+    /**
+     * Translates one thing, or puts back what was written where it is already translated. For
+     * anywhere that offers translating without a sheet ever having been opened.
+     *
+     * @param manager What a sheet would be opened with, where the language has to be asked
+     *                about, or null where there is nothing to open one with.
+     */
+    public static void forThis(xa.d content, Object manager) {
+        translate(content, null, manager);
+    }
+
     /** Does what the sheet would have done, off the thread that draws. */
     private static void translate(xa.d content, String language, Object manager) {
         new Thread(() -> {

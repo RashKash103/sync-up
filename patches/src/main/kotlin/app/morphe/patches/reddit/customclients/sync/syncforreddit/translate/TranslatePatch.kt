@@ -57,6 +57,22 @@ private const val EXTENSION_PACKAGE = "Lapp/morphe/extension/"
 private const val PROVIDER_CLASS =
     "Lcom/laurencedawson/reddit_sync/provider/RedditProvider;"
 
+private const val COMMENT_BUTTONS_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/translate/CommentButtons;"
+
+private const val ON_BIND_METHOD = "onBind(Ljava/lang/Object;Lxa/d;)V"
+
+private const val COMMENT_HOLDER_CLASS =
+    "Lcom/laurencedawson/reddit_sync/ui/viewholders/comments/CommentHolder;"
+
+/** Where a comment is given to the row that draws it, buttons and all. */
+private val drawsACommentFingerprint = Fingerprint(
+    definingClass = COMMENT_HOLDER_CLASS,
+    parameters = listOf("Lxa/d;"),
+    returnType = "V",
+    custom = { method, _ -> method.implementation != null },
+)
+
 private const val LABELS_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/translate/Labels;"
 
@@ -273,6 +289,7 @@ val translatePatch = bytecodePatch(
             WITHOUT_THE_SHEET_CLASS_DESCRIPTOR,
             STORED_CLASS_DESCRIPTOR,
             LABELS_CLASS_DESCRIPTOR,
+            COMMENT_BUTTONS_CLASS_DESCRIPTOR,
             ROWS_CLASS_DESCRIPTOR,
             SCREEN_CLASS_DESCRIPTOR,
         ).forEach { reached ->
@@ -397,6 +414,16 @@ val translatePatch = bytecodePatch(
         if (storesRows < 2) {
             throw PatchException("Rows are not stored the way they were, found $storesRows")
         }
+
+        // The row of buttons under a comment is a fixed set, laid out in the layout for it and
+        // held in a field each. There is no translating among them and no setting that adds
+        // one, so one is put at the end of the row as each comment is bound. Injected where the
+        // comment arrives rather than where the row is finished with, so that what is handed
+        // over is still what was passed in.
+        drawsACommentFingerprint.method.addInstructions(
+            0,
+            "invoke-static { p0, p1 }, $COMMENT_BUTTONS_CLASS_DESCRIPTOR->$ON_BIND_METHOD"
+        )
 
         // The quick action under a comment is asked the same pair of questions the menus are,
         // and the paid-copy one is answered here too. Whether the action is offered at all
