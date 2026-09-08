@@ -1,7 +1,9 @@
 package app.morphe.extension.syncforreddit.translate;
 
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import java.lang.reflect.Field;
@@ -58,6 +60,7 @@ public final class CommentButtons {
             }
 
             ours.setVisibility(View.VISIBLE);
+            drawnLike(ours, row);
             ours.setContentDescription(Originals.isTranslated(comment)
                     ? "Undo the translation" : "Translate this comment");
 
@@ -68,6 +71,53 @@ public final class CommentButtons {
             // A comment that draws without the button beats one that does not draw.
             Logger.printInfo(() -> "Could not put a translate button under a comment: " + ex);
         }
+    }
+
+    /**
+     * Gives the button the look of the ones beside it.
+     *
+     * <p>Each of those is told in the layout which colour to take and whether to show a ripple,
+     * and a button made here is told neither: it is built with nothing to read those from, so it
+     * falls back to the quieter colour and comes out grey beside the rest. Rather than guess at
+     * what the layout says, the look is taken from a button that has it — which also means it
+     * follows the theme wherever the others do, since this is done every time a comment is
+     * drawn.
+     */
+    private static void drawnLike(TranslateButton ours, ViewGroup row) {
+        try {
+            View beside = neighbour(row, ours);
+            if (!(beside instanceof ImageView)) {
+                return;
+            }
+
+            ours.setColorFilter(((ImageView) beside).getColorFilter());
+
+            Drawable background = beside.getBackground();
+            if (background != null && background.getConstantState() != null) {
+                // A drawable holds the state of the view it is drawn for, so it is copied
+                // rather than shared: pressing one button must not light up another.
+                ours.setBackground(background.getConstantState().newDrawable().mutate());
+            }
+            ours.setPadding(beside.getPaddingLeft(), beside.getPaddingTop(),
+                    beside.getPaddingRight(), beside.getPaddingBottom());
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "Could not draw the translate button like the rest: " + ex);
+        }
+    }
+
+    /**
+     * @return A button beside ours to take the look from. The last of the row is the one that
+     *         opens the rest of the menu, which is drawn plainly and is always there; the ones
+     *         that vote are coloured by whether they have been used.
+     */
+    private static View neighbour(ViewGroup row, TranslateButton ours) {
+        for (int at = row.getChildCount() - 1; at >= 0; at--) {
+            View each = row.getChildAt(at);
+            if (each != ours) {
+                return each;
+            }
+        }
+        return null;
     }
 
     /** @return Whether there is anything about this comment worth offering to translate. */
@@ -94,6 +144,11 @@ public final class CommentButtons {
         return null;
     }
 
+    /** @return Where in the row ours goes, which is in front of the last button there. */
+    private static int nextToLast(ViewGroup row) {
+        return Math.max(0, row.getChildCount() - 1);
+    }
+
     /** @return Ours, where this row has already been given one. */
     private static TranslateButton alreadyThere(ViewGroup row) {
         View found = row.findViewWithTag(OURS);
@@ -101,7 +156,8 @@ public final class CommentButtons {
     }
 
     /**
-     * @return A button added to the end of the row, sized as the buttons beside it are.
+     * @return A button added to the row, next to last: the one that opens the rest of the menu
+     *         stays where it is, at the end.
      *
      * <p>Every one of them is as wide as the whole row and carries a weight of one, which is how
      * a row of buttons is made to share the width evenly. The weight is the part that does that:
@@ -124,11 +180,11 @@ public final class CommentButtons {
             mine.setMargins(beside.leftMargin, beside.topMargin, beside.rightMargin,
                     beside.bottomMargin);
             mine.gravity = beside.gravity;
-            row.addView(ours, mine);
+            row.addView(ours, nextToLast(row), mine);
         } else if (like != null) {
-            row.addView(ours, new ViewGroup.LayoutParams(like));
+            row.addView(ours, nextToLast(row), new ViewGroup.LayoutParams(like));
         } else {
-            row.addView(ours);
+            row.addView(ours, nextToLast(row));
         }
         return ours;
     }
