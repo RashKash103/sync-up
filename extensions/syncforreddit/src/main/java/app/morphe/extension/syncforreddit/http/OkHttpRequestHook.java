@@ -82,6 +82,7 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
      * As {@link #install}, for the client Sync hands whatever draws its pictures.
      */
     public static synchronized OkHttpClient installForImages(OkHttpClient client) {
+        Logger.printInfo(() -> "A client for drawing pictures is being hooked");
         if (client == null) {
             return null;
         }
