@@ -14,8 +14,12 @@ import app.morphe.extension.shared.Logger;
  *
  * <p>Wanted in two places — when a translation is made, and when the app has written over one
  * with what its author wrote — so it belongs to neither.
+ *
+ * <p>Public because the app calls into it: a class the patch points a call at is reached from
+ * whatever package that call was written into, and a package-private one is refused at the
+ * moment it is first called rather than when it is patched.
  */
-final class Stored {
+public final class Stored {
     /** What the app calls a comment, where it says which kind of thing it has. */
     static final int A_COMMENT = 11;
 

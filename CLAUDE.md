@@ -198,6 +198,13 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   a call placed in front of that return is never reached by the path that matters, and nothing
   is logged at all. Anchor on an instruction every path executes — the one that reads the value
   being passed around is usually it — and resolve the branch targets before choosing an index.
+- **An extension class the patch points a call at has to be `public`.** It is reached from
+  whatever app package the call was injected into, so a package-private one throws
+  `IllegalAccessError: Illegal class access` the first time that call runs — which for anything
+  on a startup path means the app will not open. `translate/TranslatePatch.kt` checks the access
+  flags of every class it calls into before it injects anything, which turns this into a patch
+  failure rather than a crash on a device. The same applies in reverse to app methods the
+  extension calls: see the two accessors on `Lda/d;`, opened by that patch.
 - **An injected call cannot go into a method that takes an array.** What assembles inline smali
   builds a method around the instruction out of the target method's own parameters, and does not
   read an array among them. It fails as `NoSuchElementException: Collection is empty` from

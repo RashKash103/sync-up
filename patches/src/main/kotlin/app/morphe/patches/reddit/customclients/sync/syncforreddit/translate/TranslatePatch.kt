@@ -263,6 +263,26 @@ val translatePatch = bytecodePatch(
     compatibleWith(*SyncForRedditCompatible)
 
     execute {
+        // Every one of these is called from the app's own classes, in packages of their own. A
+        // class that is not public is refused at the moment it is first called, which is on a
+        // device and long after this. Refused here instead.
+        listOf(
+            SETTINGS_CLASS_DESCRIPTOR,
+            NOW_CLASS_DESCRIPTOR,
+            IN_PLACE_CLASS_DESCRIPTOR,
+            WITHOUT_THE_SHEET_CLASS_DESCRIPTOR,
+            STORED_CLASS_DESCRIPTOR,
+            LABELS_CLASS_DESCRIPTOR,
+            ROWS_CLASS_DESCRIPTOR,
+            SCREEN_CLASS_DESCRIPTOR,
+        ).forEach { reached ->
+            val extension = classDefByOrNull(reached)
+                ?: throw PatchException("$reached is not in the app to be called")
+            if (extension.accessFlags and AccessFlags.PUBLIC.value == 0) {
+                throw PatchException("$reached is not public, so the app cannot call it")
+            }
+        }
+
         screenForFingerprint.method.apply {
             // Answered before Sync looks, and only for the one id that is ours: for every other
             // the screen is null and Sync goes on to look the id up as it always did.
