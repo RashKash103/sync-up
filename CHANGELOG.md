@@ -1,3 +1,9 @@
+## [1.7.0-dev.44](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.43...v1.7.0-dev.44) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Show a website preview with the picture the page names ([7717b7c](https://github.com/RashKash103/sync-up/commit/7717b7c266a71c8b21313b188c7c8970e482ef8c))
+
 ## [1.7.0-dev.43](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.42...v1.7.0-dev.43) (2026-09-08)
 
 ### ✨ New Features
