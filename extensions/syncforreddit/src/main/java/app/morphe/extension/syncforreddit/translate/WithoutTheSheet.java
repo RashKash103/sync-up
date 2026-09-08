@@ -82,86 +82,25 @@ public final class WithoutTheSheet {
         translate(content, null, manager);
     }
 
+    /** What came of asking for one thing to be translated. */
+    enum Came {
+        TRANSLATED,
+        PUT_BACK,
+        ALREADY_IN_IT,
+        NO_LANGUAGE,
+        NOTHING_TO_DO,
+    }
+
     /** Does what the sheet would have done, off the thread that draws. */
     private static void translate(xa.d content, String language, Object manager) {
         new Thread(() -> {
             try {
-                Context context = Utils.getContext();
-                String id = content.U();
-                boolean isAComment = content.Y0() == Stored.A_COMMENT;
-
-                // Asking a second time is asking for what was written back.
-                Originals.Written wasWritten = Originals.written(id);
-                if (wasWritten != null) {
-                    Logger.printInfo(() -> "Putting back what was written");
-                    Originals.forget(id);
-                    Stored.write(context, id, isAComment, wasWritten.title, wasWritten.body);
-                    return;
-                }
-
-                // A post has a title as well as a body, and a great many have only a title.
-                String body = isAComment ? content.o() : content.P0();
-                String title = isAComment ? null : content.b1();
-                boolean hasBody = Markdown.worthTranslating(body);
-                boolean hasTitle = Markdown.worthTranslating(title);
-
-                if (!hasBody && !hasTitle) {
-                    say("Nothing to translate");
-                    return;
-                }
-
-                String into = TranslationSettings.language(context);
-                String service = TranslationSettings.service(context);
-
-                String from = language == null || language.isEmpty()
-                        || OnDeviceTranslator.UNKNOWN.equals(language)
-                        ? OnDeviceTranslator.languageOf(justWords(hasBody ? body : title))
-                        : language;
-
-                if (from == null || from.isEmpty()
-                        || OnDeviceTranslator.UNKNOWN.equals(from)) {
+                Came came = of(content, language, true);
+                if (came == Came.NO_LANGUAGE) {
                     // Nothing can be translated out of a language nobody can name. Sync has a
                     // sheet for choosing one, and choosing one comes back through here.
                     askWhichLanguage(content, manager);
-                    return;
                 }
-
-                if (OnDeviceTranslator.isTheSameLanguage(from, into)) {
-                    // Asking for English to be put into English wastes a download and ends with
-                    // the same text and a note saying it was translated.
-                    say(already(into));
-                    return;
-                }
-
-                if (!heldAlready(context, service, into, body, title)) {
-                    // Said once for the post rather than once for each part of it.
-                    say("Translating…");
-                }
-
-                String saidBody = hasBody ? translated(context, service, body, from, into, true)
-                        : null;
-                String saidTitle = hasTitle
-                        ? translated(context, service, title, from, into, false) : null;
-
-                boolean bodyChanged = saidBody != null && !saidBody.equals(body);
-                boolean titleChanged = saidTitle != null && !saidTitle.equals(title);
-                if (!bodyChanged && !titleChanged) {
-                    // Nothing came of it: either it was already in the language wanted, or the
-                    // service gave back what it was given. Either way there is nothing to say
-                    // under the author and nothing to put back later.
-                    Logger.printInfo(() -> "The translation says what was written");
-                    say(already(into));
-                    return;
-                }
-
-                // Stored first, and only then remembered. What the line under an author says
-                // has to follow what the post says, and it cannot lead it.
-                Stored.write(context, id, isAComment, titleChanged ? saidTitle : null,
-                        bodyChanged ? saidBody : null);
-                // Both parts are kept as they were and as they became, so that what a post
-                // says can be recognised as one or the other whichever part was translated.
-                Originals.remember(id, title, body, titleChanged ? saidTitle : title,
-                        bodyChanged ? saidBody : body, from);
             } catch (Exception ex) {
                 Logger.printInfo(() -> "Could not translate: " + OnDeviceTranslator.because(ex));
                 // A service says what was wrong with a key or an allowance, and that is worth
@@ -171,6 +110,96 @@ public final class WithoutTheSheet {
                         ? "Could not translate" : "Could not translate: " + said);
             }
         }, "sync-up-translate").start();
+    }
+
+    /**
+     * Translates one thing, or puts back what was written where it is already translated.
+     *
+     * @param announce Whether to say what is happening. Translating many things says one thing
+     *                 about all of them rather than one about each.
+     * @return What came of it.
+     */
+    static Came of(xa.d content, String language, boolean announce) throws Exception {
+        Context context = Utils.getContext();
+        String id = content.U();
+        boolean isAComment = content.Y0() == Stored.A_COMMENT;
+
+        // Asking a second time is asking for what was written back.
+        Originals.Written wasWritten = Originals.written(id);
+        if (wasWritten != null) {
+            Logger.printInfo(() -> "Putting back what was written");
+            Originals.forget(id);
+            Stored.write(context, id, isAComment, wasWritten.title, wasWritten.body);
+            return Came.PUT_BACK;
+        }
+
+        // A post has a title as well as a body, and a great many have only a title.
+        String body = isAComment ? content.o() : content.P0();
+        String title = isAComment ? null : content.b1();
+        boolean hasBody = Markdown.worthTranslating(body);
+        boolean hasTitle = Markdown.worthTranslating(title);
+
+        if (!hasBody && !hasTitle) {
+            if (announce) {
+                say("Nothing to translate");
+            }
+            return Came.NOTHING_TO_DO;
+        }
+
+        String into = TranslationSettings.language(context);
+        String service = TranslationSettings.service(context);
+
+        String from = language == null || language.isEmpty()
+                || OnDeviceTranslator.UNKNOWN.equals(language)
+                ? OnDeviceTranslator.languageOf(justWords(hasBody ? body : title))
+                : language;
+
+        if (from == null || from.isEmpty()
+                || OnDeviceTranslator.UNKNOWN.equals(from)) {
+            return Came.NO_LANGUAGE;
+        }
+
+        if (OnDeviceTranslator.isTheSameLanguage(from, into)) {
+            // Asking for English to be put into English wastes a download and ends with
+            // the same text and a note saying it was translated.
+            if (announce) {
+                say(already(into));
+            }
+            return Came.ALREADY_IN_IT;
+        }
+
+        if (announce && !heldAlready(context, service, into, body, title)) {
+            // Said once for the post rather than once for each part of it.
+            say("Translating…");
+        }
+
+        String saidBody = hasBody ? translated(context, service, body, from, into, true)
+                : null;
+        String saidTitle = hasTitle
+                ? translated(context, service, title, from, into, false) : null;
+
+        boolean bodyChanged = saidBody != null && !saidBody.equals(body);
+        boolean titleChanged = saidTitle != null && !saidTitle.equals(title);
+        if (!bodyChanged && !titleChanged) {
+            // Nothing came of it: either it was already in the language wanted, or the
+            // service gave back what it was given. Either way there is nothing to say
+            // under the author and nothing to put back later.
+            Logger.printInfo(() -> "The translation says what was written");
+            if (announce) {
+                say(already(into));
+            }
+            return Came.ALREADY_IN_IT;
+        }
+
+        // Stored first, and only then remembered. What the line under an author says
+        // has to follow what the post says, and it cannot lead it.
+        Stored.write(context, id, isAComment, titleChanged ? saidTitle : null,
+                bodyChanged ? saidBody : null);
+        // Both parts are kept as they were and as they became, so that what a post
+        // says can be recognised as one or the other whichever part was translated.
+        Originals.remember(id, title, body, titleChanged ? saidTitle : title,
+                bodyChanged ? saidBody : body, from);
+        return Came.TRANSLATED;
     }
 
     /** @return Whether every part of this was translated before, and none of it has to wait. */

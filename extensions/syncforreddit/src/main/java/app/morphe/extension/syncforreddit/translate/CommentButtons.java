@@ -8,7 +8,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import androidx.fragment.app.FragmentManager;
+
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -69,7 +72,9 @@ public final class CommentButtons {
 
             // A row is drawn again for another comment, so what it does is set every time.
             xa.d about = comment;
-            ours.setOnClickListener(tapped -> WithoutTheSheet.forThis(about, null));
+            Object drawnBy = holder;
+            ours.setOnClickListener(tapped ->
+                    WithoutTheSheet.forThis(about, whatOpensASheet(drawnBy)));
         } catch (Throwable ex) {
             // A comment that draws without the button beats one that does not draw.
             Logger.printInfo(() -> "Could not put a translate button under a comment: " + ex);
@@ -123,6 +128,28 @@ public final class CommentButtons {
             if (each != ours) {
                 return each;
             }
+        }
+        return null;
+    }
+
+    /**
+     * @return What a sheet can be opened with, which is wanted only where the language of a
+     *         comment cannot be told and one has to be asked for. What draws a comment knows;
+     *         it keeps the answer to itself, so it is asked rather than told.
+     */
+    private static Object whatOpensASheet(Object holder) {
+        try {
+            for (Class<?> each = holder.getClass(); each != null; each = each.getSuperclass()) {
+                for (Method maybe : each.getDeclaredMethods()) {
+                    if (maybe.getParameterTypes().length == 0
+                            && FragmentManager.class.isAssignableFrom(maybe.getReturnType())) {
+                        maybe.setAccessible(true);
+                        return maybe.invoke(holder);
+                    }
+                }
+            }
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "Could not find what opens a sheet: " + ex);
         }
         return null;
     }
