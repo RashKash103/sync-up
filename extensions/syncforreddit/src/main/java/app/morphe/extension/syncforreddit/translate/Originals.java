@@ -45,6 +45,8 @@ public final class Originals {
     /** What is written in the file: a post has a title as well as a body. */
     private static final String TITLE = "title";
     private static final String BODY = "body";
+    private static final String TRANSLATED_TITLE = "translated_title";
+    private static final String TRANSLATED_BODY = "translated_body";
 
     /** Between the two, where they are counted as one for telling the text again. */
     private static final char BETWEEN = '\u0000';
@@ -58,10 +60,15 @@ public final class Originals {
 
     private static final int WITH_PARTS = 2;
 
+    /** And this one keeps the translation beside what was written, so the two are told apart. */
+    private static final int WITH_BOTH = 3;
+
     /** What is known about one, beside the text of it. */
     private static final String FROM = "from";
     private static final String HASH = "hash";
     private static final String LENGTH = "length";
+    private static final String TRANSLATED_HASH = "translated_hash";
+    private static final String TRANSLATED_LENGTH = "translated_length";
     private static final String AT = "at";
 
     /** Enough for far more threads than are read at a sitting. */
@@ -80,17 +87,28 @@ public final class Originals {
         final String from;
         final int hash;
         final int length;
+        final int translatedHash;
+        final int translatedLength;
         final int version;
 
-        Held(String from, int hash, int length, int version) {
+        Held(String from, int hash, int length, int translatedHash, int translatedLength,
+             int version) {
             this.from = from;
             this.hash = hash;
             this.length = length;
+            this.translatedHash = translatedHash;
+            this.translatedLength = translatedLength;
             this.version = version;
         }
 
-        boolean is(String text) {
+        boolean isWhatWasWritten(String text) {
             return text != null && text.length() == length && text.hashCode() == hash;
+        }
+
+        /** @return Whether this is the translation. Only an entry that kept one can tell. */
+        boolean isTheTranslation(String text) {
+            return version >= WITH_BOTH && text != null && translatedLength > 0
+                    && text.length() == translatedLength && text.hashCode() == translatedHash;
         }
 
         /** @return The parts counted the way this entry counted them when it was written. */
@@ -101,16 +119,23 @@ public final class Originals {
 
     private Originals() {}
 
-    /** What a post said before it was translated. Either part may be absent. */
+    /** What a post said before it was translated, and what it was translated to. */
     static final class Written {
         final String title;
         final String body;
+        final String translatedTitle;
+        final String translatedBody;
 
-        Written(String title, String body) {
+        Written(String title, String body, String translatedTitle, String translatedBody) {
             this.title = title;
             this.body = body;
+            this.translatedTitle = translatedTitle;
+            this.translatedBody = translatedBody;
         }
     }
+
+    /** Which posts are having their translation written back, so it is done once at a time. */
+    private static final java.util.Set<String> beingPutBack = new java.util.HashSet<>();
 
     /** @return What was written, or null where this was never translated. */
     @Nullable
@@ -127,13 +152,16 @@ public final class Originals {
             try {
                 JSONObject says = new JSONObject(kept_);
                 if (says.has(TITLE) || says.has(BODY)) {
-                    return new Written(says.has(TITLE) ? says.getString(TITLE) : null,
-                            says.has(BODY) ? says.getString(BODY) : null);
+                    return new Written(
+                            says.has(TITLE) ? says.getString(TITLE) : null,
+                            says.has(BODY) ? says.getString(BODY) : null,
+                            says.has(TRANSLATED_TITLE) ? says.getString(TRANSLATED_TITLE) : null,
+                            says.has(TRANSLATED_BODY) ? says.getString(TRANSLATED_BODY) : null);
                 }
             } catch (Exception ex) {
                 // Left by a build that kept the text on its own rather than its parts.
             }
-            return new Written(null, kept_);
+            return new Written(null, kept_, null, null);
         } catch (Exception ex) {
             Logger.printInfo(() -> "Could not read what was written: " + ex);
             return null;
@@ -151,7 +179,8 @@ public final class Originals {
      * <p>Called only once the translation is where it can be seen. Keeping it before that would
      * leave the line under the author saying a post is translated when it is not.
      */
-    static void remember(String id, String title, String body, String from) {
+    static void remember(String id, String title, String body, String translatedTitle,
+                         String translatedBody, String from) {
         if (id == null || id.isEmpty() || (title == null && body == null)) {
             return;
         }
@@ -169,19 +198,28 @@ public final class Originals {
             if (body != null) {
                 parts.put(BODY, body);
             }
+            if (translatedTitle != null) {
+                parts.put(TRANSLATED_TITLE, translatedTitle);
+            }
+            if (translatedBody != null) {
+                parts.put(TRANSLATED_BODY, translatedBody);
+            }
             write(kept, parts.toString());
 
             String asOne = asOne(title, body);
+            String translated = asOne(translatedTitle, translatedBody);
             JSONObject says = new JSONObject();
             says.put(FROM, from == null ? "" : from);
             says.put(HASH, asOne.hashCode());
             says.put(LENGTH, asOne.length());
+            says.put(TRANSLATED_HASH, translated.hashCode());
+            says.put(TRANSLATED_LENGTH, translated.length());
             says.put(AT, System.currentTimeMillis());
-            says.put(VERSION, WITH_PARTS);
+            says.put(VERSION, WITH_BOTH);
             store().edit().putString(id, says.toString()).apply();
 
             held().put(id, new Held(from == null ? "" : from, asOne.hashCode(), asOne.length(),
-                    WITH_PARTS));
+                    translated.hashCode(), translated.length(), WITH_BOTH));
 
             makeRoom();
         } catch (Exception ex) {
@@ -229,22 +267,64 @@ public final class Originals {
                 return null;
             }
 
-            boolean isAComment = content.Y0() == A_COMMENT;
+            boolean isAComment = content.Y0() == Stored.A_COMMENT;
             String body = isAComment ? content.o() : content.P0();
             String title = isAComment ? null : content.b1();
+            String saysNow = about.asItWasCounted(title, body);
 
-            if (about.is(about.asItWasCounted(title, body))) {
-                // What it says is what was written, so it is not translated any more.
-                forgetLater(id);
+            if (about.isTheTranslation(saysNow)) {
+                String language = named(about.from);
+                return language == null ? "translated" : "translated from " + language;
+            }
+
+            if (about.isWhatWasWritten(saysNow)) {
+                // The app has written what its author wrote back over the translation, which
+                // is what reading a thread again does. Nobody asked for that, so it is put
+                // back — and until it is, this says nothing rather than something untrue.
+                putItBackAgain(id, isAComment);
                 return null;
             }
 
-            String language = named(about.from);
-            return language == null ? "translated" : "translated from " + language;
+            // Neither what was written nor what it was translated to: the text has moved on
+            // and what is kept about it is of no further use.
+            forgetLater(id);
+            return null;
         } catch (Exception ex) {
             // Never at the cost of the thread drawing.
             return null;
         }
+    }
+
+    /**
+     * Writes the translation back over what the app has just replaced it with.
+     *
+     * <p>Once per post at a time: this is asked as a thread draws, and a thread draws a row
+     * more than once.
+     */
+    private static void putItBackAgain(String id, boolean isAComment) {
+        synchronized (beingPutBack) {
+            if (!beingPutBack.add(id)) {
+                return;
+            }
+        }
+        new Thread(() -> {
+            try {
+                Written was = written(id);
+                if (was != null && (was.translatedTitle != null || was.translatedBody != null)) {
+                    Logger.printInfo(() -> "Putting the translation back over " + id);
+                    Stored.write(Utils.getContext(), id, isAComment, was.translatedTitle,
+                            was.translatedBody);
+                } else {
+                    forget(id);
+                }
+            } catch (Exception ex) {
+                Logger.printInfo(() -> "Could not put the translation back: " + ex);
+            } finally {
+                synchronized (beingPutBack) {
+                    beingPutBack.remove(id);
+                }
+            }
+        }, "sync-up-retranslate").start();
     }
 
     /**
@@ -292,7 +372,9 @@ public final class Originals {
                 for (Map.Entry<String, ?> each : store().getAll().entrySet()) {
                     JSONObject says = new JSONObject(String.valueOf(each.getValue()));
                     held.put(each.getKey(), new Held(says.optString(FROM, ""),
-                            says.optInt(HASH), says.optInt(LENGTH), says.optInt(VERSION, 1)));
+                            says.optInt(HASH), says.optInt(LENGTH),
+                            says.optInt(TRANSLATED_HASH), says.optInt(TRANSLATED_LENGTH),
+                            says.optInt(VERSION, 1)));
                 }
             } catch (Exception ex) {
                 Logger.printInfo(() -> "Could not read what has been translated: " + ex);

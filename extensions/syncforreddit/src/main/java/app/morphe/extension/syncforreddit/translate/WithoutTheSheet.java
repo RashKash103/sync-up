@@ -1,13 +1,12 @@
 package app.morphe.extension.syncforreddit.translate;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
 
-import com.laurencedawson.reddit_sync.provider.RedditProvider;
+import androidx.fragment.app.FragmentManager;
 
 import java.util.regex.Pattern;
 
@@ -33,15 +32,6 @@ public final class WithoutTheSheet {
     private static final String THE_CONTENT = "translate_post";
     private static final String THE_LANGUAGE = "override_language";
 
-    /** What the app calls a comment, where it says which kind of thing it has. */
-    private static final int A_COMMENT = 11;
-
-    /** Where the text of each is kept. */
-    private static final String COMMENT_WRITTEN = "body_raw";
-    private static final String COMMENT_DRAWN = "body_processed";
-    private static final String POST_WRITTEN = "selftext_raw";
-    private static final String POST_DRAWN = "selftext_processed";
-    private static final String THE_TITLE = "title";
 
     /** Enough of the text to tell what language it is in, and no more than is needed. */
     private static final int ENOUGH_TO_TELL = 700;
@@ -61,7 +51,7 @@ public final class WithoutTheSheet {
      * @param arguments What it would have been opened with.
      * @return Whether this has been dealt with, and the sheet should not open.
      */
-    public static boolean instead(Class<?> what, Object unusedManager, Bundle arguments) {
+    public static boolean instead(Class<?> what, Object manager, Bundle arguments) {
         try {
             if (what != da.d.class || arguments == null) {
                 return false;
@@ -72,7 +62,7 @@ public final class WithoutTheSheet {
                 return false;
             }
 
-            translate((xa.d) about, arguments.getString(THE_LANGUAGE));
+            translate((xa.d) about, arguments.getString(THE_LANGUAGE), manager);
             return true;
         } catch (Throwable ex) {
             // Let Sync open its sheet and do it the long way.
@@ -82,19 +72,19 @@ public final class WithoutTheSheet {
     }
 
     /** Does what the sheet would have done, off the thread that draws. */
-    private static void translate(xa.d content, String language) {
+    private static void translate(xa.d content, String language, Object manager) {
         new Thread(() -> {
             try {
                 Context context = Utils.getContext();
                 String id = content.U();
-                boolean isAComment = content.Y0() == A_COMMENT;
+                boolean isAComment = content.Y0() == Stored.A_COMMENT;
 
                 // Asking a second time is asking for what was written back.
                 Originals.Written wasWritten = Originals.written(id);
                 if (wasWritten != null) {
                     Logger.printInfo(() -> "Putting back what was written");
                     Originals.forget(id);
-                    store(context, id, isAComment, wasWritten.title, wasWritten.body);
+                    Stored.write(context, id, isAComment, wasWritten.title, wasWritten.body);
                     return;
                 }
 
@@ -117,11 +107,24 @@ public final class WithoutTheSheet {
                         ? OnDeviceTranslator.languageOf(justWords(hasBody ? body : title))
                         : language;
 
+                if (from == null || from.isEmpty()
+                        || OnDeviceTranslator.UNKNOWN.equals(from)) {
+                    // Nothing can be translated out of a language nobody can name. Sync has a
+                    // sheet for choosing one, and choosing one comes back through here.
+                    askWhichLanguage(content, manager);
+                    return;
+                }
+
                 if (OnDeviceTranslator.isTheSameLanguage(from, into)) {
                     // Asking for English to be put into English wastes a download and ends with
                     // the same text and a note saying it was translated.
                     say(already(into));
                     return;
+                }
+
+                if (!heldAlready(context, service, into, body, title)) {
+                    // Said once for the post rather than once for each part of it.
+                    say("Translating…");
                 }
 
                 String saidBody = hasBody ? translated(context, service, body, from, into, true)
@@ -142,10 +145,12 @@ public final class WithoutTheSheet {
 
                 // Stored first, and only then remembered. What the line under an author says
                 // has to follow what the post says, and it cannot lead it.
-                store(context, id, isAComment, titleChanged ? saidTitle : null,
+                Stored.write(context, id, isAComment, titleChanged ? saidTitle : null,
                         bodyChanged ? saidBody : null);
-                Originals.remember(id, titleChanged ? title : null, bodyChanged ? body : null,
-                        from);
+                // Both parts are kept as they were and as they became, so that what a post
+                // says can be recognised as one or the other whichever part was translated.
+                Originals.remember(id, title, body, titleChanged ? saidTitle : title,
+                        bodyChanged ? saidBody : body, from);
             } catch (Exception ex) {
                 Logger.printInfo(() -> "Could not translate: " + OnDeviceTranslator.because(ex));
                 // A service says what was wrong with a key or an allowance, and that is worth
@@ -155,6 +160,14 @@ public final class WithoutTheSheet {
                         ? "Could not translate" : "Could not translate: " + said);
             }
         }, "sync-up-translate").start();
+    }
+
+    /** @return Whether every part of this was translated before, and none of it has to wait. */
+    private static boolean heldAlready(Context context, String service, String into, String body,
+                                       String title) {
+        return (body == null || TranslationCache.remembered(context, body, service, into) != null)
+                && (title == null
+                || TranslationCache.remembered(context, title, service, into) != null);
     }
 
     /**
@@ -171,33 +184,10 @@ public final class WithoutTheSheet {
             return already.text;
         }
 
-        say("Translating…");
         String said = TranslateNow.by(service, text, from, into, asWritten);
         TranslationCache.remember(context, text, service, into,
                 new TranslationCache.Translated(said, from));
         return said;
-    }
-
-    /**
-     * Writes the text where the app reads it from and says so, which is what makes everything
-     * showing this post or comment draw it again.
-     */
-    private static void store(Context context, String id, boolean isAComment, String title,
-                              String body) {
-        ContentValues values = new ContentValues();
-        if (body != null) {
-            values.put(isAComment ? COMMENT_WRITTEN : POST_WRITTEN, body);
-            values.put(isAComment ? COMMENT_DRAWN : POST_DRAWN, d7.f.r(null, body));
-        }
-        if (title != null) {
-            values.put(THE_TITLE, title);
-        }
-        if (values.size() == 0) {
-            return;
-        }
-
-        context.getContentResolver().update(RedditProvider.q, values, id, null);
-        context.getContentResolver().notifyChange(RedditProvider.B, null);
     }
 
     /**
@@ -214,6 +204,24 @@ public final class WithoutTheSheet {
     private static String already(String into) {
         String language = OnDeviceTranslator.nameOf(into);
         return language == null ? "Already in that language" : "Already in " + language;
+    }
+
+    /**
+     * Shows Sync's own sheet for choosing what language something is written in. Choosing one
+     * opens the translating sheet again with that language, which arrives back here.
+     */
+    private static void askWhichLanguage(xa.d content, Object manager) {
+        say("Could not detect language");
+        if (!(manager instanceof FragmentManager)) {
+            return;
+        }
+        onTheMainThread.post(() -> {
+            try {
+                s9.g.h(da.e.class, (FragmentManager) manager, content);
+            } catch (Throwable ex) {
+                Logger.printInfo(() -> "Could not ask which language: " + ex);
+            }
+        });
     }
 
     private static void say(String what) {
