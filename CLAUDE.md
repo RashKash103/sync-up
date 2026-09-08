@@ -278,7 +278,9 @@ since JSON may escape the slashes in a URL. Writing them back unescaped is valid
 - `api.gfycat.com` and `gfycat.com` — DNS no longer resolves at all.
 - `api.redgifs.com/info` — 404, removed. Sync calls it first when opening a RedGifs link.
 - `ap.syncforreddit.com` — Sync's own proxy, still up but answers 401. Feed autoplay routes
-  RedGifs and gfycat through it when the `enhancedAutoPlay` setting is on.
+  RedGifs and gfycat through it when the `enhancedAutoPlay` setting is on, and the picture
+  beside a website preview is asked of `/image?url=` on it — which is why every preview but a
+  video's drew a broken image until the page itself was read for the picture it names.
 
 ## Version pinning
 

@@ -295,7 +295,12 @@ service being asked.
 
 - **Unlock Sync Ultra** — Turns on the parts of Sync's subscription that need nothing but the
   device they run on, and takes away what can no longer be had.
-  - **Website previews** in comments, **reading text out of an image**, **tagging a user**,
+  - **Website previews** in comments — including the picture beside them. Sync asks its own
+    proxy for that picture and the proxy refuses everything now, so every preview but a video's
+    came out as a broken image. The page is read instead and asked which picture it names for
+    being quoted, which is what pages have carried in their head for years. What each page
+    answers is remembered, so a thread full of links to one place asks it once.
+  - **Reading text out of an image**, **tagging a user**,
     **following a link past Google's copy of a page**, **opening the app logged out**, and the
     joke-link bypass. Each still obeys its own setting; the patch only answers the questions
     asked before that setting is reached.

@@ -5,10 +5,16 @@ import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
+import app.morphe.patcher.Fingerprint
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
+import app.morphe.patches.reddit.customclients.sync.syncforreddit.http.interceptHttpRequests
+import app.morphe.util.returnEarly
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+
+private const val PREVIEW_PICTURE_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/http/posts/WebsitePreviewImagePatch;"
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/ultra/UltraFeatures;"
@@ -78,7 +84,7 @@ val unlockUltraPatch = bytecodePatch(
             "on its own servers is left alone, and every offer to buy it is removed.",
     default = true,
 ) {
-    dependsOn(sharedExtensionPatch, ultraSettingsPatch)
+    dependsOn(sharedExtensionPatch, ultraSettingsPatch, interceptHttpRequests)
 
     compatibleWith(*SyncForRedditCompatible)
 
@@ -151,6 +157,13 @@ val unlockUltraPatch = bytecodePatch(
                 throw PatchException("Nothing is behind the subscription in $where->$named")
             }
         }
+
+        // The picture beside a previewed link is asked of Sync's own proxy, which refuses
+        // everything. What answers instead reads the page and asks it what picture it names.
+        Fingerprint(
+            definingClass = PREVIEW_PICTURE_CLASS_DESCRIPTOR,
+            name = "isPatchIncluded",
+        ).method.returnEarly(true)
 
         // Showing a preview of a website asks all three and then asks the setting for it. Only
         // the setting is worth asking, so it is asked on its own.
