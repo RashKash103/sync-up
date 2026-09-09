@@ -281,6 +281,12 @@ since JSON may escape the slashes in a URL. Writing them back unescaped is valid
   RedGifs and gfycat through it when the `enhancedAutoPlay` setting is on, and the picture
   beside a website preview is asked of `/image?url=` on it — which is why every preview but a
   video's drew a broken image until the page itself was read for the picture it names.
+  **One host, two jobs**: `/image?url=` carries an Imgur picture for one feature and a whole
+  page for the other, and two interceptors of ours want it. `FixImgurProxyPatch` reissues the
+  request against whatever `url=` holds, which is right for a picture and hands HTML to an image
+  decoder for a page, so it now tells the two apart and leaves a page to
+  `WebsitePreviewImagePatch` further down the chain. A preview that draws a broken image with
+  no sign of our interceptor in the log is this: another interceptor took it first.
 
 ## Version pinning
 

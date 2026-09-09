@@ -24,11 +24,6 @@ public final class UltraFeatures {
 
     private UltraFeatures() {}
 
-    /** Says what picture the app decided to ask for, which is where a preview goes wrong. */
-    public static void asksFor(String picture) {
-        Logger.printInfo(() -> "Preview picture wanted: " + picture);
-    }
-
     /**
      * @return Always yes. Put where one of those three questions was asked, so that what is
      *         asked afterwards is the setting for the feature itself.
@@ -46,10 +41,9 @@ public final class UltraFeatures {
         try {
             SharedPreferences settings =
                     TranslationSettings.store(Utils.getContext());
-            boolean wanted = settings != null && settings.getBoolean(WEBSITE_PREVIEWS, false);
-            boolean canBe = wanted && wc.q.c(url);
-            Logger.printInfo(() -> "Preview? " + url + " setting=" + wanted + " suitable=" + canBe);
-            return canBe;
+            return settings != null
+                    && settings.getBoolean(WEBSITE_PREVIEWS, false)
+                    && wc.q.c(url);
         } catch (Throwable ex) {
             Logger.printInfo(() -> "Could not tell whether to preview " + url + ": " + ex);
             return false;

@@ -26,7 +26,6 @@ private const val YES_METHOD = "yes()Z"
 
 private const val WEBSITE_PREVIEW_METHOD = "websitePreviewFor(Ljava/lang/String;)Z"
 
-private const val ASKS_FOR_METHOD = "asksFor(Ljava/lang/String;)V"
 
 /** Whether the copy is paid for. Asked in more than forty places, and answered in six. */
 private const val PAID_FOR = "Luc/b;"
@@ -170,22 +169,6 @@ val unlockUltraPatch = bytecodePatch(
             name = "isPatchIncluded",
         ).method.returnEarly(true)
 
-        // What picture the app settles on for a preview, said out loud where it settles on it.
-        mutableClassDefBy(DECIDES_A_PREVIEW).methods
-            .single { it.name == "b" && it.parameters.size == 1 }
-            .apply {
-                implementation!!.instructions.withIndex()
-                    .filter { (_, instruction) -> instruction.opcode == Opcode.RETURN_OBJECT }
-                    .map { (at, _) -> at }
-                    .reversed()
-                    .forEach { at ->
-                        val picture = getInstruction<OneRegisterInstruction>(at).registerA
-                        addInstructions(
-                            at,
-                            "invoke-static { v$picture }, $EXTENSION_CLASS_DESCRIPTOR->$ASKS_FOR_METHOD"
-                        )
-                    }
-            }
 
         // Showing a preview of a website asks all three and then asks the setting for it. Only
         // the setting is worth asking, so it is asked on its own.

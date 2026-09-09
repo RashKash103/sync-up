@@ -97,16 +97,12 @@ public class WebsitePreviewImagePatch extends PatchedditInterceptor {
         Request request = chain.request();
         HttpUrl asked = request.url();
 
-        Logger.printInfo(() -> "Saw " + asked.host() + asked.encodedPath()
-                + (isPatchIncluded() ? "" : "  (interceptor is off)"));
-
         if (!isPatchIncluded()
                 || !THEIR_PROXY.equals(asked.host())
                 || !asked.encodedPath().startsWith(THE_PICTURE_PATH)) {
             return chain.proceed(request);
         }
 
-        Logger.printInfo(() -> "That one is the preview proxy: " + asked);
 
         String page = asked.queryParameter(THE_PAGE);
         if (page == null || page.isEmpty()) {
@@ -116,8 +112,9 @@ public class WebsitePreviewImagePatch extends PatchedditInterceptor {
 
         String picture = pictureFor(page);
         if (picture == null) {
-            // Nothing to put there. What the proxy says is what it has always said.
-            Logger.printInfo(() -> "No picture found for " + page + ", leaving it to the proxy");
+            // The page names none, or would not be read. What the proxy says is what it has
+            // always said, which is what was drawn before any of this.
+            Logger.printInfo(() -> "No picture named by " + page);
             return chain.proceed(request);
         }
 
@@ -128,7 +125,6 @@ public class WebsitePreviewImagePatch extends PatchedditInterceptor {
             return chain.proceed(request);
         }
 
-        Logger.printInfo(() -> "Showing " + page + " with " + instead);
         return chain.proceed(request.newBuilder().url(instead).build());
     }
 
@@ -136,16 +132,12 @@ public class WebsitePreviewImagePatch extends PatchedditInterceptor {
     private static String pictureFor(String page) {
         String already = named.get(page);
         if (already != null) {
-            Logger.printInfo(() -> "Already read " + page + ": "
-                    + (already.isEmpty() ? "it names none" : already));
             return already.isEmpty() ? null : already;
         }
 
         String found = null;
         try {
             String head = headOf(page);
-            Logger.printInfo(() -> "Read " + page + ": "
-                    + (head == null ? "nothing" : head.length() + " characters"));
             if (head != null) {
                 Matcher names = NAMES_A_PICTURE.matcher(head);
                 if (names.find()) {
@@ -161,8 +153,6 @@ public class WebsitePreviewImagePatch extends PatchedditInterceptor {
             Logger.printInfo(() -> "Could not read " + page + " for a picture: " + ex);
         }
 
-        String named_ = found;
-        Logger.printInfo(() -> "That page names " + (named_ == null ? "no picture" : named_));
 
         String picture = whereThatPoints(page, found);
         named.put(page, picture == null ? NAMED_NONE : picture);
@@ -235,9 +225,10 @@ public class WebsitePreviewImagePatch extends PatchedditInterceptor {
             asking.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
 
             int said = asking.getResponseCode();
-            Logger.printInfo(() -> page + " answered " + said + " ("
-                    + asking.getHeaderField("content-type") + ")");
             if (said != HttpURLConnection.HTTP_OK) {
+                // Worth knowing: a site that will not be read cannot be previewed, and there is
+                // nothing to be done about it from here.
+                Logger.printInfo(() -> page + " answered " + said + " rather than a page");
                 return null;
             }
 
