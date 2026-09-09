@@ -161,7 +161,8 @@ service being asked.
 
 - **Spoof client** — Replaces Sync's revoked OAuth credentials with your own client ID,
   redirect URI and user agent. Nothing else works without this. See
-  [Getting started](#-getting-started).
+  [Getting started](#-getting-started). Its `Imgur client ID` option is separate and optional;
+  see [Uploading pictures to Imgur](#uploading-pictures-to-imgur).
 - **Fix /s/ links** — Reddit's shortened `/s/` share links resolve to a real thread rather
   than failing.
 - **Use /user/ endpoint** — Profiles are fetched from `/user/`; the `/u/` form Sync used is
@@ -334,6 +335,25 @@ service being asked.
    * Make sure the redirect URI in the `Spoof client` options and on
      https://www.reddit.com/prefs/apps/ match exactly.
 5. Once patching is complete, install the app and set it up as usual.
+
+### Uploading pictures to Imgur
+
+Attaching a picture to a post or a comment uploads it to Imgur, and Sync identifies itself with
+a client ID shared by every copy of the app. That ID has long since spent its daily allowance —
+Imgur answers an upload with `x-ratelimit-clientremaining: 0` — so the upload fails and Sync
+says *Failed to upload image*. Everything else about Imgur, including viewing and opening links,
+is unaffected.
+
+Registering your own is free, takes a minute, and gives you the full allowance to yourself:
+
+1. Go to https://api.imgur.com/oauth2/addclient while signed in to Imgur.
+2. Pick any name, and choose **OAuth 2 authorization without a callback URL**.
+3. Copy the **Client ID** — fifteen hex characters, no secret needed.
+4. Put it in the `Imgur client ID` option of the `Spoof client` patch and repatch.
+
+Left alone, the option keeps Sync's own ID and uploading keeps failing. No working ID is shipped
+in the bundle, for the same reason the Reddit one is not: a shared credential is scraped and
+revoked, and then it works for nobody.
 
 ### What if I don't have a client ID?
 

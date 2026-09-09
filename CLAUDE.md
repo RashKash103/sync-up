@@ -295,14 +295,17 @@ since JSON may escape the slashes in a URL. Writing them back unescaped is valid
   Ultra unlock does not turn it on, since it only rewrites `t7.d0.d()` where `uc.b.j()` is asked
   beside it. `UndeleteRedditPatch` covers the same need from Arctic Shift and the Wayback
   Machine.
-- `imgur-apiv3.p.rapidapi.com/3/image` — where Sync uploads an image when composing. The
-  RapidAPI subscription behind it lapsed: it answers 403 *You are not subscribed to this API*.
-  Sync's own Imgur Client-ID `981c2f80e996ca3` cannot stand in — posting to `api.imgur.com/3/image`
-  with it answers 429, where the same post with a different Client-ID answers 200. Uploading
-  needs a Client-ID this project supplies, which is a decision, not a patch. The upload is also
+- `imgur-apiv3.p.rapidapi.com/3/image` — where the *stock* app uploads a picture. Its RapidAPI
+  subscription lapsed (403 *You are not subscribed to this API*), but `Spoof client` has always
+  rewritten that URL to `api.imgur.com/3/image`, so a patched copy never asks it. What was left
+  failing is the Client-ID beside it: Sync's `981c2f80e996ca3` is shared by every copy and spent
+  — Imgur answers an upload with it `x-ratelimit-clientremaining: 0`, while the identical request
+  with a fresh ID answers 200 and returns the `data.link` Sync reads. `Spoof client` now carries
+  an `imgur-client-id` option for that, defaulting to Sync's own so nothing borrowed is shipped.
+  The stale `x-rapidapi-*` headers are still sent and Imgur ignores them. The upload also sits
   behind a remote switch, `reddit-sync-development/master/api/upload.json`, currently
   `{"enabled": true}` — when that is false Sync says *Upload to Imgur is not currently
-  available* and never asks RapidAPI at all.
+  available* and never issues the request at all.
 
   **Rate limits will lie to you here.** Both RapidAPI and Imgur answer a burst of probes with
   *Too many requests*, which reads exactly like a dead key. Space the calls out and re-read
