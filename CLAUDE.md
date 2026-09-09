@@ -424,22 +424,24 @@ is in [NOTICE](NOTICE). Two things constrain the code:
   the patch exists, no account of what was learnt writing it. The detail — what a patch changes
   and where it stops — goes in the hand-written *What the patches do* section of `README.md`,
   below the `PATCHES_END` marker.
-- **No toasts in a stable release.** `Logger.printException` raises one; anything on a hot path
-  or a transient network failure uses `printInfo` instead. Toasts are acceptable in a prerelease
-  being tested.
+- **No toasts in a stable release.** `Logger.printException` raises one, and it is not
+  conditional in practice: it is gated on `BaseSettings.DEBUG_TOAST_ON_ERROR`, which defaults to
+  `true` and has no settings UI in this bundle to turn off. Use `printInfo`, which logs the same
+  message and exception without the toast. Toasts are acceptable in a prerelease being tested;
+  the extension carried none into v1.7.0.
 - Never hand-edit `CHANGELOG.md`, `patches-list.json`, `patches-bundle.json`, or the region
   between the `PATCHES_START` / `PATCHES_END` markers in `README.md`. The release writes them.
 - Do not create releases by hand.
 
 ## Known rough edges
 
-Inherited from upstream, deliberately left alone in the initial import:
+Inherited from upstream:
 
-- `ModifyWebViewPatch.kt` has a leftover `println` in its execute block.
-- `Constants.kt` in `reddit/customclients/` still declares `CREATE_NEW_CLIENT_METHOD`, which
-  no remaining patch uses.
 - The `sync/ads/DisableAdsPatch.kt` builder plus its `syncforreddit/ads` wrapper is now an
   indirection with a single caller, since the Lemmy target is gone.
+
+The `println` in `ModifyWebViewPatch.kt` and the unused `CREATE_NEW_CLIENT_METHOD` in
+`reddit/customclients/Constants.kt` were removed before v1.7.0.
 
 Current, from this project's own patches:
 

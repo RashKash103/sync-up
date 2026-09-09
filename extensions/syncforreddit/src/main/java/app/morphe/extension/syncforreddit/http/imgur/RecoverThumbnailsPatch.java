@@ -71,7 +71,7 @@ public class RecoverThumbnailsPatch extends PatchedditInterceptor {
             remember(thumbnail, link);
             remember(preview, link);
         } catch (Exception ex) {
-            Logger.printException(() -> "Could not record the thumbnail for " + link, ex);
+            Logger.printInfo(() -> "Could not record the thumbnail for " + link, ex);
         }
     }
 
@@ -128,7 +128,7 @@ public class RecoverThumbnailsPatch extends PatchedditInterceptor {
             Logger.printInfo(() -> "Recovered the thumbnail of " + link + " from " + replacement);
             return chain.proceed(request.newBuilder().url(replacement).build());
         } catch (JSONException ex) {
-            Logger.printException(() -> "Could not read the archive for " + link, ex);
+            Logger.printInfo(() -> "Could not read the archive for " + link, ex);
             return response;
         } catch (IOException ex) {
             // The archive being unreachable should leave the original 404 in place.

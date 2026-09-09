@@ -95,7 +95,7 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
                 restored = restore(original, submissionIdFrom(url, request));
             }
         } catch (JSONException ex) {
-            Logger.printException(() -> "Could not restore removed content", ex);
+            Logger.printInfo(() -> "Could not restore removed content", ex);
             restored = null;
         } catch (IOException ex) {
             // Arctic Shift being unreachable must not take the thread down with it.
@@ -105,7 +105,7 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
             restored = null;
         } catch (Throwable ex) {
             // Whatever went wrong, the thread is worth more than what could have been put back.
-            Logger.printException(() -> "Could not restore removed content", ex);
+            Logger.printInfo(() -> "Could not restore removed content: " + ex);
             restored = null;
         }
 

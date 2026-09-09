@@ -40,7 +40,7 @@ public final class KeepSelftextLinksPatch {
         try {
             kept = worthKeeping(builder);
         } catch (Throwable ex) {
-            Logger.printException(() -> "Could not tell the spans apart", ex);
+            Logger.printInfo(() -> "Could not tell the spans apart: " + ex);
         }
 
         builder.p();
@@ -52,7 +52,7 @@ public final class KeepSelftextLinksPatch {
         try {
             held(builder).addAll(kept);
         } catch (Throwable ex) {
-            Logger.printException(() -> "Could not put the spans back", ex);
+            Logger.printInfo(() -> "Could not put the spans back: " + ex);
         }
     }
 

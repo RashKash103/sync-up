@@ -243,7 +243,7 @@ public class UndeleteImgurPatch extends PatchedditInterceptor {
                 }
             }
         } catch (JSONException ex) {
-            Logger.printException(() -> "Could not read the Wayback Machine index", ex);
+            Logger.printInfo(() -> "Could not read the Wayback Machine index", ex);
             return response;
         } catch (IOException ex) {
             // The Wayback Machine being unreachable should leave the original 404 in place.

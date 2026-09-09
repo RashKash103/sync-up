@@ -44,11 +44,9 @@ val spoofClientPatch = spoofClientPatch { clientId, redirectUri, userAgent ->
         SYNCS_OWN_IMGUR_CLIENT_ID,
         null,
         "Imgur client ID",
-        "What to identify as when uploading a picture to Imgur. Sync's own is shared by every " +
-                "copy of the app and has run out of its daily allowance, so uploading fails until " +
-                "this is set to one of your own. Registering one is free and takes a minute: " +
-                "https://api.imgur.com/oauth2/addclient, choosing \"OAuth 2 without a callback " +
-                "URL\". Leaving this alone keeps Sync's, and uploading keeps failing.",
+        "What to identify as when uploading a picture to Imgur. Sync's own has run out of its " +
+                "daily allowance, so uploading fails until this is one of your own; refer to Sync " +
+                "Up documentation for how to get one.",
         false,
         validator = { value -> value != null && LOOKS_LIKE_A_CLIENT_ID.matches(value) }
     )

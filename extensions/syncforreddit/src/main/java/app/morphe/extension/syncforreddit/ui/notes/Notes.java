@@ -92,7 +92,7 @@ public final class Notes {
             }
         } catch (Throwable ex) {
             // Losing a note is a far better outcome than a thread that will not draw.
-            Logger.printException(() -> "Could not add a note", ex);
+            Logger.printInfo(() -> "Could not add a note: " + ex);
         }
     }
 }

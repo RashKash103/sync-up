@@ -81,7 +81,7 @@ public class TappableLinksPatch extends PatchedditInterceptor {
                     rewritten != null ? rewritten : original);
         } catch (Throwable ex) {
             // A post that cannot be tapped is a far better outcome than one that will not draw.
-            Logger.printException(() -> "Could not write the links in a post", ex);
+            Logger.printInfo(() -> "Could not write the links in a post: " + ex);
             return rebuilt(response, request, contentType, original);
         }
     }

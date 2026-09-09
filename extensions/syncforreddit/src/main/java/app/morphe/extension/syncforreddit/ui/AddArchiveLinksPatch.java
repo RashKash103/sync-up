@@ -75,7 +75,7 @@ public class AddArchiveLinksPatch {
         } catch (Throwable ex) {
             // Throwable rather than Exception: a missing class or a changed signature arrives
             // as an Error, and catching only Exception let those disappear silently.
-            Logger.printException(() -> "Could not add the archive link options", ex);
+            Logger.printInfo(() -> "Could not add the archive link options: " + ex);
         }
     }
 
@@ -104,7 +104,7 @@ public class AddArchiveLinksPatch {
             open(Utils.getContext(), archive + url);
             return true;
         } catch (Exception ex) {
-            Logger.printException(() -> "Could not open the archive link", ex);
+            Logger.printInfo(() -> "Could not open the archive link", ex);
             return false;
         }
     }
@@ -157,7 +157,7 @@ public class AddArchiveLinksPatch {
                     index + 2);
             Logger.printDebug(() -> "Added the archive rows to the post menu");
         } catch (Throwable ex) {
-            Logger.printException(() -> "Could not add the archive rows", ex);
+            Logger.printInfo(() -> "Could not add the archive rows: " + ex);
         }
     }
 
@@ -182,7 +182,7 @@ public class AddArchiveLinksPatch {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
         } catch (Exception ex) {
-            Logger.printException(() -> "Could not open " + target, ex);
+            Logger.printInfo(() -> "Could not open " + target, ex);
         }
     }
 }

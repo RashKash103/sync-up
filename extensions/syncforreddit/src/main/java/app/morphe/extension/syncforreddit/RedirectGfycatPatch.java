@@ -160,7 +160,7 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
                     ? respond(request, "application/json", apiBody(media))
                     : respond(request, "text/html", scrapeBody(media));
         } catch (JSONException ex) {
-            Logger.printException(() -> "Could not parse RedGifs response for Gfycat id " + id, ex);
+            Logger.printInfo(() -> "Could not parse RedGifs response for Gfycat id " + id, ex);
             return gone(request);
         }
     }
@@ -204,7 +204,7 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
         try {
             media = lookup(id);
         } catch (JSONException ex) {
-            Logger.printException(() -> "Could not parse the RedGifs response for " + id, ex);
+            Logger.printInfo(() -> "Could not parse the RedGifs response for " + id, ex);
             return gone(request);
         }
 

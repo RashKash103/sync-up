@@ -137,7 +137,7 @@ public class FixImgurProxyPatch extends PatchedditInterceptor {
             Logger.printDebug(() -> "No local answer for the Imgur proxy path " + url.encodedPath());
             return gone(request);
         } catch (JSONException ex) {
-            Logger.printException(() -> "Could not build the Imgur response for " + id, ex);
+            Logger.printInfo(() -> "Could not build the Imgur response for " + id, ex);
             return gone(request);
         }
     }
@@ -160,7 +160,7 @@ public class FixImgurProxyPatch extends PatchedditInterceptor {
             try {
                 return albumThumbnail(chain, request, id);
             } catch (JSONException ex) {
-                Logger.printException(() -> "Could not recover a thumbnail for album " + id, ex);
+                Logger.printInfo(() -> "Could not recover a thumbnail for album " + id, ex);
                 return gone(request);
             }
         }
