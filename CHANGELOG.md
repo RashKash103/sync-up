@@ -1,3 +1,5 @@
+## [1.7.0-dev.49](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.48...v1.7.0-dev.49) (2026-09-09)
+
 ## [1.7.0-dev.48](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.47...v1.7.0-dev.48) (2026-09-09)
 
 ### 🐛 Bug Fixes

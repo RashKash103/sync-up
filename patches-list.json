@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0-dev.48",
+  "version": "1.7.0-dev.49",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -265,7 +265,7 @@
     },
     {
       "name": "Redirect Gfycat links to RedGifs",
-      "description": "Loads Gfycat links from RedGifs. Gfycat's domains no longer resolve, so without this every Gfycat link fails.",
+      "description": "Loads Gfycat links from RedGifs, and plays a Gfycat or RedGifs video from there where Sync would play it through a proxy of its own. Gfycat's domains no longer resolve, so without this every Gfycat link fails.",
       "use": true,
       "dependencies": [
         "BytecodePatch",
