@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-09T00:51:08",
-  "description": "## [1.7.0-dev.49](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.48...v1.7.0-dev.49) (2026-09-09)",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.49/patches-1.7.0-dev.49.mpp",
+  "created_at": "2026-09-09T01:41:06",
+  "description": "## [1.7.0-dev.50](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.49...v1.7.0-dev.50) (2026-09-09)\n\n### ✨ New Features\n\n* Let a working Imgur client id be given for uploading a picture ([0b5e3b2](https://github.com/RashKash103/sync-up/commit/0b5e3b2312ee3bdad06c70ff3550f5e566b13f8e))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.7.0-dev.50/patches-1.7.0-dev.50.mpp",
   "signature_download_url": "",
-  "version": "1.7.0-dev.49"
+  "version": "1.7.0-dev.50"
 }

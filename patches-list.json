@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0-dev.49",
+  "version": "1.7.0-dev.50",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -355,6 +355,15 @@
           "required": true,
           "type": "kotlin.String",
           "default": "org.quantumbadger.redreader/1.25.1",
+          "values": null
+        },
+        {
+          "key": "imgur-client-id",
+          "title": "Imgur client ID",
+          "description": "What to identify as when uploading a picture to Imgur. Sync's own is shared by every copy of the app and has run out of its daily allowance, so uploading fails until this is set to one of your own. Registering one is free and takes a minute: https://api.imgur.com/oauth2/addclient, choosing \"OAuth 2 without a callback URL\". Leaving this alone keeps Sync's, and uploading keeps failing.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "981c2f80e996ca3",
           "values": null
         }
       ]

@@ -1,3 +1,9 @@
+## [1.7.0-dev.50](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.49...v1.7.0-dev.50) (2026-09-09)
+
+### ✨ New Features
+
+* Let a working Imgur client id be given for uploading a picture ([0b5e3b2](https://github.com/RashKash103/sync-up/commit/0b5e3b2312ee3bdad06c70ff3550f5e566b13f8e))
+
 ## [1.7.0-dev.49](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.48...v1.7.0-dev.49) (2026-09-09)
 
 ## [1.7.0-dev.48](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.47...v1.7.0-dev.48) (2026-09-09)
