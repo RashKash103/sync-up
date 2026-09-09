@@ -296,12 +296,18 @@ since JSON may escape the slashes in a URL. Writing them back unescaped is valid
   beside it. `UndeleteRedditPatch` covers the same need from Arctic Shift and the Wayback
   Machine.
 - `imgur-apiv3.p.rapidapi.com/3/image` — where Sync uploads an image when composing. The
-  RapidAPI subscription behind it lapsed (403 *not subscribed*), and Sync's own Imgur Client-ID
-  `981c2f80e996ca3` is separately out of quota — `api.imgur.com` answers it
-  `x-ratelimit-clientremaining: 0`, so moving the upload to Imgur directly does not fix it.
-  Uploading needs a Client-ID this project supplies, which is a decision, not a patch.
-- `api.tumblr.com` — Sync's shared `api_key` answers 429 *Limit Exceeded*, so a Tumblr link
-  resolves to nothing. Same shape of problem as the Imgur upload: the key, not the endpoint.
+  RapidAPI subscription behind it lapsed: it answers 403 *You are not subscribed to this API*.
+  Sync's own Imgur Client-ID `981c2f80e996ca3` cannot stand in — posting to `api.imgur.com/3/image`
+  with it answers 429, where the same post with a different Client-ID answers 200. Uploading
+  needs a Client-ID this project supplies, which is a decision, not a patch. The upload is also
+  behind a remote switch, `reddit-sync-development/master/api/upload.json`, currently
+  `{"enabled": true}` — when that is false Sync says *Upload to Imgur is not currently
+  available* and never asks RapidAPI at all.
+
+  **Rate limits will lie to you here.** Both RapidAPI and Imgur answer a burst of probes with
+  *Too many requests*, which reads exactly like a dead key. Space the calls out and re-read
+  before concluding anything: `api.tumblr.com` was written up as broken on a single 429 and is
+  in fact fine.
 - `sli.mg`, `api.eroshare.com`, `i.lvme.me`, `picsarus.com`, `vid.me` — services that shut down
   years ago. Nothing to route them to; the content is gone at the source.
 - `67.205.181.214` — a house ad loaded into a WebView when AdMob fails. Dead, and unreachable
@@ -314,6 +320,8 @@ since JSON may escape the slashes in a URL. Writing them back unescaped is valid
 - `backend.deviantart.com/oembed` — alive over **https**; Sync asks over `http` and OkHttp
   follows the 301, and the manifest sets `usesCleartextTraffic="true"` so the request starts.
   A made-up deviation URL answers 404, which is easy to mistake for a retired endpoint.
+- `api.tumblr.com` — Sync's shared `api_key` still works. It answers 429 *Limit Exceeded* under
+  a burst, which is a shared key being busy, not a retired one.
 - `raw.githubusercontent.com/laurencedawson/reddit-sync-development`, `api.streamable.com`,
   `reddit.statuspage.io`, `syncapps.io`, `api.redgifs.com` itself — all answering.
 
