@@ -44,6 +44,21 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
     private static final String GFYCAT_API_PATH = "/v1/gfycats/";
     private static final String REDGIFS_GIF_ENDPOINT = RedgifsTokenManager.REDGIFS_API_HOST + "/v2/gifs/";
 
+    /** Sync's own proxy, which is still there and refuses everything. */
+    private static final String THEIR_PROXY = "ap.syncforreddit.com";
+
+    private static final String THEIR_PROXY_PATH = "/image";
+
+    private static final String THE_TARGET = "url";
+
+    /**
+     * How the proxy was asked for a video rather than an address. With Sync's enhanced autoplay
+     * setting on, a Gfycat or RedGifs post in a feed is played from the proxy rather than from
+     * the site itself, so with the proxy refusing everything that setting stops those playing
+     * at all — which is worse than leaving it off.
+     */
+    private static final String[] PROXY_TOKENS = { "redgifs-", "gfycat-" };
+
     private static final RedirectGfycatPatch INSTANCE = new RedirectGfycatPatch();
 
     private RedirectGfycatPatch() {}
@@ -78,6 +93,11 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
         Request request = chain.request();
         HttpUrl url = request.url();
         String host = url.host();
+
+        String proxied = whatTheProxyWasAskedFor(url);
+        if (proxied != null) {
+            return autoplay(chain, request, proxied);
+        }
 
         if (!host.equals(GFYCAT_HOST) && !host.endsWith("." + GFYCAT_HOST)) {
             return chain.proceed(request);
@@ -143,6 +163,71 @@ public class RedirectGfycatPatch extends PatchedditInterceptor {
             Logger.printException(() -> "Could not parse RedGifs response for Gfycat id " + id, ex);
             return gone(request);
         }
+    }
+
+    /**
+     * @return The id the proxy was asked to resolve into a video, or null where the request is
+     *         not one of those. What Sync sends is already the id: it takes the last part of the
+     *         link and strips the extension and the size suffix before asking.
+     */
+    @Nullable
+    private static String whatTheProxyWasAskedFor(HttpUrl url) {
+        if (!THEIR_PROXY.equals(url.host())
+                || !url.encodedPath().startsWith(THEIR_PROXY_PATH)) {
+            return null;
+        }
+
+        String target = url.queryParameter(THE_TARGET);
+        if (target == null) {
+            return null;
+        }
+
+        for (String token : PROXY_TOKENS) {
+            if (target.startsWith(token)) {
+                return normalizeId(target.substring(token.length()));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Answers what the proxy was asked with the video itself, which is what it served. RedGifs
+     * holds both what it always did and what came over from Gfycat, so one lookup covers both
+     * tokens.
+     */
+    private Response autoplay(Chain chain, Request request, String id) throws IOException {
+        if (id.isEmpty()) {
+            return gone(request);
+        }
+
+        MediaUrls media;
+        try {
+            media = lookup(id);
+        } catch (JSONException ex) {
+            Logger.printException(() -> "Could not parse the RedGifs response for " + id, ex);
+            return gone(request);
+        }
+
+        if (media == null) {
+            Logger.printDebug(() -> "RedGifs has no " + id + " to autoplay");
+            return gone(request);
+        }
+
+        // The same proxy served the still beside a feed tile, and whatever draws pictures says
+        // so, since a video is of no use to it.
+        boolean drawing = request.header(OkHttpRequestHook.IMAGE_REQUEST) != null;
+        String instead = drawing
+                ? (media.poster != null ? media.poster : media.thumbnail)
+                : media.highQuality;
+        if (instead == null || instead.isEmpty()) {
+            return gone(request);
+        }
+
+        Logger.printDebug(() -> "Autoplaying " + id + " from RedGifs");
+        return chain.proceed(request.newBuilder()
+                .url(instead)
+                .header("User-Agent", getUserAgent())
+                .build());
     }
 
     private static String lastPathSegment(HttpUrl url) {

@@ -277,16 +277,45 @@ since JSON may escape the slashes in a URL. Writing them back unescaped is valid
 
 - `api.gfycat.com` and `gfycat.com` — DNS no longer resolves at all.
 - `api.redgifs.com/info` — 404, removed. Sync calls it first when opening a RedGifs link.
-- `ap.syncforreddit.com` — Sync's own proxy, still up but answers 401. Feed autoplay routes
-  RedGifs and gfycat through it when the `enhancedAutoPlay` setting is on, and the picture
-  beside a website preview is asked of `/image?url=` on it — which is why every preview but a
-  video's drew a broken image until the page itself was read for the picture it names.
-  **One host, two jobs**: `/image?url=` carries an Imgur picture for one feature and a whole
-  page for the other, and two interceptors of ours want it. `FixImgurProxyPatch` reissues the
-  request against whatever `url=` holds, which is right for a picture and hands HTML to an image
-  decoder for a page, so it now tells the two apart and leaves a page to
-  `WebsitePreviewImagePatch` further down the chain. A preview that draws a broken image with
-  no sign of our interceptor in the log is this: another interceptor took it first.
+- `images.syncforreddit.com` — DNS no longer resolves. Sync's Imgur proxy, answered locally by
+  `FixImgurProxyPatch`.
+- `ap.syncforreddit.com` — Sync's own proxy, still up but answers 401 to everything without a
+  subscriber token. `/stats.json` is open and says what it is: a cache of website previews.
+  **One host, three jobs**, all through `/image?url=`, and each needs different handling:
+  an Imgur picture or album (`imgur-album-<id>`), a whole page whose picture is wanted, and
+  `redgifs-<id>` / `gfycat-<id>`, which Sync asks for the *video* when the `enhancedAutoPlay`
+  setting is on. Three interceptors of ours want that one path, so each claims only its own and
+  passes the rest down the chain: `FixImgurProxyPatch` first, then `RedirectGfycatPatch` for the
+  two video tokens, then `WebsitePreviewImagePatch` for a page. Reissuing the request against
+  whatever `url=` holds is right for a picture and hands HTML to an image decoder for a page. A
+  preview that draws a broken image with no sign of our interceptor in the log is this: another
+  interceptor took it first.
+- `api.pushshift.io` — 403 without moderator credentials. Sync's own *Restore comment* row asks
+  it, but that row is behind `t7.d0.e()`, a remote flag that is off, so it never appears; the
+  Ultra unlock does not turn it on, since it only rewrites `t7.d0.d()` where `uc.b.j()` is asked
+  beside it. `UndeleteRedditPatch` covers the same need from Arctic Shift and the Wayback
+  Machine.
+- `imgur-apiv3.p.rapidapi.com/3/image` — where Sync uploads an image when composing. The
+  RapidAPI subscription behind it lapsed (403 *not subscribed*), and Sync's own Imgur Client-ID
+  `981c2f80e996ca3` is separately out of quota — `api.imgur.com` answers it
+  `x-ratelimit-clientremaining: 0`, so moving the upload to Imgur directly does not fix it.
+  Uploading needs a Client-ID this project supplies, which is a decision, not a patch.
+- `api.tumblr.com` — Sync's shared `api_key` answers 429 *Limit Exceeded*, so a Tumblr link
+  resolves to nothing. Same shape of problem as the Imgur upload: the key, not the endpoint.
+- `sli.mg`, `api.eroshare.com`, `i.lvme.me`, `picsarus.com`, `vid.me` — services that shut down
+  years ago. Nothing to route them to; the content is gone at the source.
+- `67.205.181.214` — a house ad loaded into a WebView when AdMob fails. Dead, and unreachable
+  anyway once `Disable ads` is applied.
+
+**Not dead, despite appearances.** Checked and working, so do not "fix" them:
+
+- `todo.syncforreddit.com` — serves the launcher icons, `licenses.html`, and the translate
+  marker images. Alive.
+- `backend.deviantart.com/oembed` — alive over **https**; Sync asks over `http` and OkHttp
+  follows the 301, and the manifest sets `usesCleartextTraffic="true"` so the request starts.
+  A made-up deviation URL answers 404, which is easy to mistake for a retired endpoint.
+- `raw.githubusercontent.com/laurencedawson/reddit-sync-development`, `api.streamable.com`,
+  `reddit.statuspage.io`, `syncapps.io`, `api.redgifs.com` itself — all answering.
 
 ## Version pinning
 

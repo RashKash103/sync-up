@@ -46,6 +46,13 @@ public class FixImgurProxyPatch extends PatchedditInterceptor {
     private static final String IMAGE_PROXY_HOST = "ap.syncforreddit.com";
     private static final String IMAGE_PROXY_PATH = "/image";
     private static final String ALBUM_TOKEN = "imgur-album-";
+
+    /**
+     * Tokens naming something for the proxy to resolve before serving it, rather than an address
+     * it could fetch. Sync asks for these when its enhanced autoplay setting is on, wanting the
+     * video itself; what knows how to find one is further down the chain.
+     */
+    private static final String[] RESOLVED_ELSEWHERE = { "redgifs-", "gfycat-" };
     private static final String IMAGE_PATH = "image";
     private static final String ALBUM_PATH = "a";
 
@@ -155,6 +162,14 @@ public class FixImgurProxyPatch extends PatchedditInterceptor {
             } catch (JSONException ex) {
                 Logger.printException(() -> "Could not recover a thumbnail for album " + id, ex);
                 return gone(request);
+            }
+        }
+
+        for (String token : RESOLVED_ELSEWHERE) {
+            if (target.startsWith(token)) {
+                Logger.printDebug(() -> "Leaving the image proxy request for " + target
+                        + " to whatever resolves it");
+                return chain.proceed(request);
             }
         }
 
