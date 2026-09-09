@@ -29,6 +29,15 @@ internal val imgurImageAPIFingerprint = Fingerprint(
     strings = listOf("https://imgur-apiv3.p.rapidapi.com/3/image")
 )
 
+/**
+ * The headers the Imgur upload is sent with, which is where the Client-ID it identifies itself
+ * as lives. Anchored on the RapidAPI header names rather than on the Client-ID itself, since
+ * that is the string being replaced.
+ */
+internal val imgurUploadHeadersFingerprint = Fingerprint(
+    strings = listOf("x-rapidapi-key", "x-rapidapi-host")
+)
+
 internal val getRedirectUriFingerprint = Fingerprint(
     strings = listOf("http://redditsync/auth")
 )

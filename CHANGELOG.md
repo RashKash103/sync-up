@@ -1,3 +1,259 @@
+## [1.7.0-dev.50](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.49...v1.7.0-dev.50) (2026-09-09)
+
+### ✨ New Features
+
+* Let a working Imgur client id be given for uploading a picture ([0b5e3b2](https://github.com/RashKash103/sync-up/commit/0b5e3b2312ee3bdad06c70ff3550f5e566b13f8e))
+
+## [1.7.0-dev.49](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.48...v1.7.0-dev.49) (2026-09-09)
+
+## [1.7.0-dev.48](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.47...v1.7.0-dev.48) (2026-09-09)
+
+### 🐛 Bug Fixes
+
+* Draw a website preview with the picture its page names ([a3b4b48](https://github.com/RashKash103/sync-up/commit/a3b4b482b3d34dd1799bdf2f1596e017dd352935))
+
+## [1.7.0-dev.47](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.46...v1.7.0-dev.47) (2026-09-08)
+
+## [1.7.0-dev.46](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.45...v1.7.0-dev.46) (2026-09-08)
+
+## [1.7.0-dev.45](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.44...v1.7.0-dev.45) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Ask a page for its picture the way a browser would ([1327818](https://github.com/RashKash103/sync-up/commit/1327818f62d29ccb77f8dd1fb194a6f55e4688fd))
+
+## [1.7.0-dev.44](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.43...v1.7.0-dev.44) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Show a website preview with the picture the page names ([7717b7c](https://github.com/RashKash103/sync-up/commit/7717b7c266a71c8b21313b188c7c8970e482ef8c))
+
+## [1.7.0-dev.43](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.42...v1.7.0-dev.43) (2026-09-08)
+
+### ✨ New Features
+
+* Unlock what Sync Ultra kept back and needs nothing to run ([e61f4d0](https://github.com/RashKash103/sync-up/commit/e61f4d0f79e1496341762a3d1556d2b655da1384))
+
+## [1.7.0-dev.42](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.41...v1.7.0-dev.42) (2026-09-08)
+
+### ✨ New Features
+
+* Tell DeepL what a comment is answering, and keep up with a thread ([c3a0042](https://github.com/RashKash103/sync-up/commit/c3a0042d8908e88686ce6802a96c055a411e82e7))
+
+## [1.7.0-dev.41](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.40...v1.7.0-dev.41) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Make the reader for a thread where something can be told of a change ([0dde7fd](https://github.com/RashKash103/sync-up/commit/0dde7fdf1401f47f6e6c8f9e00c5dda7e6dd90d5))
+
+## [1.7.0-dev.40](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.39...v1.7.0-dev.40) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Put the thread entry where the menu will reach it ([ad2a986](https://github.com/RashKash103/sync-up/commit/ad2a986154a4eb75cba8225ae3ac80471a85519e))
+
+## [1.7.0-dev.39](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.38...v1.7.0-dev.39) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Read a thread from where Sync keeps it, and offer one comment's own ([a974723](https://github.com/RashKash103/sync-up/commit/a974723694794d3f133e50a05172f8ec75120d3e))
+
+## [1.7.0-dev.38](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.37...v1.7.0-dev.38) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Make Sync's own Translate all do what translating one does ([5dc0469](https://github.com/RashKash103/sync-up/commit/5dc04692ed5e4f0c69c8887054e71f43f9f85ca5))
+
+## [1.7.0-dev.37](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.36...v1.7.0-dev.37) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Let a menu row say what it does and nothing more ([53abe17](https://github.com/RashKash103/sync-up/commit/53abe17c553ea510931be7588871c1ffa8656fdc))
+
+## [1.7.0-dev.36](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.35...v1.7.0-dev.36) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Close the menu when the row for all the comments is tapped ([321c621](https://github.com/RashKash103/sync-up/commit/321c621e7194dc19fa63ea00b798087ac832d864))
+
+## [1.7.0-dev.35](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.34...v1.7.0-dev.35) (2026-09-08)
+
+### ✨ New Features
+
+* Translate a whole thread, judging each comment on its own ([16a8bc1](https://github.com/RashKash103/sync-up/commit/16a8bc15e93079a78ffc61c23afed4e8464d1384))
+
+## [1.7.0-dev.34](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.33...v1.7.0-dev.34) (2026-09-08)
+
+### ✨ New Features
+
+* Mark what is standing translated the way a saved comment is marked ([f615731](https://github.com/RashKash103/sync-up/commit/f615731ccf209db5d591674d4803267d1fd810ef))
+
+## [1.7.0-dev.33](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.32...v1.7.0-dev.33) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Draw the translate button as the buttons beside it are drawn ([fd4041d](https://github.com/RashKash103/sync-up/commit/fd4041d9eeb184d0ed11c0c7369bc012b04253b3))
+
+## [1.7.0-dev.32](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.31...v1.7.0-dev.32) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Leave room for the buttons the translate button was put beside ([f289a03](https://github.com/RashKash103/sync-up/commit/f289a03a242206a8857c1057f9ee7a9dacc14377))
+
+## [1.7.0-dev.31](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.30...v1.7.0-dev.31) (2026-09-08)
+
+### ✨ New Features
+
+* Put a translate button in the row under a comment ([7283e3c](https://github.com/RashKash103/sync-up/commit/7283e3ce2a9fa1ef909941638492b2220fa31d5b))
+
+## [1.7.0-dev.30](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.29...v1.7.0-dev.30) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Let the app reach the class it is now made to call ([46e32eb](https://github.com/RashKash103/sync-up/commit/46e32eb1363c9a2df2a512648515aa1eb5630973))
+
+## [1.7.0-dev.29](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.28...v1.7.0-dev.29) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Keep a post translated without it turning back first ([ce33d4a](https://github.com/RashKash103/sync-up/commit/ce33d4a8fc5e8ff7349e1ba059a48d7f7795184a))
+
+## [1.7.0-dev.28](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.27...v1.7.0-dev.28) (2026-09-08)
+
+### 🐛 Bug Fixes
+
+* Let an API key and what a service is told be typed in ([d9d057e](https://github.com/RashKash103/sync-up/commit/d9d057e14df77492c378b112dabf5a5067612540))
+* Let the note about a translation carry less weight than the one beside it ([7a404e4](https://github.com/RashKash103/sync-up/commit/7a404e4391e6eb0c55c67991e5b08a54325db704))
+* Read what an earlier build wrote about a translation ([01133db](https://github.com/RashKash103/sync-up/commit/01133db9d5e999bdbf3f6673d24f468393029cae))
+
+### ✨ New Features
+
+* Keep a translation in place, in a feed as well as in a thread ([b161c37](https://github.com/RashKash103/sync-up/commit/b161c3797132886251202eae9d70b77ea1398b3f))
+* Offer translating from the actions under a comment ([b6e9faf](https://github.com/RashKash103/sync-up/commit/b6e9faf8061ae23056d9d622e60d3b89416ebec3))
+
+## [1.7.0-dev.27](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.26...v1.7.0-dev.27) (2026-09-07)
+
+### ✨ New Features
+
+* Offer translation for any post with words in it, title included ([241219d](https://github.com/RashKash103/sync-up/commit/241219de89abd4aac8ec0dff2e6e8ab126c77f4d))
+
+## [1.7.0-dev.26](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.25...v1.7.0-dev.26) (2026-09-07)
+
+### ✨ New Features
+
+* Translate through DeepL with a key of one's own ([37cd69e](https://github.com/RashKash103/sync-up/commit/37cd69e954a0f198b5dec9045fe5b6a08e28044d))
+* Translate through Google Cloud with a key of one's own ([fedf81a](https://github.com/RashKash103/sync-up/commit/fedf81a6b9e65ab54a02d8e1978cb487d12a3c18))
+
+## [1.7.0-dev.25](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.24...v1.7.0-dev.25) (2026-09-07)
+
+## [1.7.0-dev.24](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.23...v1.7.0-dev.24) (2026-09-07)
+
+## [1.7.0-dev.23](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.22...v1.7.0-dev.23) (2026-09-07)
+
+## [1.7.0-dev.22](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.21...v1.7.0-dev.22) (2026-09-07)
+
+## [1.7.0-dev.21](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.20...v1.7.0-dev.21) (2026-09-07)
+
+## [1.7.0-dev.20](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.19...v1.7.0-dev.20) (2026-09-07)
+
+## [1.7.0-dev.19](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.18...v1.7.0-dev.19) (2026-09-07)
+
+## [1.7.0-dev.18](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.17...v1.7.0-dev.18) (2026-09-07)
+
+## [1.7.0-dev.17](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.16...v1.7.0-dev.17) (2026-09-07)
+
+## [1.7.0-dev.16](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.15...v1.7.0-dev.16) (2026-09-07)
+
+## [1.7.0-dev.15](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.14...v1.7.0-dev.15) (2026-09-07)
+
+### ✨ New Features
+
+* Offer translating without a paid copy or the remote flag ([8db46d2](https://github.com/RashKash103/sync-up/commit/8db46d29780e92ae3029118d26757945179994ac))
+
+## [1.7.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.13...v1.7.0-dev.14) (2026-09-07)
+
+### ✨ New Features
+
+* Translate through the settings rather than always into English ([b3b82ec](https://github.com/RashKash103/sync-up/commit/b3b82ecb371808e4e985c99a6f37b7b325c3134e))
+
+## [1.7.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.12...v1.7.0-dev.13) (2026-09-07)
+
+### ✨ New Features
+
+* Translate on the device, and keep what has been translated ([123c1a5](https://github.com/RashKash103/sync-up/commit/123c1a5ff4767e36f5ec998892184bf8e8e5ae42))
+
+## [1.7.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.11...v1.7.0-dev.12) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Fade a row before it draws, while the holder is still the holder ([ec6ca64](https://github.com/RashKash103/sync-up/commit/ec6ca6459095501f99b0d24e9d9e839207542db5))
+
+## [1.7.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.10...v1.7.0-dev.11) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Make a settings row that cannot be used look like it ([0b6d467](https://github.com/RashKash103/sync-up/commit/0b6d467b27dc239754f821195e0541d0711761b8))
+
+## [1.7.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.9...v1.7.0-dev.10) (2026-09-07)
+
+### ✨ New Features
+
+* Fade the settings of a service not in use, and show what DeepL has left ([5d2dac8](https://github.com/RashKash103/sync-up/commit/5d2dac826618bccfabdbdeeeafee201b9569f9a5))
+
+## [1.7.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.8...v1.7.0-dev.9) (2026-09-07)
+
+### ✨ New Features
+
+* Show only the settings of the service that is in use ([91b57b6](https://github.com/RashKash103/sync-up/commit/91b57b68a873113ed37b7bda51e8b0d3e30b2d69))
+
+## [1.7.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.7...v1.7.0-dev.8) (2026-09-07)
+
+### ✨ New Features
+
+* Give translation a screen of its own, beside the other content screens ([4019da9](https://github.com/RashKash103/sync-up/commit/4019da99a9110fd70c2ec08313c1af2573371868))
+
+## [1.7.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.6...v1.7.0-dev.7) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Show what a translation setting is set to, and say what context means ([80bdc52](https://github.com/RashKash103/sync-up/commit/80bdc52a068e3cb447dfe0b9237d66da5bf1a007))
+
+## [1.7.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.5...v1.7.0-dev.6) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Let a translation setting show what it is set to ([127e0af](https://github.com/RashKash103/sync-up/commit/127e0af16363a63aa8b8f6c1676ea8bf997f7b27))
+
+## [1.7.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.4...v1.7.0-dev.5) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Put the translation settings in a screen Sync already has ([5efb264](https://github.com/RashKash103/sync-up/commit/5efb264a8d7b2e5fdc24aa5113fda6bf418f6387))
+
+## [1.7.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.3...v1.7.0-dev.4) (2026-09-07)
+
+### ✨ New Features
+
+* Give translation a screen in Sync's own settings ([77d8839](https://github.com/RashKash103/sync-up/commit/77d883906124257794c080ff5e6afd038a36a76f))
+
+## [1.7.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.2...v1.7.0-dev.3) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Draw every volume cell with the same character, and say Volume above it ([acfcb01](https://github.com/RashKash103/sync-up/commit/acfcb01ad21b7953caf878ef2abac0766ae1166d))
+
+## [1.7.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.7.0-dev.1...v1.7.0-dev.2) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* Draw the volume cells with squares every device has ([23f7a40](https://github.com/RashKash103/sync-up/commit/23f7a403dbe0bc00bf90aa7301de5d0bf416af83))
+
+## [1.7.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.6.0...v1.7.0-dev.1) (2026-09-07)
+
+### ✨ New Features
+
+* Show the volume as a row of cells rather than a number ([303fedb](https://github.com/RashKash103/sync-up/commit/303fedbfa4cd974052047a6a6eac34b6260ea74c))
+
 ## [1.6.0](https://github.com/RashKash103/sync-up/compare/v1.5.0...v1.6.0) (2026-09-05)
 
 ### 🐛 Bug Fixes

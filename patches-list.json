@@ -1,5 +1,5 @@
 {
-  "version": "1.6.0",
+  "version": "1.7.0-dev.50",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -39,6 +39,7 @@
       "description": "Restores the text of removed posts and comments, and the names of deleted authors, from Project Arctic Shift.",
       "use": true,
       "dependencies": [
+        "BytecodePatch",
         "BytecodePatch",
         "BytecodePatch"
       ],
@@ -264,7 +265,7 @@
     },
     {
       "name": "Redirect Gfycat links to RedGifs",
-      "description": "Loads Gfycat links from RedGifs. Gfycat's domains no longer resolve, so without this every Gfycat link fails.",
+      "description": "Loads Gfycat links from RedGifs, and plays a Gfycat or RedGifs video from there where Sync would play it through a proxy of its own. Gfycat's domains no longer resolve, so without this every Gfycat link fails.",
       "use": true,
       "dependencies": [
         "BytecodePatch",
@@ -355,8 +356,53 @@
           "type": "kotlin.String",
           "default": "org.quantumbadger.redreader/1.25.1",
           "values": null
+        },
+        {
+          "key": "imgur-client-id",
+          "title": "Imgur client ID",
+          "description": "What to identify as when uploading a picture to Imgur. Sync's own is shared by every copy of the app and has run out of its daily allowance, so uploading fails until this is set to one of your own. Registering one is free and takes a minute: https://api.imgur.com/oauth2/addclient, choosing \"OAuth 2 without a callback URL\". Leaving this alone keeps Sync's, and uploading keeps failing.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "981c2f80e996ca3",
+          "values": null
         }
       ]
+    },
+    {
+      "name": "Translate posts and comments",
+      "description": "Translates a post or comment where it sits, on this device or through DeepL or Google Cloud. Everything about it is set up under Translation in Sync's settings.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "ResourcePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Unlock Sync Ultra",
+      "description": "Turns on the parts of Sync Ultra that need nothing but this device: website previews, reading text out of an image, tagging a user, and others. What Sync kept on its own servers is left alone, and every offer to buy it is removed.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "ResourcePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
     },
     {
       "name": "Use /user/ endpoint",

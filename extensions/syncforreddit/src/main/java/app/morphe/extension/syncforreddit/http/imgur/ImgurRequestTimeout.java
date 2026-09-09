@@ -26,7 +26,7 @@ public final class ImgurRequestTimeout {
         try {
             request.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, 0, 1f));
         } catch (Exception ex) {
-            Logger.printException(() -> "Could not give the Imgur request more time", ex);
+            Logger.printInfo(() -> "Could not give the Imgur request more time", ex);
         }
     }
 }

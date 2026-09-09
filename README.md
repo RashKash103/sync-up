@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.6.0](https://github.com/RashKash103/sync-up/releases/tag/v1.6.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;22 patches total
+> **[v1.7.0-dev.50](https://github.com/RashKash103/sync-up/releases/tag/v1.7.0-dev.50)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;24 patches total
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;21 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;23 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -63,16 +63,18 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Draws a bare address in a post's body as a link. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Loads a post's thumbnail from the Wayback Machine when its Reddit preview has been purged. |  |
-| [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Loads Gfycat links from RedGifs. Gfycat's domains no longer resolve, so without this every Gfycat link fails. |  |
+| [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Loads Gfycat links from RedGifs, and plays a Gfycat or RedGifs video from there where Sync would play it through a proxy of its own. Gfycat's domains no longer resolve, so without this every Gfycat link fails. |  |
 | [Show a hidden profile from the archive](#show-a-hidden-profile-from-the-archive) | Fills in a profile from Project Arctic Shift when Reddit answers with nothing, which is what a hidden profile returns. |  |
 | [Show videos posted in comments](#show-videos-posted-in-comments) | Draws a video posted in a comment in the comment, and plays it when tapped. |  |
-| [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent |
+| [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent<br>• Imgur client ID |
+| [Translate posts and comments](#translate-posts-and-comments) | Translates a post or comment where it sits, on this device or through DeepL or Google Cloud. Everything about it is set up under Translation in Sync's settings. |  |
+| [Unlock Sync Ultra](#unlock-sync-ultra) | Turns on the parts of Sync Ultra that need nothing but this device: website previews, reading text out of an image, tagging a user, and others. What Sync kept on its own servers is left alone, and every offer to buy it is removed. |  |
 | [Use /user/ endpoint](#use-user-endpoint) | Replaces the deprecated /u profile endpoint with /user. |  |
 
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;20 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;22 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -92,16 +94,18 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Draws a bare address in a post's body as a link. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Loads a post's thumbnail from the Wayback Machine when its Reddit preview has been purged. |  |
-| [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Loads Gfycat links from RedGifs. Gfycat's domains no longer resolve, so without this every Gfycat link fails. |  |
+| [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Loads Gfycat links from RedGifs, and plays a Gfycat or RedGifs video from there where Sync would play it through a proxy of its own. Gfycat's domains no longer resolve, so without this every Gfycat link fails. |  |
 | [Show a hidden profile from the archive](#show-a-hidden-profile-from-the-archive) | Fills in a profile from Project Arctic Shift when Reddit answers with nothing, which is what a hidden profile returns. |  |
 | [Show videos posted in comments](#show-videos-posted-in-comments) | Draws a video posted in a comment in the comment, and plays it when tapped. |  |
-| [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent |
+| [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent<br>• Imgur client ID |
+| [Translate posts and comments](#translate-posts-and-comments) | Translates a post or comment where it sits, on this device or through DeepL or Google Cloud. Everything about it is set up under Translation in Sync's settings. |  |
+| [Unlock Sync Ultra](#unlock-sync-ultra) | Turns on the parts of Sync Ultra that need nothing but this device: website previews, reading text out of an image, tagging a user, and others. What Sync kept on its own servers is left alone, and every offer to buy it is removed. |  |
 | [Use /user/ endpoint](#use-user-endpoint) | Replaces the deprecated /u profile endpoint with /user. |  |
 
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;20 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;22 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -121,10 +125,12 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Draws a bare address in a post's body as a link. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Loads a post's thumbnail from the Wayback Machine when its Reddit preview has been purged. |  |
-| [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Loads Gfycat links from RedGifs. Gfycat's domains no longer resolve, so without this every Gfycat link fails. |  |
+| [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Loads Gfycat links from RedGifs, and plays a Gfycat or RedGifs video from there where Sync would play it through a proxy of its own. Gfycat's domains no longer resolve, so without this every Gfycat link fails. |  |
 | [Show a hidden profile from the archive](#show-a-hidden-profile-from-the-archive) | Fills in a profile from Project Arctic Shift when Reddit answers with nothing, which is what a hidden profile returns. |  |
 | [Show videos posted in comments](#show-videos-posted-in-comments) | Draws a video posted in a comment in the comment, and plays it when tapped. |  |
-| [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent |
+| [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent<br>• Imgur client ID |
+| [Translate posts and comments](#translate-posts-and-comments) | Translates a post or comment where it sits, on this device or through DeepL or Google Cloud. Everything about it is set up under Translation in Sync's settings. |  |
+| [Unlock Sync Ultra](#unlock-sync-ultra) | Turns on the parts of Sync Ultra that need nothing but this device: website previews, reading text out of an image, tagging a user, and others. What Sync kept on its own servers is left alone, and every offer to buy it is removed. |  |
 | [Use /user/ endpoint](#use-user-endpoint) | Replaces the deprecated /u profile endpoint with /user. |  |
 
 </details>
@@ -155,7 +161,8 @@ service being asked.
 
 - **Spoof client** — Replaces Sync's revoked OAuth credentials with your own client ID,
   redirect URI and user agent. Nothing else works without this. See
-  [Getting started](#-getting-started).
+  [Getting started](#-getting-started). Its `Imgur client ID` option is separate and optional;
+  see [Uploading pictures to Imgur](#uploading-pictures-to-imgur).
 - **Fix /s/ links** — Reddit's shortened `/s/` share links resolve to a real thread rather
   than failing.
 - **Use /user/ endpoint** — Profiles are fetched from `/user/`; the `/u/` form Sync used is
@@ -237,6 +244,77 @@ service being asked.
   - Volume moves the device's own volume, in the steps the device has.
   - A long press still shows and hides the viewer's controls, as it does without the patch.
 
+#### Translation
+
+- **Translate posts and comments** — Translates a post or a comment where it stands, in place
+  of the text rather than under it. Everything about it is set up under *Translation* in Sync's
+  own settings, and nothing is translated until asked for.
+  - **Where it is offered.** Sync's own translation is a paid feature that also waits on a flag
+    it is no longer given, so its *Translate* entries never appear. Both questions are answered
+    from the setting instead, and only where they are asked about translating — the rest of the
+    app is untouched.
+  - **On this device by default.** ML Kit translates without sending the text anywhere, using a
+    model fetched the first time a pair of languages is asked for. The first translation into a
+    new language waits on a few megabytes; the rest are quick.
+  - **DeepL and Google Cloud** translate through a key of your own, entered in the same
+    settings. Every run of words in a post goes in one request rather than one each. DeepL's
+    remaining allowance is shown against the key, and what it is told about how to translate is
+    sent only for the languages that accept it. Neither is used unless chosen.
+  - **Any post with words in it**, from a feed or from the comments screen, and a post's title
+    as well as its body — Sync itself offers this only for a post with a body, opened from the
+    comments screen.
+  - **A button in the row under a comment**, beside reply and the rest. Sync has no such button:
+    its own translating is offered from the menu at the top of a thread and from a comment's own
+    menu. This one is made as each comment is drawn and themed as one of the app's own buttons,
+    and the row is left exactly as it was where translation is turned off.
+  - **What was written is kept**, so asking a second time puts the original back — the entry
+    says *Untranslate* while it would. The line under
+    the author says which language it is being read from while it stands translated, beside the
+    note about restored text where a comment is both. The note is checked against what the post
+    says rather than remembered from when it was asked for, so a thread read again from Reddit —
+    which quietly undoes a translation — does not leave it claiming otherwise.
+  - **Markdown survives.** Sync translates the text as it is drawn, so links come back as their
+    own words and the paragraphs run together. Here the text as written is translated, a line at
+    a time, with everything that is not language — where a link points, an address, the name of
+    a subreddit or a person, code, emotes, spoilers, and the marks that make text bold or
+    italic — held out of the translation and put back after. Where a service does not give one
+    of those back, that line is translated again in pieces, which reads less well and cannot
+    break a link.
+  - **A whole thread, or one conversation in it.** Sync's own *Translate all* is taken over so
+    that it translates the way everything else here does, and a comment's menu offers the
+    conversation under it. Each comment's language is judged on its own, since a thread holds
+    several; one whose language cannot be told is left alone and counted, and asking about that
+    one on its own offers to choose a language. A thread asked for whole keeps up: what loads
+    into it afterwards is translated as it arrives.
+  - **DeepL is told what a comment is answering** — the post, or the post and the comments above
+    it, as the setting says. It translates against that without translating it, which is what a
+    reply that is a fragment needs. Nothing is sent for a post, which answers nothing.
+  - Translations are kept for as long as the setting says, so reading a thread again does not
+    pay for it twice. What is being kept, and clearing it, are in the same settings.
+
+#### Sync Ultra
+
+- **Unlock Sync Ultra** — Turns on the parts of Sync's subscription that need nothing but the
+  device they run on, and takes away what can no longer be had.
+  - **Website previews** in comments — including the picture beside them. Sync asks its own
+    proxy for that picture and the proxy refuses everything now, so every preview but a video's
+    came out as a broken image. The page is read instead and asked which picture it names for
+    being quoted, which is what pages have carried in their head for years. What each page
+    answers is remembered, so a thread full of links to one place asks it once.
+  - **Reading text out of an image**, **tagging a user**,
+    **following a link past Google's copy of a page**, **opening the app logged out**, and the
+    joke-link bypass. Each still obeys its own setting; the patch only answers the questions
+    asked before that setting is reached.
+  - Those questions were three: whether the copy is paid for, whether a flag was turned on from
+    afar, and — for several of them — whether the account reading it is one of the developer's
+    own. The last two mean some of these were finished and then never given to anyone.
+  - **What is left alone**: paints, tags and settings kept on Sync's own servers, its cloud
+    backup, and its own restoring of removed comments. Those need services that no longer
+    answer, and a button that can only fail is worse than no button. Sync's own translating is
+    replaced rather than unlocked — see *Translation* above.
+  - The **Sync Ultra screen is removed** from settings, along with the cloud backup section that
+    needed it and the offer to buy it in the account switcher.
+
 #### Other
 
 - **Enable Android debugging** — Inherited from upstream, off by default, and applies to any
@@ -257,6 +335,25 @@ service being asked.
    * Make sure the redirect URI in the `Spoof client` options and on
      https://www.reddit.com/prefs/apps/ match exactly.
 5. Once patching is complete, install the app and set it up as usual.
+
+### Uploading pictures to Imgur
+
+Attaching a picture to a post or a comment uploads it to Imgur, and Sync identifies itself with
+a client ID shared by every copy of the app. That ID has long since spent its daily allowance —
+Imgur answers an upload with `x-ratelimit-clientremaining: 0` — so the upload fails and Sync
+says *Failed to upload image*. Everything else about Imgur, including viewing and opening links,
+is unaffected.
+
+Registering your own is free, takes a minute, and gives you the full allowance to yourself:
+
+1. Go to https://api.imgur.com/oauth2/addclient while signed in to Imgur.
+2. Pick any name, and choose **OAuth 2 authorization without a callback URL**.
+3. Copy the **Client ID** — fifteen hex characters, no secret needed.
+4. Put it in the `Imgur client ID` option of the `Spoof client` patch and repatch.
+
+Left alone, the option keeps Sync's own ID and uploading keeps failing. No working ID is shipped
+in the bundle, for the same reason the Reddit one is not: a shared credential is scraped and
+revoked, and then it works for nobody.
 
 ### What if I don't have a client ID?
 

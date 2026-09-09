@@ -198,6 +198,20 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   a call placed in front of that return is never reached by the path that matters, and nothing
   is logged at all. Anchor on an instruction every path executes — the one that reads the value
   being passed around is usually it — and resolve the branch targets before choosing an index.
+- **An extension class the patch points a call at has to be `public`.** It is reached from
+  whatever app package the call was injected into, so a package-private one throws
+  `IllegalAccessError: Illegal class access` the first time that call runs — which for anything
+  on a startup path means the app will not open. `translate/TranslatePatch.kt` checks the access
+  flags of every class it calls into before it injects anything, which turns this into a patch
+  failure rather than a crash on a device. The same applies in reverse to app methods the
+  extension calls: see the two accessors on `Lda/d;`, opened by that patch.
+- **An injected call cannot go into a method that takes an array.** What assembles inline smali
+  builds a method around the instruction out of the target method's own parameters, and does not
+  read an array among them. It fails as `NoSuchElementException: Collection is empty` from
+  `InlineSmaliCompiler.compile` — nothing about arrays, and nothing about the line at fault
+  beyond the patch's own stack frame. Naming the register by number rather than as `pN` does not
+  help, since the signature is built either way. `RedditProvider.bulkInsert(Uri, ContentValues[])`
+  cannot be hooked; its callers, which take no arrays, can.
 - **Two methods on a class can have the same signature.** `Loc/c;` has both `u()V` and `p()V`,
   so a predicate matching "no parameters, returns void, on `Loc/c;`" finds the wrong one. Anchor
   on what guards or surrounds the call instead.
@@ -263,8 +277,56 @@ since JSON may escape the slashes in a URL. Writing them back unescaped is valid
 
 - `api.gfycat.com` and `gfycat.com` — DNS no longer resolves at all.
 - `api.redgifs.com/info` — 404, removed. Sync calls it first when opening a RedGifs link.
-- `ap.syncforreddit.com` — Sync's own proxy, still up but answers 401. Feed autoplay routes
-  RedGifs and gfycat through it when the `enhancedAutoPlay` setting is on.
+- `images.syncforreddit.com` — DNS no longer resolves. Sync's Imgur proxy, answered locally by
+  `FixImgurProxyPatch`.
+- `ap.syncforreddit.com` — Sync's own proxy, still up but answers 401 to everything without a
+  subscriber token. `/stats.json` is open and says what it is: a cache of website previews.
+  **One host, three jobs**, all through `/image?url=`, and each needs different handling:
+  an Imgur picture or album (`imgur-album-<id>`), a whole page whose picture is wanted, and
+  `redgifs-<id>` / `gfycat-<id>`, which Sync asks for the *video* when the `enhancedAutoPlay`
+  setting is on. Three interceptors of ours want that one path, so each claims only its own and
+  passes the rest down the chain: `FixImgurProxyPatch` first, then `RedirectGfycatPatch` for the
+  two video tokens, then `WebsitePreviewImagePatch` for a page. Reissuing the request against
+  whatever `url=` holds is right for a picture and hands HTML to an image decoder for a page. A
+  preview that draws a broken image with no sign of our interceptor in the log is this: another
+  interceptor took it first.
+- `api.pushshift.io` — 403 without moderator credentials. Sync's own *Restore comment* row asks
+  it, but that row is behind `t7.d0.e()`, a remote flag that is off, so it never appears; the
+  Ultra unlock does not turn it on, since it only rewrites `t7.d0.d()` where `uc.b.j()` is asked
+  beside it. `UndeleteRedditPatch` covers the same need from Arctic Shift and the Wayback
+  Machine.
+- `imgur-apiv3.p.rapidapi.com/3/image` — where the *stock* app uploads a picture. Its RapidAPI
+  subscription lapsed (403 *You are not subscribed to this API*), but `Spoof client` has always
+  rewritten that URL to `api.imgur.com/3/image`, so a patched copy never asks it. What was left
+  failing is the Client-ID beside it: Sync's `981c2f80e996ca3` is shared by every copy and spent
+  — Imgur answers an upload with it `x-ratelimit-clientremaining: 0`, while the identical request
+  with a fresh ID answers 200 and returns the `data.link` Sync reads. `Spoof client` now carries
+  an `imgur-client-id` option for that, defaulting to Sync's own so nothing borrowed is shipped.
+  The stale `x-rapidapi-*` headers are still sent and Imgur ignores them. The upload also sits
+  behind a remote switch, `reddit-sync-development/master/api/upload.json`, currently
+  `{"enabled": true}` — when that is false Sync says *Upload to Imgur is not currently
+  available* and never issues the request at all.
+
+  **Rate limits will lie to you here.** Both RapidAPI and Imgur answer a burst of probes with
+  *Too many requests*, which reads exactly like a dead key. Space the calls out and re-read
+  before concluding anything: `api.tumblr.com` was written up as broken on a single 429 and is
+  in fact fine.
+- `sli.mg`, `api.eroshare.com`, `i.lvme.me`, `picsarus.com`, `vid.me` — services that shut down
+  years ago. Nothing to route them to; the content is gone at the source.
+- `67.205.181.214` — a house ad loaded into a WebView when AdMob fails. Dead, and unreachable
+  anyway once `Disable ads` is applied.
+
+**Not dead, despite appearances.** Checked and working, so do not "fix" them:
+
+- `todo.syncforreddit.com` — serves the launcher icons, `licenses.html`, and the translate
+  marker images. Alive.
+- `backend.deviantart.com/oembed` — alive over **https**; Sync asks over `http` and OkHttp
+  follows the 301, and the manifest sets `usesCleartextTraffic="true"` so the request starts.
+  A made-up deviation URL answers 404, which is easy to mistake for a retired endpoint.
+- `api.tumblr.com` — Sync's shared `api_key` still works. It answers 429 *Limit Exceeded* under
+  a burst, which is a shared key being busy, not a retired one.
+- `raw.githubusercontent.com/laurencedawson/reddit-sync-development`, `api.streamable.com`,
+  `reddit.statuspage.io`, `syncapps.io`, `api.redgifs.com` itself — all answering.
 
 ## Version pinning
 
@@ -286,7 +348,15 @@ The patch logic is a faithful port. Where this repository intentionally differs:
   the shared code only those used, are dropped.
 - Patches with no Patcheddit equivalent, written for problems specific to Sync: the RedGifs
   `/info` emulation and the Gfycat to RedGifs redirect. Both came out of endpoints Sync depends
-  on that no longer exist.
+  on that no longer exist. Also the translation patch, and `Unlock Sync Ultra`.
+- **Sync Ultra is asked about in three ways**, and a feature kept back may be behind any or all
+  of them: `uc.b.j()` (paid for, asked in 43 places), `t7.d0.*` (flags set from afar, all off),
+  and an account name containing `.AO-` (the developer's own). Where all three are asked
+  together the feature was finished and never given out, and needs nothing but the device —
+  website previews, reading text out of an image, tagging a user. Where only the first is asked
+  it is usually a small local thing. What is kept on Sync's own servers — paints, tags, cloud
+  backup, its own restoring of removed comments — is left gated, since those services answer
+  401 or nothing at all.
 - The Boost patches that were worth porting are reworked rather than copied, because Sync
   differs at every hook point: no JRAW, a different thread URL shape, raw markdown instead of
   the `_html` fields, Glide on its own client, and a layout driven menu. `org.json` is used
@@ -332,6 +402,16 @@ is in [NOTICE](NOTICE). Two things constrain the code:
 - Semantic commit messages; the release version and changelog are generated from them.
   `feat:` minor, `fix:`/`bump:`/`perf:` patch, `chore:` no release.
 - Work on `dev`. `main` is stable releases only, reached by merging `dev` (not squashing).
+- **Squash the steps of a fix before `main` sees them.** A bug that took several attempts
+  belongs in the stable changelog as the fix that worked, not as the attempts: `main` is merged
+  rather than squashed, so every commit on `dev` reaches the notes. Prefer not creating the
+  noise in the first place — ship an attempt on `build(Needs bump):`, which publishes a
+  prerelease and is hidden from the notes, and keep `fix:`/`feat:` for the version confirmed to
+  work. Where attempts have already gone out under those types, fold them together on `dev`
+  before opening the merge. Rewriting commits that have already been released strands the git
+  notes semantic-release keys by commit SHA (`refs/notes/semantic-release-*`), and the next
+  release fails until they are re-attached, so squash before the prerelease that supersedes
+  them rather than after.
 - **Diagnostics go on `chore:` commits.** Because `main` is merged rather than squashed, every
   commit on `dev` appears in the stable changelog, and a release that reads as six entries about
   a diagnostic that no longer exists is worse than no entry at all. A patch written to answer a
@@ -344,28 +424,31 @@ is in [NOTICE](NOTICE). Two things constrain the code:
   the patch exists, no account of what was learnt writing it. The detail — what a patch changes
   and where it stops — goes in the hand-written *What the patches do* section of `README.md`,
   below the `PATCHES_END` marker.
-- **No toasts in a stable release.** `Logger.printException` raises one; anything on a hot path
-  or a transient network failure uses `printInfo` instead. Toasts are acceptable in a prerelease
-  being tested.
+- **No toasts in a stable release.** `Logger.printException` raises one, and it is not
+  conditional in practice: it is gated on `BaseSettings.DEBUG_TOAST_ON_ERROR`, which defaults to
+  `true` and has no settings UI in this bundle to turn off. Use `printInfo`, which logs the same
+  message and exception without the toast. Toasts are acceptable in a prerelease being tested;
+  the extension carried none into v1.7.0.
 - Never hand-edit `CHANGELOG.md`, `patches-list.json`, `patches-bundle.json`, or the region
   between the `PATCHES_START` / `PATCHES_END` markers in `README.md`. The release writes them.
 - Do not create releases by hand.
 
 ## Known rough edges
 
-Inherited from upstream, deliberately left alone in the initial import:
+Inherited from upstream:
 
-- `ModifyWebViewPatch.kt` has a leftover `println` in its execute block.
-- `Constants.kt` in `reddit/customclients/` still declares `CREATE_NEW_CLIENT_METHOD`, which
-  no remaining patch uses.
 - The `sync/ads/DisableAdsPatch.kt` builder plus its `syncforreddit/ads` wrapper is now an
   indirection with a single caller, since the Lemmy target is gone.
+
+The `println` in `ModifyWebViewPatch.kt` and the unused `CREATE_NEW_CLIENT_METHOD` in
+`reddit/customclients/Constants.kt` were removed before v1.7.0.
 
 Current, from this project's own patches:
 
 - Tapping an archive row in the post menu opens the browser but does not dismiss the sheet.
-  Dismissing needs a reference to the fragment and an androidx.fragment dependency the
-  extension does not currently have.
+  That patch is handed the sheet's root view rather than the sheet, so it has nothing to close.
+  Closing one is possible where the sheet itself is to hand: `x3()` resolves through a stub on
+  `s9/f`, and an androidx stub costs nothing since the stubs are compile only.
 - The undelete patches call Arctic Shift and the Wayback Machine, both free community
   services. Results are cached and only fetched when a thread actually contains removed
   content. Keep it that way; do not add speculative prefetching.

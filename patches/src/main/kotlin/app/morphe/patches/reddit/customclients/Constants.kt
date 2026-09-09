@@ -9,4 +9,3 @@ package app.morphe.patches.reddit.customclients
 
 internal const val INSTALL_NEW_CLIENT_METHOD =
     $$"install(Lokhttp3/OkHttpClient$Builder;)Lokhttp3/OkHttpClient;"
-internal const val CREATE_NEW_CLIENT_METHOD = "createClient()Lokhttp3/OkHttpClient;"

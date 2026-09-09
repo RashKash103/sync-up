@@ -119,7 +119,7 @@ public class ArchivedProfilePatch extends PatchedditInterceptor {
             return served(response, request, contentType,
                     listing(archived, archived.length() >= PAGE));
         } catch (JSONException ex) {
-            Logger.printException(() -> "Could not read the archived profile of " + tab.author, ex);
+            Logger.printInfo(() -> "Could not read the archived profile of " + tab.author, ex);
             return rebuilt(response, request, contentType, original);
         } catch (IOException ex) {
             // The archive being unreachable leaves the profile as Reddit gave it.
