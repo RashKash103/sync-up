@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0-dev.50",
+  "version": "1.7.0",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -265,7 +265,7 @@
     },
     {
       "name": "Redirect Gfycat links to RedGifs",
-      "description": "Loads Gfycat links from RedGifs, and plays a Gfycat or RedGifs video from there where Sync would play it through a proxy of its own. Gfycat's domains no longer resolve, so without this every Gfycat link fails.",
+      "description": "Loads Gfycat links from RedGifs, including the autoplaying video Sync asks its own proxy for. Gfycat's domains no longer resolve, so without this every Gfycat link fails.",
       "use": true,
       "dependencies": [
         "BytecodePatch",
@@ -360,7 +360,7 @@
         {
           "key": "imgur-client-id",
           "title": "Imgur client ID",
-          "description": "What to identify as when uploading a picture to Imgur. Sync's own is shared by every copy of the app and has run out of its daily allowance, so uploading fails until this is set to one of your own. Registering one is free and takes a minute: https://api.imgur.com/oauth2/addclient, choosing \"OAuth 2 without a callback URL\". Leaving this alone keeps Sync's, and uploading keeps failing.",
+          "description": "What to identify as when uploading a picture to Imgur. Sync's own has run out of its daily allowance, so uploading fails until this is one of your own; refer to Sync Up documentation for how to get one.",
           "required": false,
           "type": "kotlin.String",
           "default": "981c2f80e996ca3",
