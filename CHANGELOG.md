@@ -1,3 +1,9 @@
+## [1.8.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.9...v1.8.0-dev.10) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Put the picture where the card was written, not in front of the test ([51144e1](https://github.com/RashKash103/sync-up/commit/51144e11dafdf1aa27ffcc0d1a3a81ecdcaadef5))
+
 ## [1.8.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.8...v1.8.0-dev.9) (2026-09-11)
 
 ### 🐛 Bug Fixes

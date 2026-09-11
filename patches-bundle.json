@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-11T23:02:07",
-  "description": "## [1.8.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.8...v1.8.0-dev.9) (2026-09-11)\n\n### 🐛 Bug Fixes\n\n* Draw the picture itself, and number the button's actions where Sync looks ([aacff98](https://github.com/RashKash103/sync-up/commit/aacff988e289f40bb51c6eefa1e27ef37d0ed46d))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.8.0-dev.9/patches-1.8.0-dev.9.mpp",
+  "created_at": "2026-09-11T23:42:33",
+  "description": "## [1.8.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.9...v1.8.0-dev.10) (2026-09-11)\n\n### 🐛 Bug Fixes\n\n* Put the picture where the card was written, not in front of the test ([51144e1](https://github.com/RashKash103/sync-up/commit/51144e11dafdf1aa27ffcc0d1a3a81ecdcaadef5))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.8.0-dev.10/patches-1.8.0-dev.10.mpp",
   "signature_download_url": "",
-  "version": "1.8.0-dev.9"
+  "version": "1.8.0-dev.10"
 }
