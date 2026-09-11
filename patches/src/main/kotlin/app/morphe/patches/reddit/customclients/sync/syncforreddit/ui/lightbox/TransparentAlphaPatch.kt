@@ -18,6 +18,8 @@ private const val EXTENSION_CLASS_DESCRIPTOR =
 private const val PREFERRED_CONFIG_METHOD =
     "preferredConfig(Landroid/graphics/Bitmap\$Config;)Landroid/graphics/Bitmap\$Config;"
 
+private const val TILE_BACKGROUND_METHOD = "tileBackground(I)I"
+
 /** The zooming view a picture is opened in, which keeps the format to decode in statically. */
 private const val ZOOMING_VIEW = "Lcom/davemorrissey/labs/subscaleview/SubsamplingScaleImageView;"
 
@@ -60,5 +62,21 @@ val transparentAlphaPatch = bytecodePatch(
                 """
             )
         }
+
+        // The view fills every tile with a colour before drawing the picture over it, and the
+        // viewer asks for opaque white, so transparency survived the decode and was painted
+        // over anyway.
+        Fingerprint(
+            definingClass = ZOOMING_VIEW,
+            name = "setTileBackgroundColor",
+            parameters = listOf("I"),
+            returnType = "V",
+        ).method.addInstructions(
+            0,
+            """
+            invoke-static       { p1 }, $EXTENSION_CLASS_DESCRIPTOR->$TILE_BACKGROUND_METHOD
+            move-result         p1
+            """
+        )
     }
 }

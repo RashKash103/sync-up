@@ -56,7 +56,7 @@ internal val extraFabActionsSettingsPatch = resourcePatch(
                 "sync_up_fab_values",
                 listOf("-1") + ACTIONS.indices.map { it.toString() },
             )
-            array("sync_up_fab_orientation_entries", listOf("Above the button", "Beside the button"))
+            array("sync_up_fab_orientation_entries", listOf("Vertical", "Horizontal"))
             array("sync_up_fab_orientation_values", listOf("0", "1"))
         }
 
@@ -83,6 +83,8 @@ internal val extraFabActionsSettingsPatch = resourcePatch(
                         "android:entries" to "@array/sync_up_fab_entries",
                         "android:entryValues" to "@array/sync_up_fab_values",
                         "android:defaultValue" to "-1",
+                        // Shows what is chosen without having to open it.
+                        "android:summary" to "%s",
                     ),
                 )
             }
@@ -90,10 +92,11 @@ internal val extraFabActionsSettingsPatch = resourcePatch(
                 LIST,
                 mapOf(
                     "android:key" to "sync_up_fab_orientation",
-                    "android:title" to "Where the extra actions go",
+                    "android:title" to "Orientation",
                     "android:entries" to "@array/sync_up_fab_orientation_entries",
                     "android:entryValues" to "@array/sync_up_fab_orientation_values",
                     "android:defaultValue" to "0",
+                    "android:summary" to "%s",
                 ),
             )
             add(

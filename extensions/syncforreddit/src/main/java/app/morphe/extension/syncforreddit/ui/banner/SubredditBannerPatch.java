@@ -1,10 +1,11 @@
 package app.morphe.extension.syncforreddit.ui.banner;
 
 import android.graphics.Bitmap;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 
@@ -124,7 +125,15 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
                 Logger.printInfo(() -> "banner: the feed's view is not one things can go in");
                 return;
             }
-            draw((ViewGroup) root, subreddit);
+            // Deferred by a frame: the feed's own view is what arrives here, and the strip goes
+            // in whatever holds it, which is not always attached yet.
+            root.post(() -> {
+                try {
+                    draw((ViewGroup) root, subreddit);
+                } catch (Throwable ex) {
+                    Logger.printInfo(() -> "banner: could not be drawn: " + ex);
+                }
+            });
         } catch (Throwable ex) {
             // A feed that draws is worth more than the banner above it.
             Logger.printInfo(() -> "banner: could not be added: " + ex);
@@ -136,86 +145,97 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
         return new SubredditBannerPatch().isPatchIncluded();
     }
 
-    private static void draw(ViewGroup root, String subreddit) {
-        ImageView strip = root.findViewWithTag(TAG);
+    private static void draw(ViewGroup feed, String subreddit) {
+        ViewGroup holder = feed.getParent() instanceof ViewGroup
+                ? (ViewGroup) feed.getParent() : null;
+        if (holder == null) {
+            Logger.printInfo(() -> "banner: the feed is not in anything the strip can go in");
+            return;
+        }
+
+        ImageView strip = holder.findViewWithTag(TAG);
         if (strip == null) {
-            ViewGroup into = whereItCanGo(root);
-            if (into == null) {
-                return;
-            }
-            strip = new ImageView(into.getContext());
+            strip = new ImageView(holder.getContext());
             strip.setTag(TAG);
             strip.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            int height = (int) (HEIGHT_DP
-                    * into.getContext().getResources().getDisplayMetrics().density);
-            // Built to the parent's own rules rather than to a guess about which parent it is.
-            ViewGroup.LayoutParams params = into.generateLayoutParams(null);
-            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-            params.height = height;
-            strip.setLayoutParams(params);
             strip.setVisibility(View.GONE);
-            into.addView(strip, 0);
 
-            final ViewGroup added = into;
+            int height = height(holder);
+            if (holder instanceof FrameLayout) {
+                // Stacked on top of the feed, which is what a frame does with its children.
+                strip.setLayoutParams(new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, height, Gravity.TOP));
+            } else {
+                Logger.printInfo(() -> "banner: the feed sits in a "
+                        + holder.getClass().getName() + ", which is not a frame; placing the "
+                        + "strip by its own rules and hoping it lands at the top");
+                strip.setLayoutParams(new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, height));
+            }
+            // Added last so it is drawn over the posts rather than behind them.
+            holder.addView(strip);
+
+            final ViewGroup added = holder;
             Logger.printInfo(() -> "banner: added the strip to " + added.getClass().getName()
                     + ", now " + added.getChildCount() + " children");
         }
 
         final ImageView showing = strip;
         Bitmap picture = SubredditBanners.bannerFor(subreddit,
-                () -> showing.post(() -> draw(root, subreddit)));
+                () -> showing.post(() -> {
+                    try {
+                        draw(feed, subreddit);
+                    } catch (Throwable ex) {
+                        Logger.printInfo(() -> "banner: could not be drawn: " + ex);
+                    }
+                }));
         if (picture == null) {
             Logger.printDebug(() -> "banner: nothing to draw for r/" + subreddit + " yet");
+            makeRoom(feed, 0);
+            showing.setVisibility(View.GONE);
             return;
         }
         showing.setImageBitmap(picture);
         showing.setVisibility(View.VISIBLE);
+        makeRoom(feed, height(holder));
         Logger.printInfo(() -> "banner: drawn for r/" + subreddit);
     }
 
-    /**
-     * @return The container the strip can be put at the top of, or null where none of them
-     *         stacks its children and putting one first would only hide it behind the rest.
-     *
-     * <p>Which layout Sync builds the feed out of is not something to assume, so what is
-     *         actually there is written out the first time in full.
-     */
-    private static ViewGroup whereItCanGo(ViewGroup root) {
-        describe(root, 0);
-
-        if (root instanceof LinearLayout) {
-            return root;
-        }
-        // One level down, since the feed is usually a refresh layout wrapping the list.
-        for (int at = 0; at < root.getChildCount(); at++) {
-            View child = root.getChildAt(at);
-            if (child instanceof LinearLayout) {
-                Logger.printInfo(() -> "banner: putting the strip in a child that stacks");
-                return (ViewGroup) child;
-            }
-        }
-        Logger.printInfo(() -> "banner: nothing here stacks its children, so the strip would "
-                + "sit behind the feed rather than above it; not adding one");
-        return null;
+    private static int height(ViewGroup holder) {
+        return (int) (HEIGHT_DP
+                * holder.getContext().getResources().getDisplayMetrics().density);
     }
 
-    /** Writes out what the feed is built of, so the right place for the strip can be chosen. */
-    private static void describe(View view, int depth) {
-        StringBuilder indent = new StringBuilder();
-        for (int at = 0; at < depth; at++) {
-            indent.append("  ");
-        }
-        Logger.printInfo(() -> "banner: view " + indent + view.getClass().getName()
-                + " id=" + view.getId()
-                + (view instanceof ViewGroup
-                        ? " children=" + ((ViewGroup) view).getChildCount() : ""));
-        if (depth >= 2 || !(view instanceof ViewGroup)) {
+    /**
+     * Starts the posts below the strip rather than behind it. The list keeps drawing into the
+     * space as it scrolls, so the strip stands still and the posts pass under it.
+     */
+    private static void makeRoom(ViewGroup feed, int height) {
+        View list = listIn(feed);
+        if (list == null) {
+            Logger.printInfo(() -> "banner: no list in the feed to start below the strip");
             return;
         }
-        ViewGroup group = (ViewGroup) view;
-        for (int at = 0; at < group.getChildCount(); at++) {
-            describe(group.getChildAt(at), depth + 1);
+        if (list.getPaddingTop() == height) {
+            return;
         }
+        if (list instanceof ViewGroup) {
+            ((ViewGroup) list).setClipToPadding(false);
+        }
+        list.setPadding(list.getPaddingLeft(), height, list.getPaddingRight(),
+                list.getPaddingBottom());
+        Logger.printInfo(() -> "banner: the list now starts " + height + " below the top");
+    }
+
+    /** @return The posts themselves, found by what they are rather than by an obfuscated id. */
+    private static View listIn(ViewGroup feed) {
+        for (int at = 0; at < feed.getChildCount(); at++) {
+            View child = feed.getChildAt(at);
+            if (child.getClass().getName().contains("RecyclerView")) {
+                return child;
+            }
+        }
+        return null;
     }
 
     // endregion

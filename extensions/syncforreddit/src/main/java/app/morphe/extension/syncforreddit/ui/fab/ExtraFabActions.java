@@ -1,7 +1,9 @@
 package app.morphe.extension.syncforreddit.ui.fab;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
@@ -21,20 +23,25 @@ import app.morphe.extension.syncforreddit.settings.SyncUpSettings;
 import com.laurencedawson.reddit_sync.ui.fragment_dialogs.bottom.ActionsBottomSheetFragment;
 
 /**
- * Extra actions beside the feed's floating button.
+ * The feed's floating button, with more than one thing on it.
  *
  * <p>Sync's own button carries exactly one of three things. Everything else it can do is in the
  * actions sheet behind it, each known there by a number, drawn with an icon and carried out by
- * one call. Those same numbers are what this offers directly, as a row or column of buttons
- * sharing one rounded surface beside the button itself.
+ * one call. Those same numbers are what this offers directly.
+ *
+ * <p>The button is not left sitting beside a second one: what is drawn is a single surface
+ * holding the extra actions and, last, the button's own action, standing exactly where the
+ * button stood. Sync's button is still there underneath, kept invisible and doing the work when
+ * its cell is tapped, so everything it decides — which action it carries, when it hides itself —
+ * still holds.
  *
  * <p>Nothing here is allowed to take the feed down with it: every step is guarded, and the
- * button Sync draws is left exactly as it was if any of it fails.
+ * button Sync draws is put back exactly as it was if any of it fails.
  *
  * @noinspection unused
  */
 public final class ExtraFabActions {
-    /** How many actions can be put beside the button. */
+    /** How many extra actions can be put on the button. */
     public static final int SLOTS = 4;
 
     private static final String SLOT = "sync_up_fab_slot_";
@@ -44,15 +51,15 @@ public final class ExtraFabActions {
     /** What a slot holds when it holds nothing. */
     private static final int NOTHING = -1;
 
-    /** Laid out down the screen, above the button. */
+    /** Laid out down the screen, the button's own action at the bottom. */
     private static final int VERTICAL = 0;
 
-    /** What the container is tagged with, so it is found again rather than added twice. */
+    /** What the surface is tagged with, so it is found again rather than added twice. */
     private static final String TAG = "sync-up-fab-actions";
 
-    private static final int SIZE_DP = 44;
-    private static final int ICON_DP = 22;
-    private static final int GAP_DP = 12;
+    /** Matches the button it stands in place of, so the two read as one thing. */
+    private static final int SIZE_DP = 56;
+    private static final int ICON_DP = 24;
     private static final int SEPARATOR_DP = 1;
 
     private ExtraFabActions() {}
@@ -76,11 +83,6 @@ public final class ExtraFabActions {
             SyncUpSettings.report("fab", SLOT + "1", SLOT + "2", SLOT + "3", SLOT + "4",
                     ORIENTATION, SEPARATORS);
 
-            List<Integer> wanted = chosen();
-            Logger.printInfo(() -> "fab: attach for r/" + subreddit + ", chosen " + wanted
-                    + ", parent " + (fab.getParent() == null ? "none"
-                    : fab.getParent().getClass().getName()));
-
             ViewGroup parent = fab.getParent() instanceof ViewGroup
                     ? (ViewGroup) fab.getParent() : null;
             if (parent == null) {
@@ -88,26 +90,48 @@ public final class ExtraFabActions {
                 return;
             }
 
-            View existing = parent.findViewWithTag(TAG);
-            if (existing != null) {
-                Logger.printDebug(() -> "fab: taking the previous row away before rebuilding");
-                parent.removeView(existing);
-            }
+            List<Integer> wanted = chosen();
+            Logger.printInfo(() -> "fab: attach for r/" + subreddit + ", chosen " + wanted);
+
             if (wanted.isEmpty()) {
-                Logger.printInfo(() -> "fab: nothing chosen, leaving the button alone");
+                // Nothing asked for, so Sync's own button is left to do its job by itself.
+                Logger.printInfo(() -> "fab: nothing chosen, putting the button back");
+                restore(fab);
+                View previous = parent.findViewWithTag(TAG);
+                if (previous != null) {
+                    parent.removeView(previous);
+                }
                 return;
             }
 
-            LinearLayout row = build(fab.getContext(), wanted, subreddit);
-            if (row == null) {
+            View existing = parent.findViewWithTag(TAG);
+            if (existing != null) {
+                parent.removeView(existing);
+            }
+
+            LinearLayout surface = build(fab, wanted, subreddit);
+            if (surface == null) {
+                restore(fab);
                 return;
             }
-            parent.addView(row);
-            follow(fab, row);
-            Logger.printInfo(() -> "fab: added " + wanted.size() + " action(s) beside the button");
+            parent.addView(surface);
+            follow(fab, surface);
+            Logger.printInfo(() -> "fab: standing in for the button with " + wanted.size()
+                    + " extra action(s) plus its own");
         } catch (Throwable ex) {
-            // A feed that draws is worth more than the actions beside its button.
-            Logger.printInfo(() -> "fab: could not add the actions: " + ex);
+            // A feed that draws is worth more than the actions on its button.
+            Logger.printInfo(() -> "fab: could not stand in for the button: " + ex);
+            restore(fab);
+        }
+    }
+
+    /** Puts Sync's own button back the way it was found. */
+    private static void restore(View fab) {
+        try {
+            fab.setAlpha(1f);
+            fab.setClickable(true);
+        } catch (Throwable ex) {
+            Logger.printDebug(() -> "fab: could not put the button back: " + ex);
         }
     }
 
@@ -129,71 +153,170 @@ public final class ExtraFabActions {
         return actions;
     }
 
-    private static LinearLayout build(Context context, List<Integer> actions, String subreddit) {
+    private static LinearLayout build(View fab, List<Integer> actions, String subreddit) {
+        Context context = fab.getContext();
         boolean vertical = SyncUpSettings.number(ORIENTATION, VERTICAL) == VERTICAL;
         boolean separators = SyncUpSettings.flag(SEPARATORS, true);
+        ColorStateList tint = iconTint(fab);
 
-        LinearLayout row = new LinearLayout(context);
-        row.setTag(TAG);
-        row.setOrientation(vertical ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER);
-        row.setElevation(fromDp(context, 6));
-        row.setBackground(surface(context, vertical));
+        LinearLayout surface = new LinearLayout(context);
+        surface.setTag(TAG);
+        surface.setOrientation(vertical ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
+        surface.setGravity(Gravity.CENTER);
+        surface.setElevation(fab.getElevation() > 0 ? fab.getElevation() : fromDp(context, 6));
+        surface.setBackground(surfaceOf(fab, vertical));
 
         for (int at = 0; at < actions.size(); at++) {
-            int action = actions.get(at);
-            if (separators && at > 0) {
-                row.addView(separator(context, vertical));
-            }
-            View button = button(context, action, subreddit);
+            View button = extra(context, actions.get(at), subreddit, tint);
             if (button == null) {
                 continue;
             }
-            row.addView(button);
+            if (separators && surface.getChildCount() > 0) {
+                surface.addView(separator(context, vertical));
+            }
+            surface.addView(button);
         }
 
-        if (row.getChildCount() == 0) {
+        if (surface.getChildCount() == 0) {
             Logger.printInfo(() -> "fab: none of the chosen actions could be drawn");
             return null;
         }
-        row.setLayoutParams(new ViewGroup.LayoutParams(
+
+        // The button's own action goes last, so it ends up where the button itself was and
+        // everything added grows away from it rather than pushing it aside.
+        if (separators) {
+            surface.addView(separator(context, vertical));
+        }
+        surface.addView(itsOwn(context, fab));
+
+        surface.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        return row;
+        return surface;
     }
 
-    /** The one surface the buttons share, shaped like the button it sits beside. */
-    private static GradientDrawable surface(Context context, boolean vertical) {
+    /** The cell standing in for the button, which hands the tap straight back to it. */
+    private static View itsOwn(Context context, View fab) {
+        ImageView cell = cell(context);
+        try {
+            Drawable icon = ((ImageView) fab).getDrawable();
+            if (icon != null) {
+                cell.setImageDrawable(icon.getConstantState() == null
+                        ? icon : icon.getConstantState().newDrawable().mutate());
+                cell.setImageTintList(((ImageView) fab).getImageTintList());
+            } else {
+                Logger.printInfo(() -> "fab: the button is drawn with nothing to copy");
+            }
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "fab: could not copy what the button is drawn with: " + ex);
+        }
+        cell.setContentDescription(fab.getContentDescription());
+        cell.setOnClickListener(view -> {
+            Logger.printInfo(() -> "fab: handing the tap back to Sync's own button");
+            fab.setClickable(true);
+            fab.performClick();
+            fab.setClickable(false);
+        });
+        cell.setOnLongClickListener(view -> {
+            fab.setClickable(true);
+            boolean handled = fab.performLongClick();
+            fab.setClickable(false);
+            return handled;
+        });
+        return cell;
+    }
+
+    private static View extra(Context context, int action, String subreddit, ColorStateList tint) {
+        try {
+            int icon = t7.b.d(action);
+            String label = t7.b.h(action);
+            Logger.printDebug(() -> "fab: cell for action " + action + " is " + label);
+
+            ImageView cell = cell(context);
+            cell.setImageResource(icon);
+            if (tint != null) {
+                cell.setImageTintList(tint);
+            }
+            cell.setContentDescription(label == null ? null : label.replace('\n', ' '));
+            cell.setOnClickListener(view -> carryOut(view, action, subreddit));
+            return cell;
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "fab: action " + action + " could not be drawn: " + ex);
+            return null;
+        }
+    }
+
+    private static ImageView cell(Context context) {
+        ImageView cell = new ImageView(context);
+        int size = (int) fromDp(context, SIZE_DP);
+        cell.setLayoutParams(new LinearLayout.LayoutParams(size, size));
+        int padding = (int) ((size - fromDp(context, ICON_DP)) / 2f);
+        cell.setPadding(padding, padding, padding, padding);
+        cell.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        cell.setClickable(true);
+        cell.setFocusable(true);
+        return cell;
+    }
+
+    /** What the icons on the button are tinted with, so the added ones match them. */
+    private static ColorStateList iconTint(View fab) {
+        try {
+            ColorStateList tint = ((ImageView) fab).getImageTintList();
+            if (tint != null) {
+                Logger.printDebug(() -> "fab: tinting the added icons as the button's are");
+                return tint;
+            }
+        } catch (Throwable ex) {
+            Logger.printDebug(() -> "fab: the button says nothing about its tint: " + ex);
+        }
+        return ColorStateList.valueOf(Color.WHITE);
+    }
+
+    /** The one surface the cells share, coloured and shaped like the button it stands for. */
+    private static GradientDrawable surfaceOf(View fab, boolean vertical) {
+        Context context = fab.getContext();
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.RECTANGLE);
         shape.setCornerRadius(fromDp(context, SIZE_DP / 2f));
-        shape.setColor(colourOfTheButton(context));
+        shape.setColor(colourOfTheButton(fab));
         return shape;
     }
 
     /**
-     * The colour Sync's own button is drawn in, so the two read as one thing. Taken from the
-     * theme rather than assumed, and falling back to a dark grey that is legible either way.
+     * The colour Sync's own button is drawn in, asked of the button itself first so that the
+     * two match whatever theme is in use.
      */
-    private static int colourOfTheButton(Context context) {
+    private static int colourOfTheButton(View fab) {
+        try {
+            ColorStateList tint = fab.getBackgroundTintList();
+            if (tint != null) {
+                int colour = tint.getDefaultColor();
+                Logger.printInfo(() -> "fab: drawing the surface in the button's own colour "
+                        + String.format("#%08X", colour));
+                return colour;
+            }
+        } catch (Throwable ex) {
+            Logger.printDebug(() -> "fab: the button says nothing about its colour: " + ex);
+        }
         try {
             android.util.TypedValue found = new android.util.TypedValue();
-            // Asked for by name: the support library's attributes are not on the compile path
-            // here, and the framework one is what Sync's own themes set anyway.
-            if (context.getTheme().resolveAttribute(android.R.attr.colorAccent, found, true)) {
+            if (fab.getContext().getTheme()
+                    .resolveAttribute(android.R.attr.colorAccent, found, true)) {
                 int colour = found.data;
-                Logger.printDebug(() -> "fab: drawing on the theme's primary colour");
+                Logger.printInfo(() -> "fab: drawing the surface in the theme's accent "
+                        + String.format("#%08X", colour));
                 return colour;
             }
         } catch (Throwable ex) {
             Logger.printDebug(() -> "fab: no theme colour to draw on: " + ex);
         }
+        Logger.printInfo(() -> "fab: drawing the surface in a plain dark grey");
         return Color.parseColor("#333333");
     }
 
     private static View separator(Context context, boolean vertical) {
         View line = new View(context);
         int thickness = (int) fromDp(context, SEPARATOR_DP);
-        int length = (int) fromDp(context, SIZE_DP * 0.55f);
+        int length = (int) fromDp(context, SIZE_DP * 0.5f);
         line.setLayoutParams(vertical
                 ? new LinearLayout.LayoutParams(length, thickness)
                 : new LinearLayout.LayoutParams(thickness, length));
@@ -201,35 +324,10 @@ public final class ExtraFabActions {
         return line;
     }
 
-    private static View button(Context context, int action, String subreddit) {
-        try {
-            int icon = t7.b.d(action);
-            String label = t7.b.h(action);
-            Logger.printDebug(() -> "fab: slot action " + action + " is " + label);
-
-            ImageView button = new ImageView(context);
-            int size = (int) fromDp(context, SIZE_DP);
-            button.setLayoutParams(new LinearLayout.LayoutParams(size, size));
-            int padding = (int) ((size - fromDp(context, ICON_DP)) / 2f);
-            button.setPadding(padding, padding, padding, padding);
-            button.setImageResource(icon);
-            button.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            button.setContentDescription(label == null ? null : label.replace('\n', ' '));
-            button.setClickable(true);
-            button.setFocusable(true);
-            button.setOnClickListener(view -> carryOut(view, action, subreddit));
-            return button;
-        } catch (Throwable ex) {
-            Logger.printInfo(() -> "fab: action " + action + " could not be drawn: " + ex);
-            return null;
-        }
-    }
-
     /** Hands the action to the same code the actions sheet runs it with. */
     private static void carryOut(View view, int action, String subreddit) {
         try {
-            Context context = view.getContext();
-            FragmentActivity activity = activityOf(context);
+            FragmentActivity activity = activityOf(view.getContext());
             if (activity == null) {
                 Logger.printInfo(() -> "fab: action " + action + " has no activity to run in");
                 return;
@@ -254,64 +352,70 @@ public final class ExtraFabActions {
     }
 
     /**
-     * Keeps the row beside the button wherever the button ends up. Placed against the button's
-     * own position rather than through the parent's layout rules, which differ between the
-     * layouts Sync puts the button in and are not ours to reason about.
+     * Keeps the surface standing where the button stands. Placed against the button's own
+     * position rather than through the parent's layout rules, which differ between the layouts
+     * Sync puts the button in and are not ours to reason about.
      */
-    private static void follow(View fab, View row) {
+    private static void follow(View fab, View surface) {
         ViewTreeObserver.OnGlobalLayoutListener place =
                 new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        try {
-                            place(fab, row);
-                        } catch (Throwable ex) {
-                            Logger.printDebug(() -> "fab: could not place the row: " + ex);
-                        }
+                        place(fab, surface);
                     }
                 };
         fab.getViewTreeObserver().addOnGlobalLayoutListener(place);
-        row.post(() -> {
-            try {
-                place(fab, row);
-            } catch (Throwable ex) {
-                Logger.printDebug(() -> "fab: could not place the row: " + ex);
-            }
-        });
+        surface.post(() -> place(fab, surface));
     }
 
-    private static void place(View fab, View row) {
-        if (fab.getWidth() == 0 || row.getWidth() == 0) {
-            return;
-        }
-        boolean vertical = SyncUpSettings.number(ORIENTATION, VERTICAL) == VERTICAL;
-        float gap = fromDp(fab.getContext(), GAP_DP);
+    /** How often a placement is worth writing down, so a layout pass does not flood the log. */
+    private static int said;
 
-        float x;
-        float y;
-        if (vertical) {
-            // Centred on the button, standing above it.
-            x = fab.getX() + (fab.getWidth() - row.getWidth()) / 2f;
-            y = fab.getY() - row.getHeight() - gap;
-        } else {
-            // Level with the button, running back from it.
-            x = fab.getX() - row.getWidth() - gap;
-            y = fab.getY() + (fab.getHeight() - row.getHeight()) / 2f;
-        }
+    private static void place(View fab, View surface) {
+        try {
+            if (surface.getParent() == null) {
+                // Replaced by a later pass over the feed; this one has nothing left to place.
+                return;
+            }
+            if (fab.getWidth() == 0 || surface.getWidth() == 0) {
+                return;
+            }
 
-        if (row.getX() != x || row.getY() != y) {
-            row.setX(x);
-            row.setY(y);
-            row.setVisibility(fab.getVisibility());
+            // Hidden rather than made invisible: what Sync sets on the button is how it says
+            // whether the button should be showing at all, and that is still worth following.
+            fab.setAlpha(0f);
+            fab.setClickable(false);
 
-            final float placedX = x;
-            final float placedY = y;
-            Logger.printInfo(() -> "fab: placed the row at " + placedX + "," + placedY
-                    + " (" + row.getWidth() + "x" + row.getHeight() + ") beside a button at "
-                    + fab.getX() + "," + fab.getY()
-                    + " (" + fab.getWidth() + "x" + fab.getHeight() + "), visibility "
-                    + fab.getVisibility() + ", parent "
-                    + (row.getParent() == null ? "none" : row.getParent().getClass().getName()));
+            boolean vertical = SyncUpSettings.number(ORIENTATION, VERTICAL) == VERTICAL;
+            float x;
+            float y;
+            if (vertical) {
+                x = fab.getX() + (fab.getWidth() - surface.getWidth()) / 2f;
+                y = fab.getY() + fab.getHeight() - surface.getHeight();
+            } else {
+                x = fab.getX() + fab.getWidth() - surface.getWidth();
+                y = fab.getY() + (fab.getHeight() - surface.getHeight()) / 2f;
+            }
+
+            surface.setX(x);
+            surface.setY(y);
+            // Settled on every pass rather than only when it moves: the button starts out
+            // invisible and is shown later, and a surface that copied that once stayed hidden.
+            surface.setVisibility(fab.getVisibility() == View.GONE ? View.GONE : View.VISIBLE);
+
+            if (said < 8) {
+                said++;
+                final float placedX = x;
+                final float placedY = y;
+                Logger.printInfo(() -> "fab: standing at " + placedX + "," + placedY
+                        + " (" + surface.getWidth() + "x" + surface.getHeight()
+                        + ") over a button at " + fab.getX() + "," + fab.getY()
+                        + " (" + fab.getWidth() + "x" + fab.getHeight() + "), the button says "
+                        + fab.getVisibility() + " so the surface is "
+                        + surface.getVisibility());
+            }
+        } catch (Throwable ex) {
+            Logger.printDebug(() -> "fab: could not place the surface: " + ex);
         }
     }
 

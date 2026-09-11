@@ -11,25 +11,25 @@ private const val CHECK_BOX =
     "com.laurencedawson.reddit_sync.ui.preferences.defaults.SyncCheckBoxPreference"
 
 /**
- * Adds the setting beside Sync's own inline linking options, which is where someone looking for
- * it would go.
+ * Adds the setting to the comments settings. It belongs just as well beside Sync's own inline
+ * linking options, but this is about comments and that is where it was looked for.
  */
 internal val inlineCommentMediaSettingsPatch = resourcePatch(
-    description = "Adds the inline media setting to the Inline linking category.",
+    description = "Adds the inline media setting to the comments General category.",
 ) {
     execute {
-        document("res/xml/cat_links.xml").use { document ->
+        document("res/xml/cat_comments.xml").use { document ->
             val headers = document.getElementsByTagName(CATEGORY_HEADER)
             val category = (0 until headers.length)
                 .map { headers.item(it) as Element }
-                .firstOrNull { it.getAttribute("app:categoryTitle") == "Inline linking" }
+                .firstOrNull { it.getAttribute("app:categoryTitle") == "General" }
                 ?.parentNode as? Element
-                ?: throw PatchException("No Inline linking category to add the setting to")
+                ?: throw PatchException("No General category in comments to add the setting to")
 
             val preference = document.createElement(CHECK_BOX)
             mapOf(
                 "android:key" to "sync_up_inline_comment_media",
-                "android:title" to "Show all media where it sits",
+                "android:title" to "Show media in comments where it sits",
                 "android:summary" to
                     "Draw every picture and video linked in a comment rather than a chip",
                 "android:defaultValue" to "false",
