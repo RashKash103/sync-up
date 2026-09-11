@@ -195,10 +195,16 @@ public final class ExtraFabActions {
         return held >= OURS_START_AT ? held - OURS_START_AT : NOTHING;
     }
 
-    /** @return The actions standing beside the button, in the order their slots are in. */
+    /**
+     * @return The actions standing beside the button, furthest first.
+     *
+     * <p>The button's own action is drawn last, at the end nearest where the button was, so the
+     * first slot has to be drawn immediately before it and the rest further out again. That is
+     * the reverse of the order they are set in.
+     */
     private static List<Integer> chosen() {
         List<Integer> actions = new ArrayList<>();
-        for (int slot = 1; slot <= SLOTS; slot++) {
+        for (int slot = SLOTS; slot >= 1; slot--) {
             int action = SyncUpSettings.number(SLOT + slot, NOTHING);
             if (action == NOTHING || actions.contains(action)) {
                 continue;

@@ -36,7 +36,11 @@ private const val LINK_SEEN_METHOD = "linkSeen(Ljava/lang/String;)V"
 
 private const val GIPHY_METHOD = "giphy(Ljava/lang/String;)V"
 
-private const val DRAW_IT_HERE_METHOD = "drawItHere(ZLoc/c;Ljava/lang/String;)Z"
+private const val TEXT_FOR_METHOD =
+    "textFor(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+
+private const val SPANS_FOR_METHOD =
+    "spansFor([Ljava/lang/Object;Ljava/lang/String;)[Ljava/lang/Object;"
 
 private const val STILL_SHOW_METHOD = "stillShowTheLink(ZZ)Z"
 
@@ -121,15 +125,24 @@ val inlineCommentMediaPatch = bytecodePatch(
             }
             val decisionRegister = getInstruction<OneRegisterInstruction>(guardIndex).registerA
 
-            // What Sync does here is add the link to a list it draws as cards — a small picture
-            // with the address beside it. Where the picture itself was asked for, it is put in
-            // the way Sync's own giphy handling puts one in, and the card is not made.
-            val builderRegister = (implementation!!.registerCount - parameters.size)
+            // Where the card is finally written into the text. Chosen over the test that
+            // guards it because a branch further up jumps to that test rather than through it,
+            // so anything put in front of it is stepped over by every link but a tenor one.
+            val cardIndex = (spanIndex until instructions.count()).first { at ->
+                val called = getInstruction(at).getReference<MethodReference>()
+                called?.definingClass == "Loc/c;" && called.name == "c"
+            }
+            val card = getInstruction<FiveRegisterInstruction>(cardIndex)
+            val textRegister = card.registerD
+            val spansRegister = card.registerE
+
             addInstructions(
-                guardIndex,
+                cardIndex,
                 """
-                invoke-static       { v$decisionRegister, p0, v$linkRegister }, $EXTENSION_CLASS_DESCRIPTOR->$DRAW_IT_HERE_METHOD
-                move-result         v$decisionRegister
+                invoke-static       { v$textRegister, v$linkRegister }, $EXTENSION_CLASS_DESCRIPTOR->$TEXT_FOR_METHOD
+                move-result-object  v$textRegister
+                invoke-static       { v$spansRegister, v$linkRegister }, $EXTENSION_CLASS_DESCRIPTOR->$SPANS_FOR_METHOD
+                move-result-object  v$spansRegister
                 """
             )
 

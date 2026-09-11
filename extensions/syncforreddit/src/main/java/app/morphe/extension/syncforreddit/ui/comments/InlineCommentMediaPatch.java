@@ -80,22 +80,42 @@ public final class InlineCommentMediaPatch {
      * @param link The address of the picture.
      * @return Whether Sync should still make its card.
      */
-    public static boolean drawItHere(boolean card, oc.c into, String link) {
-        if (!isPatchIncluded() || !inlineEverything() || into == null
-                || link == null || link.isEmpty() || !isMedia(link)) {
-            return card;
+    /** What text stands for a picture that is drawn rather than named. */
+    private static final String THE_PICTURE_ITSELF = "\uFFFC";
+
+    /**
+     * @return What to write where Sync was about to write the label of a card.
+     *
+     * <p>Sync is about to add the link to a list it draws as cards — a small picture with the
+     * address beside it — and the text it writes is that card's label. Where the picture itself
+     * was asked for, what is written instead is the one character a picture stands in, and the
+     * spans below put the picture there.
+     */
+    public static String textFor(String label, String link) {
+        if (!wanted(link)) {
+            return label;
+        }
+        justDrew.set(Boolean.TRUE);
+        Logger.printInfo(() -> "inline comments: drawing " + link + " where it stood");
+        return THE_PICTURE_ITSELF;
+    }
+
+    /** @return What to draw that text with: the picture itself, rather than a card's label. */
+    public static Object[] spansFor(Object[] spans, String link) {
+        if (!wanted(link)) {
+            return spans;
         }
         try {
-            into.c("\uFFFC", new Object[]{ new nb.d(link), new mb.d(link) });
-            into.b("\n");
-            justDrew.set(Boolean.TRUE);
-            Logger.printInfo(() -> "inline comments: drew " + link + " where it stood");
-            // Sync's card would stand beside what has just been put in.
-            return false;
+            return new Object[]{ new nb.d(link), new mb.d(link) };
         } catch (Throwable ex) {
             Logger.printInfo(() -> "inline comments: could not draw " + link + ": " + ex);
-            return card;
+            return spans;
         }
+    }
+
+    private static boolean wanted(String link) {
+        return isPatchIncluded() && link != null && !link.isEmpty()
+                && inlineEverything() && isMedia(link);
     }
 
     /**
