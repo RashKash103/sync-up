@@ -1,3 +1,9 @@
+## [1.8.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.8...v1.8.0-dev.9) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Draw the picture itself, and number the button's actions where Sync looks ([aacff98](https://github.com/RashKash103/sync-up/commit/aacff988e289f40bb51c6eefa1e27ef37d0ed46d))
+
 ## [1.8.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.7...v1.8.0-dev.8) (2026-09-11)
 
 ### 🐛 Bug Fixes
