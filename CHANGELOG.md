@@ -1,3 +1,9 @@
+## [1.8.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.3...v1.8.0-dev.4) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Lay the extra actions over the button, and let the banner scroll away ([f9fb7f2](https://github.com/RashKash103/sync-up/commit/f9fb7f203e5acd2ec4192dafa76ef49ee3146a27))
+
 ## [1.8.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.2...v1.8.0-dev.3) (2026-09-11)
 
 ### 🐛 Bug Fixes

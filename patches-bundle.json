@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-11T20:04:42",
-  "description": "## [1.8.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.2...v1.8.0-dev.3) (2026-09-11)\n\n### 🐛 Bug Fixes\n\n* Make the extra actions Sync's own buttons, and correct which they are ([a2e06c0](https://github.com/RashKash103/sync-up/commit/a2e06c05e09213961adbdb22e0dd94c27027eb77))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.8.0-dev.3/patches-1.8.0-dev.3.mpp",
+  "created_at": "2026-09-11T20:31:23",
+  "description": "## [1.8.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.3...v1.8.0-dev.4) (2026-09-11)\n\n### 🐛 Bug Fixes\n\n* Lay the extra actions over the button, and let the banner scroll away ([f9fb7f2](https://github.com/RashKash103/sync-up/commit/f9fb7f203e5acd2ec4192dafa76ef49ee3146a27))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.8.0-dev.4/patches-1.8.0-dev.4.mpp",
   "signature_download_url": "",
-  "version": "1.8.0-dev.3"
+  "version": "1.8.0-dev.4"
 }
