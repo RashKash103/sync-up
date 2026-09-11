@@ -89,9 +89,12 @@ public final class SubredditBanners {
 
     /** Called for every request that goes past, to borrow what Reddit insists on. */
     public static void noticeCredentials(String header, String agent) {
-        if (header != null && header.startsWith("Bearer ") && !header.equals(authorization)) {
+        // Taken however it is written: asking only for one spelling of it left nothing noted
+        // at all, and then nothing to ask Reddit with.
+        if (header != null && !header.isEmpty() && !header.equals(authorization)) {
             authorization = header;
-            Logger.printInfo(() -> "banner: noted the credentials to ask Reddit with");
+            Logger.printInfo(() -> "banner: noted the credentials to ask Reddit with ("
+                    + header.substring(0, Math.min(12, header.length())) + "…)");
         }
         if (agent != null && !agent.isEmpty()) {
             userAgent = agent;
@@ -101,9 +104,18 @@ public final class SubredditBanners {
     /** Called where Sync settles what the feed is about. */
     public static void showing(String subreddit) {
         String named = normalise(subreddit);
-        if (named != null && !named.equals(showing)) {
-            showing = named;
-            Logger.printInfo(() -> "banner: the feed is showing r/" + named);
+        if (named == null || named.equals(showing)) {
+            return;
+        }
+        showing = named;
+        Logger.printInfo(() -> "banner: the feed is showing r/" + named);
+
+        // The feed's view is made before this is said, so whatever is hanging there belongs to
+        // the subreddit before it and nothing else would ever ask again.
+        Runnable again = lookAgain;
+        if (again != null) {
+            Logger.printInfo(() -> "banner: telling the feed to look again, now r/" + named);
+            again.run();
         }
     }
 

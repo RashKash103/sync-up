@@ -13,8 +13,18 @@ private const val CHECK_BOX =
 private const val LIST =
     "com.laurencedawson.reddit_sync.ui.preferences.defaults.SyncListPreference"
 
-/** How many actions can be put beside the button. Matches the extension. */
-private const val SLOTS = 4
+/** How many actions can stand beside the button. Matches the extension. */
+private const val SLOTS = 3
+
+/**
+ * What is added to an action's number when it is stored in Sync's own setting for what its
+ * button is for. That setting already means three things of Sync's own by the numbers 0, 1 and
+ * 2, and those are left meaning them.
+ */
+private const val OURS_START_AT = 100
+
+/** What Sync's own button can be, which its setting has always chosen between. */
+private val ITS_OWN = listOf("Submit", "Hide read", "More actions")
 
 /**
  * Sync's own actions, in the order it numbers them. Written out here rather than read from the
@@ -55,10 +65,16 @@ internal val extraFabActionsSettingsPatch = resourcePatch(
                 resources.appendChild(array)
             }
 
-            // Two lists over one set of values: leaving the button's own action alone is not
-            // the same idea as leaving a slot beside it empty.
-            array("sync_up_fab_main_entries", listOf("Leave it to Sync") + ACTIONS)
             array("sync_up_fab_entries", listOf("None") + ACTIONS)
+
+            // Sync's own setting for what its button is for, opened up: the three it already
+            // offered, and then every action the sheet behind it knows.
+            array("sync_up_main_fab_entries", ITS_OWN + ACTIONS)
+            array(
+                "sync_up_main_fab_values",
+                ITS_OWN.indices.map { it.toString() } +
+                    ACTIONS.indices.map { (OURS_START_AT + it).toString() },
+            )
             array(
                 "sync_up_fab_values",
                 listOf("-1") + ACTIONS.indices.map { it.toString() },
@@ -81,28 +97,27 @@ internal val extraFabActionsSettingsPatch = resourcePatch(
                 category.appendChild(preference)
             }
 
-            // Sync's own action setting is taken away: the button's action is chosen here now,
-            // out of all of them rather than the three it offered.
+            // Sync's own setting is kept and opened up rather than replaced. Taking it away
+            // is what crashed this screen: Sync looks it up by name and speaks to whatever
+            // comes back, which was nothing.
             val its = (0 until category.childNodes.length)
                 .map { category.childNodes.item(it) }
                 .filterIsInstance<Element>()
                 .firstOrNull { it.getAttribute("android:key") == "main_fab_action" }
-            if (its == null) {
-                throw PatchException("Sync no longer chooses what its floating button is for")
-            }
-            category.removeChild(its)
+                ?: throw PatchException("Sync no longer chooses what its floating button is for")
+
+            its.setAttribute("android:title", "Main action")
+            its.setAttribute("android:entries", "@array/sync_up_main_fab_entries")
+            its.setAttribute("android:entryValues", "@array/sync_up_main_fab_values")
+            its.setAttribute("android:summary", "%s")
 
             (1..SLOTS).forEach { slot ->
                 add(
                     LIST,
                     mapOf(
                         "android:key" to "sync_up_fab_slot_$slot",
-                        // The first is the button's own; the rest stand beside it.
-                        "android:title" to
-                            if (slot == 1) "Main action" else "Extra action ${slot - 1}",
-                        "android:entries" to
-                            if (slot == 1) "@array/sync_up_fab_main_entries"
-                            else "@array/sync_up_fab_entries",
+                        "android:title" to "Extra action $slot",
+                        "android:entries" to "@array/sync_up_fab_entries",
                         "android:entryValues" to "@array/sync_up_fab_values",
                         "android:defaultValue" to "-1",
                         // Shows what is chosen without having to open it.
