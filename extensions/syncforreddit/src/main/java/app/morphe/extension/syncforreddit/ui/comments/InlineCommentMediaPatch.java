@@ -84,23 +84,27 @@ public final class InlineCommentMediaPatch {
     private static final String THE_PICTURE_ITSELF = "\uFFFC";
 
     /**
-     * @return What to write where Sync was about to write the label of a card.
+     * @return The text to write where the link stood.
      *
-     * <p>Sync is about to add the link to a list it draws as cards — a small picture with the
-     * address beside it — and the text it writes is that card's label. Where the picture itself
-     * was asked for, what is written instead is the one character a picture stands in, and the
-     * spans below put the picture there.
+     * <p>Sync is about to add the link to the cards it draws under the text — a small picture
+     * with the address beside it. Where the picture itself was asked for, no card is added and
+     * the text written is the one character a picture stands in, which the spans below fill.
+     *
+     * <p>Adding the card as well is what drew each picture twice.
      */
-    public static String textFor(String label, String link) {
+    public static String cardOrPicture(nc.b cards, nc.b.a card, String link) {
         if (!wanted(link)) {
-            return label;
+            return cards.c(card);
         }
         justDrew.set(Boolean.TRUE);
         Logger.printInfo(() -> "inline comments: drawing " + link + " where it stood");
         return THE_PICTURE_ITSELF;
     }
 
-    /** @return What to draw that text with: the picture itself, rather than a card's label. */
+    /**
+     * @return What to draw that text with: the picture by itself, which is what Sync's own
+     *         giphy handling draws one with, rather than the card's label.
+     */
     public static Object[] spansFor(Object[] spans, String link) {
         if (!wanted(link)) {
             return spans;

@@ -55,6 +55,18 @@ public final class ExtraFabActions {
      */
     private static final int OURS_START_AT = 3;
 
+    /**
+     * The actions offered for the button itself, in the order they are offered in, which is what
+     * turns the number stored into the number the action is known by.
+     *
+     * <p>Two are left out: Hide read, which the button already does by itself, and Sort, which
+     * has a name and an icon but is never dispatched, so choosing it did nothing. This has to
+     * match the list the settings are built from.
+     */
+    private static final int[] OFFERED = {
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+    };
+
     private static final String SLOT = "sync_up_fab_slot_";
     private static final String ORIENTATION = "sync_up_fab_orientation";
     private static final String SEPARATORS = "sync_up_fab_separators";
@@ -192,7 +204,12 @@ public final class ExtraFabActions {
     /** @return What the button's own part carries, or NOTHING to leave it as Sync set it. */
     private static int mainAction() {
         int held = SyncUpSettings.number(ITS_OWN_SETTING, NOTHING);
-        return held >= OURS_START_AT ? held - OURS_START_AT : NOTHING;
+        int at = held - OURS_START_AT;
+        if (at < 0 || at >= OFFERED.length) {
+            // One of Sync's own three, or nothing set: the button keeps doing what it did.
+            return NOTHING;
+        }
+        return OFFERED[at];
     }
 
     /**

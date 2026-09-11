@@ -30,20 +30,22 @@ private const val OURS_START_AT = 3
 private val ITS_OWN = listOf("Submit", "Hide read", "More actions")
 
 /**
- * Sync's own actions, in the order it numbers them. Written out here rather than read from the
- * app because the settings are built before anything runs; the numbers are what the extension
- * hands back to Sync, so the order is the whole of it.
+ * The actions Sync will actually carry out, by the number it knows each one by.
  *
- * <p>Taken from the switch that answers what an action is called, read by its jump table rather
- * than by the order the names appear in the code — which is the reverse, and choosing an action
- * by it hands Sync a different one entirely.
+ * <p>Read from the jump table that answers what an action is called, not from the order the
+ * names appear in the code, which is the reverse of it.
+ *
+ * <p>Two of the numbers are missing on purpose. What carries an action out is a run of
+ * comparisons, and it compares against every number but 0 and 14 — Hide read, which the button
+ * itself does, and Sort, which has a name and an icon and a place in Sync's own list but is
+ * never dispatched and so does nothing at all.
  */
 private val ACTIONS = listOf(
-    "Hide read", "Saved", "Profile", "Submit", "Change view",
-    "Random", "Random NSFW", "Dark mode", "Friends", "Settings",
-    "Data saving", "Filters", "Recents", "Toggle account", "Sort",
-    "Refresh", "About", "Sync", "Search", "Watched",
-    "Swipe mode", "Inbox", "Explore", "Dark overlay", "Scroll to top",
+    1 to "Saved", 2 to "Profile", 3 to "Submit", 4 to "Change view", 5 to "Random",
+    6 to "Random NSFW", 7 to "Dark mode", 8 to "Friends", 9 to "Settings", 10 to "Data saving",
+    11 to "Filters", 12 to "Recents", 13 to "Toggle account", 15 to "Refresh", 16 to "About",
+    17 to "Sync", 18 to "Search", 19 to "Watched", 20 to "Swipe mode", 21 to "Inbox",
+    22 to "Explore", 23 to "Dark overlay", 24 to "Scroll to top",
 )
 
 /**
@@ -88,19 +90,20 @@ internal val extraFabActionsSettingsPatch = resourcePatch(
                 resources.appendChild(array)
             }
 
-            array("sync_up_fab_entries", listOf("None") + ACTIONS)
+            // Beside the button, the number stored is the action's own, since nothing but
+            // this reads it.
+            array("sync_up_fab_entries", listOf("None") + ACTIONS.map { it.second })
+            array("sync_up_fab_values", listOf("-1") + ACTIONS.map { it.first.toString() })
 
             // Sync's own lists for what its button is for, added to in place rather than
             // replaced. Sync looks the chosen number up in these by position, from code that
             // names them directly, so a list of our own beside them would not be the one read.
-            widen("fab_labels", ITS_OWN + ACTIONS)
+            widen("fab_labels", ITS_OWN + ACTIONS.map { it.second })
+            // Read by position where Sync looks the chosen one up, so these have to run
+            // straight through; what each position means is settled in the extension.
             widen(
                 "fab_actions",
-                (ITS_OWN + ACTIONS).indices.map { it.toString() },
-            )
-            array(
-                "sync_up_fab_values",
-                listOf("-1") + ACTIONS.indices.map { it.toString() },
+                (ITS_OWN.size + ACTIONS.size).let { total -> (0 until total).map { it.toString() } },
             )
             array("sync_up_fab_orientation_entries", listOf("Vertical", "Horizontal"))
             array("sync_up_fab_orientation_values", listOf("0", "1"))

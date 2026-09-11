@@ -36,8 +36,8 @@ private const val LINK_SEEN_METHOD = "linkSeen(Ljava/lang/String;)V"
 
 private const val GIPHY_METHOD = "giphy(Ljava/lang/String;)V"
 
-private const val TEXT_FOR_METHOD =
-    "textFor(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"
+private const val CARD_OR_PICTURE_METHOD =
+    "cardOrPicture(Lnc/b;Lnc/b\$a;Ljava/lang/String;)Ljava/lang/String;"
 
 private const val SPANS_FOR_METHOD =
     "spansFor([Ljava/lang/Object;Ljava/lang/String;)[Ljava/lang/Object;"
@@ -128,19 +128,29 @@ val inlineCommentMediaPatch = bytecodePatch(
             // Where the card is finally written into the text. Chosen over the test that
             // guards it because a branch further up jumps to that test rather than through it,
             // so anything put in front of it is stepped over by every link but a tenor one.
-            val cardIndex = (spanIndex until instructions.count()).first { at ->
+            // Where the card is added. Adding one and drawing the picture as well is what drew
+            // each of them twice, so this is the call that has to be the one or the other.
+            val addsIndex = (spanIndex until instructions.count()).first { at ->
+                val called = getInstruction(at).getReference<MethodReference>()
+                called?.definingClass == "Lnc/b;" && called.name == "c"
+            }
+            val adds = getInstruction<FiveRegisterInstruction>(addsIndex)
+            replaceInstruction(
+                addsIndex,
+                "invoke-static { v${adds.registerC}, v${adds.registerD}, v$linkRegister }, " +
+                    "$EXTENSION_CLASS_DESCRIPTOR->$CARD_OR_PICTURE_METHOD"
+            )
+
+            // And what that text is drawn with: the picture itself rather than a card's label.
+            val writesCardIndex = (addsIndex until instructions.count()).first { at ->
                 val called = getInstruction(at).getReference<MethodReference>()
                 called?.definingClass == "Loc/c;" && called.name == "c"
             }
-            val card = getInstruction<FiveRegisterInstruction>(cardIndex)
-            val textRegister = card.registerD
-            val spansRegister = card.registerE
+            val spansRegister = getInstruction<FiveRegisterInstruction>(writesCardIndex).registerE
 
             addInstructions(
-                cardIndex,
+                writesCardIndex,
                 """
-                invoke-static       { v$textRegister, v$linkRegister }, $EXTENSION_CLASS_DESCRIPTOR->$TEXT_FOR_METHOD
-                move-result-object  v$textRegister
                 invoke-static       { v$spansRegister, v$linkRegister }, $EXTENSION_CLASS_DESCRIPTOR->$SPANS_FOR_METHOD
                 move-result-object  v$spansRegister
                 """
