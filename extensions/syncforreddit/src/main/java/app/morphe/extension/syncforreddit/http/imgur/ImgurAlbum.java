@@ -29,6 +29,20 @@ import app.morphe.extension.syncforreddit.http.ArchiveRequests;
 final class ImgurAlbum {
     private static final String ALBUM_URL = "https://imgur.com/a/";
 
+    /**
+     * The page Imgur serves for embedding an album elsewhere. The album page itself is now a
+     * script shell that names nothing but its cover, while this one still carries the whole
+     * list written into it, and it needs no credential to ask for.
+     */
+    private static final String EMBED_URL_SUFFIX = "/embed?pub=true";
+
+    /**
+     * What the embed page calls the list. Anchored on the assignment rather than on the key,
+     * because the key itself sits inside the object and scanning on from it finds the first
+     * image rather than the list holding it.
+     */
+    private static final String EMBEDDED_IMAGES = "var images";
+
     /** How many archived copies to try before giving up on an album. */
     private static final int SNAPSHOTS_TO_TRY = 3;
 
@@ -45,7 +59,8 @@ final class ImgurAlbum {
 
     /** Only used where the embedded list is absent, and carries no dimensions. */
     private static final Pattern LINKED_IMAGE = Pattern.compile(
-            "i\\.imgur\\.com/([A-Za-z0-9]{5,10})(\\.[A-Za-z0-9]+)");
+            "i\\.imgur\\.com/([A-Za-z0-9]{5,10})(\\.(?:jpe?g|png|gifv?|webp|mp4))",
+            Pattern.CASE_INSENSITIVE);
 
     private static final Map<String, List<JSONObject>> cache =
             Collections.synchronizedMap(new LinkedHashMap<String, List<JSONObject>>(
@@ -79,9 +94,31 @@ final class ImgurAlbum {
                 cache.put(albumId, images);
                 return images;
             }
+            Logger.printInfo(() -> "The page for album " + albumId
+                    + " named nothing; asking for the embed of it");
         } catch (IOException ex) {
-            // Gone, or unreachable; the archive may still have it either way.
+            // Gone, or unreachable; the embed and the archive may still have it either way.
             failure = ex;
+            Logger.printInfo(() -> "Could not read the page for album " + albumId + ": " + ex);
+        }
+
+        // The album page is now a script shell for anything recent, so the embed of it is what
+        // actually answers. Tried second rather than first because the page, where it still
+        // says anything, carries the full-size addresses rather than ids to build them from.
+        try {
+            // Held apart from the variable above, which is reassigned and so cannot be spoken
+            // about from inside a log message.
+            List<JSONObject> embedded = embed(albumId);
+            if (!embedded.isEmpty()) {
+                Logger.printInfo(() -> "Read album " + albumId + " from its embed, "
+                        + embedded.size() + " image(s)");
+                cache.put(albumId, embedded);
+                return embedded;
+            }
+            Logger.printInfo(() -> "The embed of album " + albumId + " named nothing either");
+        } catch (IOException ex) {
+            failure = ex;
+            Logger.printInfo(() -> "Could not read the embed of album " + albumId + ": " + ex);
         }
 
         for (String snapshot : WaybackMachine.findSnapshots(ALBUM_URL + albumId, SNAPSHOTS_TO_TRY)) {
@@ -150,6 +187,18 @@ final class ImgurAlbum {
         return images;
     }
 
+    /**
+     * The album as the page for embedding it gives it. That page carries the list Imgur used to
+     * render into the album page itself — hash, extension and dimensions for each image — which
+     * is the shape {@link #embedded} already reads.
+     */
+    private static List<JSONObject> embed(String albumId) throws IOException, JSONException {
+        String html = ArchiveRequests.get(ALBUM_URL + albumId + EMBED_URL_SUFFIX, "text/html");
+        Logger.printDebug(() -> "The embed of album " + albumId + " is " + html.length()
+                + " characters, names a list: " + html.contains(EMBEDDED_IMAGES));
+        return listIn(html, EMBEDDED_IMAGES);
+    }
+
     private static List<JSONObject> parse(String html) throws JSONException {
         List<JSONObject> images = embedded(html);
         return images.isEmpty() ? linked(html) : images;
@@ -159,18 +208,28 @@ final class ImgurAlbum {
      * The list Imgur rendered into the page, which carries the dimensions Sync insists on.
      */
     private static List<JSONObject> embedded(String html) throws JSONException {
+        return listIn(html, EMBEDDED_LIST);
+    }
+
+    /**
+     * Reads the list of images out of the object written after {@code marker}. Both the album
+     * page Imgur used to serve and the embed page it still serves write the same object, under
+     * different names.
+     */
+    private static List<JSONObject> listIn(String html, String marker) throws JSONException {
         List<JSONObject> images = new ArrayList<>();
 
-        int marker = html.indexOf(EMBEDDED_LIST);
-        if (marker < 0) {
+        int at = html.indexOf(marker);
+        if (at < 0) {
             return images;
         }
-        int start = html.indexOf('{', marker);
+        int start = html.indexOf('{', at + marker.length());
         if (start < 0) {
             return images;
         }
         String block = objectAt(html, start);
         if (block == null) {
+            Logger.printDebug(() -> "The object after " + marker + " does not close");
             return images;
         }
 
