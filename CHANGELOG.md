@@ -1,3 +1,9 @@
+## [1.8.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.1...v1.8.0-dev.2) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Stand in for the floating button, and stop painting over transparency ([e855b2c](https://github.com/RashKash103/sync-up/commit/e855b2ce56c47e1e0e4d9090ee1d993667451874))
+
 ## [1.8.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.7.0...v1.8.0-dev.1) (2026-09-11)
 
 ### ✨ New Features
