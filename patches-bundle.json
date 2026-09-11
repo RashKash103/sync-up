@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-11T19:30:51",
-  "description": "## [1.8.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.1...v1.8.0-dev.2) (2026-09-11)\n\n### 🐛 Bug Fixes\n\n* Stand in for the floating button, and stop painting over transparency ([e855b2c](https://github.com/RashKash103/sync-up/commit/e855b2ce56c47e1e0e4d9090ee1d993667451874))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.8.0-dev.2/patches-1.8.0-dev.2.mpp",
+  "created_at": "2026-09-11T20:04:42",
+  "description": "## [1.8.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.2...v1.8.0-dev.3) (2026-09-11)\n\n### 🐛 Bug Fixes\n\n* Make the extra actions Sync's own buttons, and correct which they are ([a2e06c0](https://github.com/RashKash103/sync-up/commit/a2e06c05e09213961adbdb22e0dd94c27027eb77))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.8.0-dev.3/patches-1.8.0-dev.3.mpp",
   "signature_download_url": "",
-  "version": "1.8.0-dev.2"
+  "version": "1.8.0-dev.3"
 }

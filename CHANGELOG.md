@@ -1,3 +1,9 @@
+## [1.8.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.2...v1.8.0-dev.3) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Make the extra actions Sync's own buttons, and correct which they are ([a2e06c0](https://github.com/RashKash103/sync-up/commit/a2e06c05e09213961adbdb22e0dd94c27027eb77))
+
 ## [1.8.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.1...v1.8.0-dev.2) (2026-09-11)
 
 ### 🐛 Bug Fixes
