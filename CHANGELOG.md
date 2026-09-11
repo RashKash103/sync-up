@@ -1,3 +1,9 @@
+## [1.8.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.4...v1.8.0-dev.5) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Let the button's own action be any of them, and draw a gif where it sits ([90ac5dd](https://github.com/RashKash103/sync-up/commit/90ac5dda8febed11b9c862c0cc49d87ebc144cc8))
+
 ## [1.8.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.3...v1.8.0-dev.4) (2026-09-11)
 
 ### 🐛 Bug Fixes
