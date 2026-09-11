@@ -39,8 +39,14 @@ import com.laurencedawson.reddit_sync.ui.fragment_dialogs.bottom.ActionsBottomSh
  * @noinspection unused
  */
 public final class ExtraFabActions {
-    /** How many extra actions can be put on the button. */
+    /**
+     * How many actions the button can carry. The first is the button's own — the one Sync would
+     * have chosen between three of — and the rest stand beside it.
+     */
     public static final int SLOTS = 4;
+
+    /** Which slot holds the action the button itself carries. */
+    private static final int MAIN = 1;
 
     private static final String SLOT = "sync_up_fab_slot_";
     private static final String ORIENTATION = "sync_up_fab_orientation";
@@ -55,6 +61,9 @@ public final class ExtraFabActions {
     private static final String TAG = "sync-up-fab-actions";
 
     private static final int SEPARATOR_DP = 1;
+
+    /** What the part standing where the button stands is marked with. */
+    private static final int ITS_OWN = 0x7E000010;
 
     /** How often the chosen actions are looked at again, in frames. */
     private static final int LOOK_AGAIN_EVERY = 30;
@@ -76,6 +85,7 @@ public final class ExtraFabActions {
                     ORIENTATION, SEPARATORS);
             rebuild(fab);
             watch(fab);
+            listen(fab);
         } catch (Throwable ex) {
             Logger.printInfo(() -> "fab: could not put the actions on the button: " + ex);
         }
@@ -83,6 +93,28 @@ public final class ExtraFabActions {
 
     /** What the surface was built from, so it is only rebuilt when the answer changes. */
     private static String built;
+
+    /** Whether anything is already listening, so it is only set up once. */
+    private static boolean listened;
+
+    /** Rebuilds the moment a setting changes, rather than when the feed next draws. */
+    private static void listen(View fab) {
+        if (listened) {
+            return;
+        }
+        listened = true;
+        SyncUpSettings.whenChanged("sync_up_fab_", () -> fab.post(() -> {
+            try {
+                // Forgotten first, so the answer is built again rather than recognised as the
+                // one already standing there.
+                built = null;
+                rebuild(fab);
+                fab.invalidate();
+            } catch (Throwable ex) {
+                Logger.printInfo(() -> "fab: could not rebuild after a change: " + ex);
+            }
+        }));
+    }
 
     private static void rebuild(View fab) {
         ViewGroup parent = fab.getParent() instanceof ViewGroup
@@ -93,7 +125,8 @@ public final class ExtraFabActions {
         }
 
         List<Integer> wanted = chosen();
-        String now = wanted + "/" + SyncUpSettings.number(ORIENTATION, VERTICAL)
+        String now = wanted + "+" + mainAction() + "/"
+                + SyncUpSettings.number(ORIENTATION, VERTICAL)
                 + "/" + SyncUpSettings.flag(SEPARATORS, true);
         if (now.equals(built) && parent.findViewWithTag(TAG) != null) {
             return;
@@ -105,7 +138,7 @@ public final class ExtraFabActions {
         if (previous != null) {
             parent.removeView(previous);
         }
-        if (wanted.isEmpty()) {
+        if (wanted.isEmpty() && mainAction() == NOTHING) {
             Logger.printInfo(() -> "fab: nothing chosen, giving the button back what it draws");
             giveBack(fab);
             return;
@@ -121,10 +154,15 @@ public final class ExtraFabActions {
                 + " part(s) over the button");
     }
 
-    /** @return The actions chosen, in the order their slots are in, without the empty ones. */
+    /** @return What the button's own part carries, or NOTHING to leave it as Sync set it. */
+    private static int mainAction() {
+        return SyncUpSettings.number(SLOT + MAIN, NOTHING);
+    }
+
+    /** @return The actions standing beside the button, in the order their slots are in. */
     private static List<Integer> chosen() {
         List<Integer> actions = new ArrayList<>();
-        for (int slot = 1; slot <= SLOTS; slot++) {
+        for (int slot = MAIN + 1; slot <= SLOTS; slot++) {
             int action = SyncUpSettings.number(SLOT + slot, NOTHING);
             if (action == NOTHING || actions.contains(action)) {
                 continue;
@@ -173,20 +211,32 @@ public final class ExtraFabActions {
             }
             surface.addView(part);
         }
-        if (surface.getChildCount() == 0) {
-            Logger.printInfo(() -> "fab: none of the chosen actions could be drawn");
-            return null;
-        }
-        if (separators) {
+        if (separators && surface.getChildCount() > 0) {
             surface.addView(separator(context, size, vertical));
         }
-        surface.addView(itsOwn(context, fab, size));
+        surface.addView(itsOwn(context, fab, size, tint));
         return surface;
     }
 
-    /** The part standing for the button, which hands the tap straight back to it. */
-    private static View itsOwn(Context context, View fab, int size) {
+    /**
+     * The part standing where the button stands.
+     *
+     * <p>Sync lets its button be one of three things. Where an action has been chosen for it
+     * here, it carries that instead — any of the twenty-five — and where none has, it hands the
+     * tap straight back to the button and is drawn with whatever the button is drawn with.
+     */
+    private static View itsOwn(Context context, View fab, int size, ColorStateList tint) {
+        int main = mainAction();
+        if (main != NOTHING) {
+            View chosen = extra(context, main, size, tint);
+            if (chosen != null) {
+                chosen.setTag(ITS_OWN, Boolean.TRUE);
+                return chosen;
+            }
+        }
+
         ImageView part = part(context, size);
+        part.setTag(ITS_OWN, Boolean.TRUE);
         if (itsIcon != null) {
             part.setImageDrawable(itsIcon.getConstantState() == null
                     ? itsIcon : itsIcon.getConstantState().newDrawable().mutate());
@@ -234,8 +284,20 @@ public final class ExtraFabActions {
         return part;
     }
 
-    /** The one shape the parts share, taken from the button so the two are the same thing. */
+    /**
+     * The one shape the parts share.
+     *
+     * <p>The button's own is used where there is one to copy, stretched across the whole of it:
+     * whatever corner it is drawn with is then the corner at both ends, rather than a guess at
+     * the radius that matched at one end and not the other.
+     */
     private static Drawable surfaceFor(Context context, View fab, int size) {
+        Drawable its = itsBackground;
+        if (its != null && its.getConstantState() != null) {
+            Logger.printInfo(() -> "fab: drawing the surface with the button's own shape");
+            return its.getConstantState().newDrawable().mutate();
+        }
+        Logger.printInfo(() -> "fab: the button has no shape to copy, rounding it fully");
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.RECTANGLE);
         shape.setCornerRadius(size / 2f);
@@ -357,6 +419,9 @@ public final class ExtraFabActions {
         if (fab instanceof ImageView && ((ImageView) fab).getDrawable() != null) {
             itsIcon = ((ImageView) fab).getDrawable();
             ((ImageView) fab).setImageDrawable(null);
+            // Sync draws its button after the surface is first laid over it, so the part
+            // standing where it stands had nothing in it until now.
+            fillIn(surface);
         }
 
         boolean vertical = SyncUpSettings.number(ORIENTATION, VERTICAL) == VERTICAL;
@@ -383,6 +448,27 @@ public final class ExtraFabActions {
             Logger.printInfo(() -> "fab: over the button at " + x + "," + y
                     + " scale " + fab.getScaleX() + " alpha " + fab.getAlpha()
                     + " visibility " + fab.getVisibility());
+        }
+    }
+
+    /** Puts the button's own icon into the part standing for it, once there is one to put. */
+    private static void fillIn(View surface) {
+        if (mainAction() != NOTHING || itsIcon == null || !(surface instanceof ViewGroup)) {
+            return;
+        }
+        ViewGroup parts = (ViewGroup) surface;
+        for (int at = 0; at < parts.getChildCount(); at++) {
+            View part = parts.getChildAt(at);
+            if (!Boolean.TRUE.equals(part.getTag(ITS_OWN)) || !(part instanceof ImageView)) {
+                continue;
+            }
+            if (((ImageView) part).getDrawable() != null) {
+                return;
+            }
+            ((ImageView) part).setImageDrawable(itsIcon.getConstantState() == null
+                    ? itsIcon : itsIcon.getConstantState().newDrawable().mutate());
+            Logger.printInfo(() -> "fab: the button's own icon has arrived, drawing it");
+            return;
         }
     }
 

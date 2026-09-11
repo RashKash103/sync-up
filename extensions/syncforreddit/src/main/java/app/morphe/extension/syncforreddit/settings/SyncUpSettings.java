@@ -52,6 +52,40 @@ public final class SyncUpSettings {
         }
     }
 
+    /**
+     * Held for as long as the app runs: the settings keep only a weak hold on a listener, and
+     * one that is not kept anywhere is collected and stops being told anything.
+     */
+    private static final java.util.List<SharedPreferences.OnSharedPreferenceChangeListener>
+            listening = new java.util.ArrayList<>();
+
+    /**
+     * Calls back when a setting whose name starts with this changes, so that something showing
+     * it does not have to wait to be asked again.
+     */
+    public static void whenChanged(String prefix, Runnable what) {
+        SharedPreferences settings = store();
+        if (settings == null) {
+            return;
+        }
+        try {
+            SharedPreferences.OnSharedPreferenceChangeListener told = (changed, key) -> {
+                if (key == null || !key.startsWith(prefix)) {
+                    return;
+                }
+                Logger.printInfo(() -> "settings: " + key + " changed");
+                what.run();
+            };
+            synchronized (listening) {
+                listening.add(told);
+            }
+            settings.registerOnSharedPreferenceChangeListener(told);
+            Logger.printInfo(() -> "settings: listening for " + prefix + "*");
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "settings: could not listen for " + prefix + "*: " + ex);
+        }
+    }
+
     /** Says what each key was read as, and whether it was ever written. */
     public static void report(String what, String... keys) {
         SharedPreferences settings = store();

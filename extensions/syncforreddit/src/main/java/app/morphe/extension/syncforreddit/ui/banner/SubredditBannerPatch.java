@@ -157,6 +157,18 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
         }
 
         ImageView strip = holder.findViewWithTag(TAG);
+        if (strip != null && !subreddit.equals(strip.getTag(WHOSE))) {
+            // Another subreddit in the same window: what is hanging there belongs to the last
+            // one, and standing until the next picture arrives is worse than nothing.
+            final ImageView stale = strip;
+            Logger.printInfo(() -> "banner: the strip was r/" + stale.getTag(WHOSE)
+                    + " and is now r/" + subreddit);
+            stale.setImageDrawable(null);
+            stale.setVisibility(View.GONE);
+            stale.setOnClickListener(null);
+            stale.setClickable(false);
+            makeRoom(feed, 0);
+        }
         if (strip == null) {
             strip = new ImageView(holder.getContext());
             strip.setTag(TAG);
@@ -182,6 +194,8 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
             Logger.printInfo(() -> "banner: added the strip to " + added.getClass().getName()
                     + ", now " + added.getChildCount() + " children");
         }
+
+        strip.setTag(WHOSE, subreddit);
 
         final ImageView showing = strip;
         Bitmap picture = SubredditBanners.bannerFor(subreddit,
@@ -211,13 +225,21 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
         Logger.printInfo(() -> "banner: drawn for r/" + subreddit);
     }
 
-    /** Opens the banner the way tapping a picture linked in a post opens it. */
+    /**
+     * Opens the banner the way tapping a picture linked in a post opens it.
+     *
+     * <p>Asked for without what Reddit signs it with: the address is decided on by its ending,
+     * and one ending in a signature rather than in .png is taken for a page and handed to a
+     * browser. The picture is served either way.
+     */
     private static void open(View from, String link) {
+        int signature = link.indexOf('?');
+        String plain = signature < 0 ? link : link.substring(0, signature);
         try {
-            Logger.printInfo(() -> "banner: opening " + link);
-            new mb.d(link).onClick(from);
+            Logger.printInfo(() -> "banner: opening " + plain);
+            new mb.d(plain).onClick(from);
         } catch (Throwable ex) {
-            Logger.printInfo(() -> "banner: could not open " + link + ": " + ex);
+            Logger.printInfo(() -> "banner: could not open " + plain + ": " + ex);
         }
     }
 
@@ -254,6 +276,9 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
 
     /** What the strip is marked with once it is following the list. */
     private static final int FOLLOWING = 0x7E000001;
+
+    /** Which subreddit the strip is currently showing. */
+    private static final int WHOSE = 0x7E000002;
 
     /** How many times the offset is worth writing down before the point is made. */
     private static int said2;

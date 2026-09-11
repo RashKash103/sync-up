@@ -55,6 +55,9 @@ internal val extraFabActionsSettingsPatch = resourcePatch(
                 resources.appendChild(array)
             }
 
+            // Two lists over one set of values: leaving the button's own action alone is not
+            // the same idea as leaving a slot beside it empty.
+            array("sync_up_fab_main_entries", listOf("Leave it to Sync") + ACTIONS)
             array("sync_up_fab_entries", listOf("None") + ACTIONS)
             array(
                 "sync_up_fab_values",
@@ -78,13 +81,28 @@ internal val extraFabActionsSettingsPatch = resourcePatch(
                 category.appendChild(preference)
             }
 
+            // Sync's own action setting is taken away: the button's action is chosen here now,
+            // out of all of them rather than the three it offered.
+            val its = (0 until category.childNodes.length)
+                .map { category.childNodes.item(it) }
+                .filterIsInstance<Element>()
+                .firstOrNull { it.getAttribute("android:key") == "main_fab_action" }
+            if (its == null) {
+                throw PatchException("Sync no longer chooses what its floating button is for")
+            }
+            category.removeChild(its)
+
             (1..SLOTS).forEach { slot ->
                 add(
                     LIST,
                     mapOf(
                         "android:key" to "sync_up_fab_slot_$slot",
-                        "android:title" to "Extra action $slot",
-                        "android:entries" to "@array/sync_up_fab_entries",
+                        // The first is the button's own; the rest stand beside it.
+                        "android:title" to
+                            if (slot == 1) "Main action" else "Extra action ${slot - 1}",
+                        "android:entries" to
+                            if (slot == 1) "@array/sync_up_fab_main_entries"
+                            else "@array/sync_up_fab_entries",
                         "android:entryValues" to "@array/sync_up_fab_values",
                         "android:defaultValue" to "-1",
                         // Shows what is chosen without having to open it.

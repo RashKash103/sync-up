@@ -14,6 +14,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
@@ -41,6 +42,14 @@ private const val INLINE_SPAN = "Lnb/d;"
 
 /** Sync's own setting, which only ever covered its own narrow list of addresses. */
 private const val ITS_OWN_SETTING = "inlineImagePreviews"
+
+/**
+ * What Sync asks before it asks anything else about the address: whether it is an Imgur one.
+ * Anything that is not, and is not already known to it, leaves here and never reaches the test
+ * further down — which is why a gif hosted anywhere else was drawn as a chip however the rest of
+ * it answered.
+ */
+private const val THE_IMGUR_TEST = "Lf8/a;"
 
 @Suppress("unused")
 val inlineCommentMediaPatch = bytecodePatch(
@@ -94,6 +103,26 @@ val inlineCommentMediaPatch = bytecodePatch(
                 """
                 invoke-static       { v$decisionRegister, v$linkRegister }, $EXTENSION_CLASS_DESCRIPTOR->$SHOULD_INLINE_METHOD
                 move-result         v$decisionRegister
+                """
+            )
+
+            // The first of the two, and the one that actually turned a gif away: anything not
+            // on Imgur leaves here, long before the test above is reached.
+            val imgurIndex = instructions.indexOfFirst {
+                it.opcode == Opcode.INVOKE_STATIC &&
+                        it.getReference<MethodReference>()?.definingClass == THE_IMGUR_TEST
+            }
+            if (imgurIndex < 0) {
+                throw PatchException("Sync no longer asks whether a link in a comment is Imgur")
+            }
+            val imgurResult = imgurIndex + 1
+            val imgurRegister = getInstruction<OneRegisterInstruction>(imgurResult).registerA
+
+            addInstructions(
+                imgurResult + 1,
+                """
+                invoke-static       { v$imgurRegister, v$linkRegister }, $EXTENSION_CLASS_DESCRIPTOR->$SHOULD_INLINE_METHOD
+                move-result         v$imgurRegister
                 """
             )
 
