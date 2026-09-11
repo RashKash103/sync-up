@@ -49,6 +49,26 @@ public final class InlineCommentMediaPatch {
 
     private static int drew;
 
+    private static int seen;
+
+    /**
+     * Called with every address the link handling is given, before any of it is decided.
+     *
+     * <p>Said for each one because a capture showing only some of them cannot be told from a
+     * capture where only some were handled, and which of the two it was has mattered twice.
+     */
+    public static void linkSeen(String link) {
+        if (seen < WORTH_SAYING) {
+            seen++;
+            Logger.printInfo(() -> "inline comments: handling the link " + link);
+        }
+    }
+
+    /** Called where Sync draws one of Reddit's own giphy pictures, which it has its own path for. */
+    public static void giphy(String link) {
+        Logger.printInfo(() -> "inline comments: a giphy picture, drawn from " + link);
+    }
+
     /**
      * Called wherever text with markup in it is turned into something drawable, before any of
      * it is looked at.

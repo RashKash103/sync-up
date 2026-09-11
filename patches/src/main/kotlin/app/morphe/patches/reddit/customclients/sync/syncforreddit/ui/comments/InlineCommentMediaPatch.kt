@@ -15,6 +15,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
@@ -29,6 +31,20 @@ private const val PARSING_METHOD = "parsing()V"
 private const val HERE_METHOD = "here(Z)Z"
 
 private const val DRAWING_METHOD = "drawing(Ljava/lang/String;)V"
+
+private const val LINK_SEEN_METHOD = "linkSeen(Ljava/lang/String;)V"
+
+private const val GIPHY_METHOD = "giphy(Ljava/lang/String;)V"
+
+/**
+ * What Sync asks giphy for when it draws one of Reddit's own giphy pictures: a hundred pixels
+ * of it. That is a thumbnail, not the picture, which is why one drawn where it sits looked like
+ * a chip beside the address rather than the gif itself.
+ */
+private const val A_THUMBNAIL_OF_IT = "/100.gif"
+
+/** Big enough to read in a comment without fetching the whole of a very large gif. */
+private const val ENOUGH_OF_IT = "/200.gif"
 
 /** The view every piece of text with markup in it is drawn through. */
 private const val MARKUP_TEXT_VIEW =
@@ -164,11 +180,54 @@ val inlineCommentMediaPatch = bytecodePatch(
                 )
             }
 
+            // Every address it is given, said before anything is decided about it, so a
+            // capture shows which links reached here rather than only which were acted on.
+            val hrefIndex = instructions.indexOfFirst {
+                it.opcode == Opcode.INVOKE_VIRTUAL &&
+                        it.getReference<MethodReference>()?.let { called ->
+                            called.definingClass == "Loc/c;" && called.name == "t"
+                        } == true
+            }
+            if (hrefIndex >= 0) {
+                val href = getInstruction<OneRegisterInstruction>(hrefIndex + 1).registerA
+                addInstructions(
+                    hrefIndex + 2,
+                    "invoke-static { v$href }, $EXTENSION_CLASS_DESCRIPTOR->$LINK_SEEN_METHOD"
+                )
+            }
+
             // Last, so the indices above are not moved by it: said for every link drawn, before
             // anything is decided, so that a capture with none of these in it means this is not
             // the code that draws the thing in question.
             addInstructions(0, "invoke-static { }, $EXTENSION_CLASS_DESCRIPTOR->$PARSING_METHOD")
         }
+
+        // Reddit's own giphy pictures have a path of their own, which asks for a hundred
+        // pixels of the gif. Said so, and asked for enough of it to be worth drawing.
+        mutableClassDefBy("Lnc/d;").methods
+            .filter { it.name == "a" && it.parameters.size == 2 && it.implementation != null }
+            .forEach { method ->
+                val at = method.implementation!!.instructions.toList().indexOfFirst {
+                    it.opcode == Opcode.CONST_STRING &&
+                            it.getReference<StringReference>()?.string == A_THUMBNAIL_OF_IT
+                }
+                if (at < 0) {
+                    return@forEach
+                }
+                val register = method.getInstruction<OneRegisterInstruction>(at).registerA
+                method.replaceInstruction(at, "const-string v$register, \"$ENOUGH_OF_IT\"")
+
+                // Said once the address has been built out of it.
+                val built = (at until method.implementation!!.instructions.count()).first { on ->
+                    method.getInstruction(on).opcode == Opcode.MOVE_RESULT_OBJECT &&
+                            on > at + 1
+                }
+                method.addInstructions(
+                    built + 1,
+                    "invoke-static { v${method.getInstruction<OneRegisterInstruction>(built).registerA} }, " +
+                        "$EXTENSION_CLASS_DESCRIPTOR->$GIPHY_METHOD"
+                )
+            }
 
         // A step further out again: the text view every piece of marked-up text goes through.
         // Nothing was heard from the link handling at all, and this says whether the text even
