@@ -1,3 +1,9 @@
+## [1.8.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.5...v1.8.0-dev.6) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Open Sync's own button setting up rather than taking it away ([4d858f6](https://github.com/RashKash103/sync-up/commit/4d858f65b65eb20ef53450e7fb5da7942278e613))
+
 ## [1.8.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.4...v1.8.0-dev.5) (2026-09-11)
 
 ### 🐛 Bug Fixes
