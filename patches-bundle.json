@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-11T21:48:23",
-  "description": "## [1.8.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.6...v1.8.0-dev.7) (2026-09-11)\n\n### 🐛 Bug Fixes\n\n* Stop a website preview claiming every gif, and give each button its own ([1b47df5](https://github.com/RashKash103/sync-up/commit/1b47df5c0867402607ba4a04602861960fd651a8))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.8.0-dev.7/patches-1.8.0-dev.7.mpp",
+  "created_at": "2026-09-11T22:10:37",
+  "description": "## [1.8.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.7...v1.8.0-dev.8) (2026-09-11)\n\n### 🐛 Bug Fixes\n\n* Ask giphy for the picture rather than a hundred pixels of it ([5a604ee](https://github.com/RashKash103/sync-up/commit/5a604eef55972f1510c44b2330aaf28c9c076867))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.8.0-dev.8/patches-1.8.0-dev.8.mpp",
   "signature_download_url": "",
-  "version": "1.8.0-dev.7"
+  "version": "1.8.0-dev.8"
 }

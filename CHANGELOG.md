@@ -1,3 +1,9 @@
+## [1.8.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.7...v1.8.0-dev.8) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Ask giphy for the picture rather than a hundred pixels of it ([5a604ee](https://github.com/RashKash103/sync-up/commit/5a604eef55972f1510c44b2330aaf28c9c076867))
+
 ## [1.8.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.6...v1.8.0-dev.7) (2026-09-11)
 
 ### 🐛 Bug Fixes
