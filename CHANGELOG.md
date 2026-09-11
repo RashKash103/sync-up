@@ -1,3 +1,9 @@
+## [1.8.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.6...v1.8.0-dev.7) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Stop a website preview claiming every gif, and give each button its own ([1b47df5](https://github.com/RashKash103/sync-up/commit/1b47df5c0867402607ba4a04602861960fd651a8))
+
 ## [1.8.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.5...v1.8.0-dev.6) (2026-09-11)
 
 ### 🐛 Bug Fixes
