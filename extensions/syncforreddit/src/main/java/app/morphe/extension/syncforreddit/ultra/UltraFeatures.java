@@ -38,6 +38,13 @@ public final class UltraFeatures {
      *         about the address.
      */
     public static boolean websitePreviewFor(String url) {
+        // A picture or a video is drawn where it sits where that has been asked for. Sync
+        // settles this before it looks at drawing one, and marks a link it has previewed as
+        // dealt with, so a preview claims every gif before anything else gets to it.
+        if (app.morphe.extension.syncforreddit.ui.comments.InlineCommentMediaPatch
+                .claimsAsMedia(url)) {
+            return false;
+        }
         try {
             SharedPreferences settings =
                     TranslationSettings.store(Utils.getContext());

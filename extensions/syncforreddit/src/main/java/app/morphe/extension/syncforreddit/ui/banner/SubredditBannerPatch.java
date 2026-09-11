@@ -201,7 +201,13 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
         Bitmap picture = SubredditBanners.bannerFor(subreddit,
                 () -> showing.post(() -> {
                     try {
-                        draw(feed, subreddit);
+                        // Asked again rather than taken from here: by the time this runs the
+                        // window may be showing something else, and drawing what it was showing
+                        // when the strip went up is how the last subreddit's banner stayed.
+                        String nowShowing = SubredditBanners.showing();
+                        if (nowShowing != null) {
+                            draw(feed, nowShowing);
+                        }
                     } catch (Throwable ex) {
                         Logger.printInfo(() -> "banner: could not be drawn: " + ex);
                     }

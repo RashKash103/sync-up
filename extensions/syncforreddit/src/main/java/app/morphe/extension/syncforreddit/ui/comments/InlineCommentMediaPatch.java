@@ -39,7 +39,7 @@ public final class InlineCommentMediaPatch {
     private static boolean said;
 
     /** How many calls are worth writing down before the point is made. */
-    private static final int WORTH_SAYING = 12;
+    private static final int WORTH_SAYING = 200;
 
     private static int parsed;
     private static int gated;
@@ -132,6 +132,27 @@ public final class InlineCommentMediaPatch {
                     + (sync ? "on" : "off") + ", widening is " + (on ? "on" : "off"));
         }
         return sync || on;
+    }
+
+    /**
+     * Whether this link is one to draw where it sits rather than to show a preview of the page
+     * it is on.
+     *
+     * <p>Sync decides whether to preview a page before it decides anything about drawing a
+     * picture, and a link it has already made a preview of is marked as dealt with and never
+     * looked at again. A gif was therefore always a preview of the page it is on, whatever the
+     * rest of this answered.
+     */
+    public static boolean claimsAsMedia(String link) {
+        if (!isPatchIncluded() || link == null || link.isEmpty() || !inlineEverything()) {
+            return false;
+        }
+        boolean media = isMedia(link);
+        if (media) {
+            Logger.printInfo(() -> "inline comments: claiming " + link
+                    + " rather than letting it become a preview");
+        }
+        return media;
     }
 
     /**

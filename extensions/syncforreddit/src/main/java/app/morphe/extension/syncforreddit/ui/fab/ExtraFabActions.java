@@ -97,23 +97,47 @@ public final class ExtraFabActions {
         }
     }
 
-    /** What the surface was built from, so it is only rebuilt when the answer changes. */
-    private static String built;
+    /**
+     * What is remembered about one button.
+     *
+     * <p>Held against the button rather than in one place: a second window has a second button,
+     * and one set of these between them left each answering for the other — a change made with
+     * one window up did nothing to the other, and what one button was drawn with was put on the
+     * other.
+     */
+    private static final class Its {
+        String built;
+        Drawable icon;
+        Drawable background;
+        boolean listening;
+    }
 
-    /** Whether anything is already listening, so it is only set up once. */
-    private static boolean listened;
+    private static final java.util.Map<View, Its> theirs =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<View, Its>());
+
+    private static Its of(View fab) {
+        synchronized (theirs) {
+            Its its = theirs.get(fab);
+            if (its == null) {
+                its = new Its();
+                theirs.put(fab, its);
+            }
+            return its;
+        }
+    }
 
     /** Rebuilds the moment a setting changes, rather than when the feed next draws. */
     private static void listen(View fab) {
-        if (listened) {
+        Its its = of(fab);
+        if (its.listening) {
             return;
         }
-        listened = true;
+        its.listening = true;
         Runnable rebuild = () -> fab.post(() -> {
             try {
                 // Forgotten first, so the answer is built again rather than recognised as the
                 // one already standing there.
-                built = null;
+                of(fab).built = null;
                 rebuild(fab);
                 fab.invalidate();
             } catch (Throwable ex) {
@@ -137,10 +161,11 @@ public final class ExtraFabActions {
         String now = wanted + "+" + mainAction() + "/"
                 + SyncUpSettings.number(ORIENTATION, VERTICAL)
                 + "/" + SyncUpSettings.flag(SEPARATORS, true);
-        if (now.equals(built) && parent.findViewWithTag(TAG) != null) {
+        Its its = of(fab);
+        if (now.equals(its.built) && parent.findViewWithTag(TAG) != null) {
             return;
         }
-        built = now;
+        its.built = now;
         Logger.printInfo(() -> "fab: building for " + now);
 
         View previous = parent.findViewWithTag(TAG);
@@ -182,20 +207,17 @@ public final class ExtraFabActions {
         return actions;
     }
 
-    /** What the button draws with, kept so it can be given back and drawn in the surface. */
-    private static Drawable itsIcon;
-    private static Drawable itsBackground;
-
     private static LinearLayout build(View fab, List<Integer> actions) {
         Context context = fab.getContext();
         boolean vertical = SyncUpSettings.number(ORIENTATION, VERTICAL) == VERTICAL;
         boolean separators = SyncUpSettings.flag(SEPARATORS, true);
 
-        if (itsIcon == null && fab instanceof ImageView) {
-            itsIcon = ((ImageView) fab).getDrawable();
+        Its its = of(fab);
+        if (its.icon == null && fab instanceof ImageView) {
+            its.icon = ((ImageView) fab).getDrawable();
         }
-        if (itsBackground == null) {
-            itsBackground = fab.getBackground();
+        if (its.background == null) {
+            its.background = fab.getBackground();
         }
 
         int size = fab.getHeight() > 0 ? fab.getHeight() : (int) fromDp(context, 56);
@@ -236,6 +258,7 @@ public final class ExtraFabActions {
      * tap straight back to the button and is drawn with whatever the button is drawn with.
      */
     private static View itsOwn(Context context, View fab, int size, ColorStateList tint) {
+        Its its = of(fab);
         int main = mainAction();
         if (main != NOTHING) {
             View chosen = extra(context, main, size, tint);
@@ -250,12 +273,12 @@ public final class ExtraFabActions {
         }
 
         Logger.printInfo(() -> "fab: the button keeps its own action, drawn with "
-                + (itsIcon == null ? "nothing yet" : "its own icon"));
+                + (its.icon == null ? "nothing yet" : "its own icon"));
         ImageView part = part(context, size);
         part.setTag(ITS_OWN, Boolean.TRUE);
-        if (itsIcon != null) {
-            part.setImageDrawable(itsIcon.getConstantState() == null
-                    ? itsIcon : itsIcon.getConstantState().newDrawable().mutate());
+        if (its.icon != null) {
+            part.setImageDrawable(its.icon.getConstantState() == null
+                    ? its.icon : its.icon.getConstantState().newDrawable().mutate());
             if (fab instanceof ImageView) {
                 part.setImageTintList(((ImageView) fab).getImageTintList());
             }
@@ -308,13 +331,40 @@ public final class ExtraFabActions {
      * happened to be built, and the ends did not match.
      */
     private static Drawable surfaceFor(Context context, View fab, int size) {
-        Logger.printInfo(() -> "fab: rounding the surface by " + (size / 2f)
-                + " at every corner");
+        float radius = cornerOf(fab, size);
+        Logger.printInfo(() -> "fab: rounding the surface by " + radius + " at every corner");
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.RECTANGLE);
-        shape.setCornerRadius(size / 2f);
+        shape.setCornerRadius(radius);
         shape.setColor(colourOfTheButton(fab));
         return shape;
+    }
+
+    /**
+     * @return The corner the button itself is drawn with.
+     *
+     * <p>Asked of the button's own outline rather than assumed to be half its height. A button
+     * drawn as a rounded square next to an end rounded to a semicircle is what made the two
+     * ends of the surface look nothing like each other.
+     */
+    private static float cornerOf(View fab, int size) {
+        try {
+            Drawable its = of(fab).background;
+            if (its != null) {
+                android.graphics.Outline outline = new android.graphics.Outline();
+                its.setBounds(0, 0, size, size);
+                its.getOutline(outline);
+                float radius = outline.getRadius();
+                if (radius > 0 && radius <= size) {
+                    Logger.printInfo(() -> "fab: the button is drawn with a corner of " + radius);
+                    return radius;
+                }
+            }
+        } catch (Throwable ex) {
+            Logger.printDebug(() -> "fab: the button will not say what corner it has: " + ex);
+        }
+        Logger.printInfo(() -> "fab: the button says nothing about its corner, rounding fully");
+        return size / 2f;
     }
 
     private static int colourOfTheButton(View fab) {
@@ -364,11 +414,13 @@ public final class ExtraFabActions {
     /** Gives the button back what it draws with, and takes the surface away. */
     private static void giveBack(View fab) {
         try {
-            if (itsIcon != null && fab instanceof ImageView) {
-                ((ImageView) fab).setImageDrawable(itsIcon);
+            Its its = of(fab);
+            fab.setAlpha(1f);
+            if (its.icon != null && fab instanceof ImageView) {
+                ((ImageView) fab).setImageDrawable(its.icon);
             }
-            if (itsBackground != null) {
-                fab.setBackground(itsBackground);
+            if (its.background != null) {
+                fab.setBackground(its.background);
             }
         } catch (Throwable ex) {
             Logger.printDebug(() -> "fab: could not give the button back what it draws: " + ex);
@@ -423,17 +475,23 @@ public final class ExtraFabActions {
         }
 
         // The button keeps deciding and keeps hiding; it simply draws nothing while the
-        // surface is standing in for it.
+        // surface is standing in for it. Made see-through as well as emptied: taking its
+        // drawing away a frame at a time left it showing through in between, which is the
+        // blank circle over the surface and the flicker beside it.
+        Its its = of(fab);
+        if (fab.getAlpha() != 0f) {
+            fab.setAlpha(0f);
+        }
         if (fab.getBackground() != null) {
-            itsBackground = fab.getBackground();
+            its.background = fab.getBackground();
             fab.setBackground(null);
         }
         if (fab instanceof ImageView && ((ImageView) fab).getDrawable() != null) {
-            itsIcon = ((ImageView) fab).getDrawable();
+            its.icon = ((ImageView) fab).getDrawable();
             ((ImageView) fab).setImageDrawable(null);
             // Sync draws its button after the surface is first laid over it, so the part
             // standing where it stands had nothing in it until now.
-            fillIn(surface);
+            fillIn(fab, surface);
         }
 
         boolean vertical = SyncUpSettings.number(ORIENTATION, VERTICAL) == VERTICAL;
@@ -452,7 +510,9 @@ public final class ExtraFabActions {
         surface.setPivotY(vertical ? surface.getHeight() : surface.getHeight() / 2f);
         surface.setScaleX(fab.getScaleX());
         surface.setScaleY(fab.getScaleY());
-        surface.setAlpha(fab.getAlpha());
+        // Not the button's own fade: it is held at nothing so that it never shows through, so
+        // what is left to follow is how big it is and whether it is there at all.
+        surface.setAlpha(Math.min(1f, Math.abs(fab.getScaleX())));
         surface.setVisibility(fab.getVisibility());
 
         if (said < 6) {
@@ -464,8 +524,9 @@ public final class ExtraFabActions {
     }
 
     /** Puts the button's own icon into the part standing for it, once there is one to put. */
-    private static void fillIn(View surface) {
-        if (mainAction() != NOTHING || itsIcon == null || !(surface instanceof ViewGroup)) {
+    private static void fillIn(View fab, View surface) {
+        Its its = of(fab);
+        if (mainAction() != NOTHING || its.icon == null || !(surface instanceof ViewGroup)) {
             return;
         }
         ViewGroup parts = (ViewGroup) surface;
@@ -477,8 +538,8 @@ public final class ExtraFabActions {
             if (((ImageView) part).getDrawable() != null) {
                 return;
             }
-            ((ImageView) part).setImageDrawable(itsIcon.getConstantState() == null
-                    ? itsIcon : itsIcon.getConstantState().newDrawable().mutate());
+            ((ImageView) part).setImageDrawable(its.icon.getConstantState() == null
+                    ? its.icon : its.icon.getConstantState().newDrawable().mutate());
             Logger.printInfo(() -> "fab: the button's own icon has arrived, drawing it");
             return;
         }
