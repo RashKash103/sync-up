@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0",
+  "version": "1.8.0-dev.1",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -200,6 +200,23 @@
       "options": []
     },
     {
+      "name": "Keep transparency in a picture",
+      "description": "Draws the transparent parts of a picture opened in the viewer as the background behind it rather than as white.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "ResourcePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
       "name": "Load threads whose text contains a dollar sign",
       "description": "Stops a thread failing to load when the text in it contains a dollar sign.",
       "use": true,
@@ -236,6 +253,23 @@
       "use": true,
       "dependencies": [
         "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "More actions on the floating button",
+      "description": "Puts up to four of Sync's own actions beside the feed's floating button, chosen and ordered under Floating Action Button in the general settings.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "ResourcePatch"
       ],
       "compatiblePackages": {
         "com.laurencedawson.reddit_sync": [
@@ -287,6 +321,41 @@
       "dependencies": [
         "BytecodePatch",
         "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Show a subreddit's banner on its feed",
+      "description": "Draws the banner a subreddit sets at the top of its posts, rather than only on its About page.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch",
+        "ResourcePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Show media in a comment where it sits",
+      "description": "Draws a link in a comment as the picture or video it points at rather than as a chip naming where it goes.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "ResourcePatch"
       ],
       "compatiblePackages": {
         "com.laurencedawson.reddit_sync": [

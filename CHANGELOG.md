@@ -1,3 +1,10 @@
+## [1.8.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.7.0...v1.8.0-dev.1) (2026-09-11)
+
+### ✨ New Features
+
+* Fix an Imgur album, transparency, inline comment media and the FAB ([c626e55](https://github.com/RashKash103/sync-up/commit/c626e5535d67ba284449bda9efb671d76fcaf0f2)), closes [#15](https://github.com/RashKash103/sync-up/issues/15) [#19](https://github.com/RashKash103/sync-up/issues/19) [#17](https://github.com/RashKash103/sync-up/issues/17) [#18](https://github.com/RashKash103/sync-up/issues/18)
+* Show a subreddit's banner at the top of its feed ([2cbb027](https://github.com/RashKash103/sync-up/commit/2cbb027ed6f53f59b36dde995d0bcfb4f643a667)), closes [#16](https://github.com/RashKash103/sync-up/issues/16)
+
 ## [1.7.0](https://github.com/RashKash103/sync-up/compare/v1.6.0...v1.7.0) (2026-09-09)
 
 ### 🐛 Bug Fixes
