@@ -303,6 +303,15 @@ public final class ExtraFabActions {
             row.setX(x);
             row.setY(y);
             row.setVisibility(fab.getVisibility());
+
+            final float placedX = x;
+            final float placedY = y;
+            Logger.printInfo(() -> "fab: placed the row at " + placedX + "," + placedY
+                    + " (" + row.getWidth() + "x" + row.getHeight() + ") beside a button at "
+                    + fab.getX() + "," + fab.getY()
+                    + " (" + fab.getWidth() + "x" + fab.getHeight() + "), visibility "
+                    + fab.getVisibility() + ", parent "
+                    + (row.getParent() == null ? "none" : row.getParent().getClass().getName()));
         }
     }
 
