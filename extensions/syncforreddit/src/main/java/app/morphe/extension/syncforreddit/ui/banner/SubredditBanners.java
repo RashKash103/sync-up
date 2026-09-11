@@ -70,6 +70,19 @@ public final class SubredditBanners {
     /** What the feed showing now is about, recorded where Sync hands it over. */
     private static volatile String showing;
 
+    /**
+     * What to run when a banner becomes known.
+     *
+     * <p>Reddit's answer about a subreddit usually arrives because Sync asked for it, not
+     * because this did, and nothing was then telling the feed to look again: the strip was
+     * added, found nothing to draw, and was never asked a second time.
+     */
+    private static volatile Runnable lookAgain;
+
+    /** Subreddits whose picture is already being fetched, so a redraw does not start another. */
+    private static final java.util.Set<String> fetching =
+            java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
+
     private static final Executor FETCHING = Executors.newSingleThreadExecutor();
 
     private SubredditBanners() {}
@@ -112,9 +125,18 @@ public final class SubredditBanners {
                 return;
             }
             String found = pick(about);
-            banners.put(named, found == null ? NONE : found);
+            String before = banners.put(named, found == null ? NONE : found);
             Logger.printInfo(() -> "banner: r/" + named + " has "
                     + (found == null ? "no banner" : "a banner at " + found));
+
+            // Whoever asked, the feed showing this subreddit now wants to look again.
+            if (found != null && !found.equals(before) && named.equals(showing)) {
+                Runnable again = lookAgain;
+                if (again != null) {
+                    Logger.printInfo(() -> "banner: telling the feed to look again at r/" + named);
+                    again.run();
+                }
+            }
         } catch (Exception ex) {
             Logger.printInfo(() -> "banner: could not read what Reddit said about r/"
                     + named + ": " + ex);
@@ -144,6 +166,8 @@ public final class SubredditBanners {
         if (named == null) {
             return null;
         }
+        // Held so that an answer arriving from anywhere can ask the feed to look again.
+        lookAgain = whenKnown;
 
         Bitmap already = drawn.get(named);
         if (already != null) {
@@ -160,6 +184,11 @@ public final class SubredditBanners {
             return null;
         }
 
+        if (!fetching.add(named)) {
+            Logger.printDebug(() -> "banner: already fetching the picture for r/" + named);
+            return null;
+        }
+        Logger.printInfo(() -> "banner: fetching the picture for r/" + named + " from " + link);
         FETCHING.execute(() -> {
             try {
                 Bitmap picture = fetch(link);
@@ -173,6 +202,8 @@ public final class SubredditBanners {
                 }
             } catch (Throwable ex) {
                 Logger.printInfo(() -> "banner: could not fetch " + link + ": " + ex);
+            } finally {
+                fetching.remove(named);
             }
         });
         return null;

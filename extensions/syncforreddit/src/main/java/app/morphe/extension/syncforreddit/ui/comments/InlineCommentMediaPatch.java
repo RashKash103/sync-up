@@ -38,7 +38,45 @@ public final class InlineCommentMediaPatch {
 
     private static boolean said;
 
+    /** How many calls are worth writing down before the point is made. */
+    private static final int WORTH_SAYING = 12;
+
+    private static int parsed;
+    private static int gated;
+    private static int asked;
+
     private InlineCommentMediaPatch() {}
+
+    /**
+     * Called for every link drawn in a post or a comment, before anything is decided.
+     *
+     * <p>Said unconditionally for the first few: a capture with none of these in it means this
+     * is not the code that draws the thing in question, rather than that it declined to.
+     */
+    public static void parsing() {
+        if (parsed < WORTH_SAYING) {
+            parsed++;
+            Logger.printInfo(() -> "inline comments: a link is being drawn (" + parsed + ")");
+        }
+    }
+
+    /**
+     * Sync asks something about where the link is before it asks anything about the link. What
+     * that is, is not named in the app; it is answered here so that a capture says whether it
+     * is what stops a picture being drawn where it sits.
+     *
+     * @param sync What Sync decided about where this link is.
+     */
+    public static boolean here(boolean sync) {
+        boolean on = inlineEverything();
+        if (gated < WORTH_SAYING) {
+            gated++;
+            Logger.printInfo(() -> "inline comments: Sync says this is "
+                    + (sync ? "" : "not ") + "somewhere to draw one, widening is "
+                    + (on ? "on" : "off"));
+        }
+        return sync || on;
+    }
 
     public static boolean isPatchIncluded() {
         // Overridden by patch.
@@ -67,14 +105,13 @@ public final class InlineCommentMediaPatch {
      * @param sync What Sync's own setting says.
      */
     public static boolean orInlineEverything(boolean sync) {
-        if (sync) {
-            return true;
-        }
         boolean on = inlineEverything();
-        if (on) {
-            Logger.printDebug(() -> "inline comments: opening Sync's gate, which was off");
+        if (asked < WORTH_SAYING) {
+            asked++;
+            Logger.printInfo(() -> "inline comments: Sync's own setting is "
+                    + (sync ? "on" : "off") + ", widening is " + (on ? "on" : "off"));
         }
-        return on;
+        return sync || on;
     }
 
     /**

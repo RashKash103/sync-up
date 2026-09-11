@@ -19,14 +19,18 @@ private const val SLOTS = 4
 /**
  * Sync's own actions, in the order it numbers them. Written out here rather than read from the
  * app because the settings are built before anything runs; the numbers are what the extension
- * hands back to Sync, so only the order matters.
+ * hands back to Sync, so the order is the whole of it.
+ *
+ * <p>Taken from the switch that answers what an action is called, read by its jump table rather
+ * than by the order the names appear in the code — which is the reverse, and choosing an action
+ * by it hands Sync a different one entirely.
  */
 private val ACTIONS = listOf(
-    "Scroll to top", "Dark overlay", "Explore", "Inbox", "Swipe mode",
-    "Watched", "Search", "Sync", "About", "Refresh",
-    "Sort", "Toggle account", "Recents", "Filters", "Data saving",
-    "Settings", "Friends", "Dark mode", "Random NSFW", "Random",
-    "Change view", "Submit", "Profile", "Saved", "Hide read",
+    "Hide read", "Saved", "Profile", "Submit", "Change view",
+    "Random", "Random NSFW", "Dark mode", "Friends", "Settings",
+    "Data saving", "Filters", "Recents", "Toggle account", "Sort",
+    "Refresh", "About", "Sync", "Search", "Watched",
+    "Swipe mode", "Inbox", "Explore", "Dark overlay", "Scroll to top",
 )
 
 /**

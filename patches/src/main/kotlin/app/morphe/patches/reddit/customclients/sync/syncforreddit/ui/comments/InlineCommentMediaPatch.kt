@@ -23,6 +23,13 @@ private const val SHOULD_INLINE_METHOD = "shouldInline(ZLjava/lang/String;)Z"
 
 private const val OPEN_THE_GATE_METHOD = "orInlineEverything(Z)Z"
 
+private const val PARSING_METHOD = "parsing()V"
+
+private const val HERE_METHOD = "here(Z)Z"
+
+/** What Sync asks about where a link is, before it asks anything about the link itself. */
+private const val WHERE_IT_IS = "Lnc/a;"
+
 /** The span Sync draws a link as when it draws the picture rather than a chip naming it. */
 private const val INLINE_SPAN = "Lnb/d;"
 
@@ -102,6 +109,30 @@ val inlineCommentMediaPatch = bytecodePatch(
                 move-result         v$settingRegister
                 """
             )
+
+            // Asked before either of those: something about where the link is, which is not
+            // named in the app. Answered so that a capture says whether it is what stops a
+            // picture being drawn where it sits, and opened where it is.
+            val whereIndex = (settingIndex - 1 downTo 0).firstOrNull { at ->
+                val instruction = instructions.elementAt(at)
+                instruction.opcode == Opcode.IGET_BOOLEAN &&
+                        instruction.getReference<FieldReference>()?.definingClass == WHERE_IT_IS
+            }
+            if (whereIndex != null) {
+                val whereRegister = getInstruction<OneRegisterInstruction>(whereIndex).registerA
+                addInstructions(
+                    whereIndex + 1,
+                    """
+                    invoke-static       { v$whereRegister }, $EXTENSION_CLASS_DESCRIPTOR->$HERE_METHOD
+                    move-result         v$whereRegister
+                    """
+                )
+            }
+
+            // Last, so the indices above are not moved by it: said for every link drawn, before
+            // anything is decided, so that a capture with none of these in it means this is not
+            // the code that draws the thing in question.
+            addInstructions(0, "invoke-static { }, $EXTENSION_CLASS_DESCRIPTOR->$PARSING_METHOD")
         }
     }
 }
