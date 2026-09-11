@@ -37,6 +37,9 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
 
     private static final int HEIGHT_DP = 72;
 
+    /** Kept between the banner and the first post, which otherwise sit against each other. */
+    private static final int GAP_DP = 8;
+
     private static boolean said;
 
     @Override
@@ -197,8 +200,87 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
         }
         showing.setImageBitmap(picture);
         showing.setVisibility(View.VISIBLE);
-        makeRoom(feed, height(holder));
+        makeRoom(feed, height(holder) + gap(holder));
+
+        String link = SubredditBanners.linkFor(subreddit);
+        if (link != null) {
+            showing.setClickable(true);
+            showing.setOnClickListener(view -> open(view, link));
+        }
+        followTheList(feed, showing);
         Logger.printInfo(() -> "banner: drawn for r/" + subreddit);
+    }
+
+    /** Opens the banner the way tapping a picture linked in a post opens it. */
+    private static void open(View from, String link) {
+        try {
+            Logger.printInfo(() -> "banner: opening " + link);
+            new mb.d(link).onClick(from);
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "banner: could not open " + link + ": " + ex);
+        }
+    }
+
+    /**
+     * Moves the banner up with the posts, so it scrolls off rather than standing at the top.
+     *
+     * <p>How far the list has gone is asked of it by a name the framework gave it, which
+     * minifying cannot rename; the name Sync's own androidx would use for a listener can be, and
+     * asking for one of those is what would fail without a word.
+     */
+    private static void followTheList(ViewGroup feed, View strip) {
+        View list = listIn(feed);
+        if (list == null) {
+            return;
+        }
+        if (Boolean.TRUE.equals(strip.getTag(FOLLOWING))) {
+            return;
+        }
+        strip.setTag(FOLLOWING, Boolean.TRUE);
+
+        strip.getViewTreeObserver().addOnPreDrawListener(() -> {
+            try {
+                int gone = scrolledBy(list);
+                if (gone >= 0) {
+                    strip.setTranslationY(-gone);
+                }
+            } catch (Throwable ex) {
+                Logger.printDebug(() -> "banner: could not follow the list: " + ex);
+            }
+            return true;
+        });
+        Logger.printInfo(() -> "banner: the strip will now move with the posts");
+    }
+
+    /** What the strip is marked with once it is following the list. */
+    private static final int FOLLOWING = 0x7E000001;
+
+    /** How many times the offset is worth writing down before the point is made. */
+    private static int said2;
+
+    /** @return How far the list has scrolled, or -1 where it will not say. */
+    private static int scrolledBy(View list) {
+        try {
+            java.lang.reflect.Method how =
+                    list.getClass().getMethod("computeVerticalScrollOffset");
+            how.setAccessible(true);
+            int gone = (Integer) how.invoke(list);
+            if (said2 < 3) {
+                said2++;
+                Logger.printInfo(() -> "banner: the list has gone " + gone + " so far");
+            }
+            return gone;
+        } catch (Throwable ex) {
+            if (said2 < 3) {
+                said2++;
+                Logger.printInfo(() -> "banner: the list will not say how far it has gone: " + ex);
+            }
+            return -1;
+        }
+    }
+
+    private static int gap(ViewGroup holder) {
+        return (int) (GAP_DP * holder.getContext().getResources().getDisplayMetrics().density);
     }
 
     private static int height(ViewGroup holder) {

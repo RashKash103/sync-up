@@ -27,6 +27,12 @@ private const val PARSING_METHOD = "parsing()V"
 
 private const val HERE_METHOD = "here(Z)Z"
 
+private const val DRAWING_METHOD = "drawing(Ljava/lang/String;)V"
+
+/** The view every piece of text with markup in it is drawn through. */
+private const val MARKUP_TEXT_VIEW =
+    "Lcom/laurencedawson/reddit_sync/ui/views/text/spannable/children/HtmlTextView;"
+
 /** What Sync asks about where a link is, before it asks anything about the link itself. */
 private const val WHERE_IT_IS = "Lnc/a;"
 
@@ -134,5 +140,17 @@ val inlineCommentMediaPatch = bytecodePatch(
             // the code that draws the thing in question.
             addInstructions(0, "invoke-static { }, $EXTENSION_CLASS_DESCRIPTOR->$PARSING_METHOD")
         }
+
+        // A step further out again: the text view every piece of marked-up text goes through.
+        // Nothing was heard from the link handling at all, and this says whether the text even
+        // reaches the code that would draw a picture in it.
+        mutableClassDefBy(MARKUP_TEXT_VIEW).methods
+            .filter { it.name == "G" && it.parameters.size == 1 && it.implementation != null }
+            .forEach { method ->
+                method.addInstructions(
+                    0,
+                    "invoke-static { p1 }, $EXTENSION_CLASS_DESCRIPTOR->$DRAWING_METHOD"
+                )
+            }
     }
 }

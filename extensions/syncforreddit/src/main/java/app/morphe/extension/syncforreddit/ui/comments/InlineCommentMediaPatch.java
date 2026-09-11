@@ -47,6 +47,26 @@ public final class InlineCommentMediaPatch {
 
     private InlineCommentMediaPatch() {}
 
+    private static int drew;
+
+    /**
+     * Called wherever text with markup in it is turned into something drawable, before any of
+     * it is looked at.
+     *
+     * <p>Nothing at all was heard from the link handling, and a capture that says nothing
+     * cannot tell "the code declined" from "the code never ran". This says which.
+     *
+     * @param markup What is about to be turned into drawable text.
+     */
+    public static void drawing(String markup) {
+        if (drew < WORTH_SAYING) {
+            drew++;
+            String head = markup == null ? "nothing"
+                    : markup.substring(0, Math.min(120, markup.length())).replace('\n', ' ');
+            Logger.printInfo(() -> "inline comments: drawing text (" + drew + "): " + head);
+        }
+    }
+
     /**
      * Called for every link drawn in a post or a comment, before anything is decided.
      *

@@ -112,6 +112,17 @@ public final class SubredditBanners {
         return showing;
     }
 
+    /** @return The address of this subreddit's banner, for opening it as a picture. */
+    @Nullable
+    public static String linkFor(String subreddit) {
+        String named = normalise(subreddit);
+        if (named == null) {
+            return null;
+        }
+        String link = banners.get(named);
+        return link == null || link.isEmpty() ? null : link;
+    }
+
     /** Reads a reply Reddit gave about a subreddit, whoever asked for it. */
     public static void notice(String subreddit, String body) {
         String named = normalise(subreddit);
