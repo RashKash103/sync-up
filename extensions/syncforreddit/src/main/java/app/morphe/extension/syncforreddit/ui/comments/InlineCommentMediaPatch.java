@@ -64,6 +64,54 @@ public final class InlineCommentMediaPatch {
         }
     }
 
+    /** Set while a picture has just been put in, so the address is not written out after it. */
+    private static final ThreadLocal<Boolean> justDrew = new ThreadLocal<>();
+
+    /**
+     * Draws the picture where the link stood, rather than letting Sync make a card of it.
+     *
+     * <p>Sync has two ways of putting a picture into text. Its giphy handling puts the picture
+     * in by itself. Everything else goes into a list of cards, and a card is drawn as a small
+     * picture with the address beside it — which is the rectangle, and is not what was asked
+     * for. This puts it in the first way.
+     *
+     * @param card What Sync was about to do, which is make a card of it.
+     * @param into The text being built.
+     * @param link The address of the picture.
+     * @return Whether Sync should still make its card.
+     */
+    public static boolean drawItHere(boolean card, oc.c into, String link) {
+        if (!isPatchIncluded() || !inlineEverything() || into == null
+                || link == null || link.isEmpty() || !isMedia(link)) {
+            return card;
+        }
+        try {
+            into.c("\uFFFC", new Object[]{ new nb.d(link), new mb.d(link) });
+            into.b("\n");
+            justDrew.set(Boolean.TRUE);
+            Logger.printInfo(() -> "inline comments: drew " + link + " where it stood");
+            // Sync's card would stand beside what has just been put in.
+            return false;
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "inline comments: could not draw " + link + ": " + ex);
+            return card;
+        }
+    }
+
+    /**
+     * @param expanded Whether Sync writes the address out after a link.
+     * @param handled  Whether the link was already drawn as something.
+     * @return Whether to write the address out.
+     */
+    public static boolean stillShowTheLink(boolean expanded, boolean handled) {
+        if (Boolean.TRUE.equals(justDrew.get())) {
+            justDrew.remove();
+            Logger.printDebug(() -> "inline comments: leaving the address off what was drawn");
+            return false;
+        }
+        return expanded;
+    }
+
     /** Called where Sync draws one of Reddit's own giphy pictures, which it has its own path for. */
     public static void giphy(String link) {
         Logger.printInfo(() -> "inline comments: a giphy picture, drawn from " + link);

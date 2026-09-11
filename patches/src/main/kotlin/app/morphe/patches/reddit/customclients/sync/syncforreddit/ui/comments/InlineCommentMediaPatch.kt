@@ -36,6 +36,13 @@ private const val LINK_SEEN_METHOD = "linkSeen(Ljava/lang/String;)V"
 
 private const val GIPHY_METHOD = "giphy(Ljava/lang/String;)V"
 
+private const val DRAW_IT_HERE_METHOD = "drawItHere(ZLoc/c;Ljava/lang/String;)Z"
+
+private const val STILL_SHOW_METHOD = "stillShowTheLink(ZZ)Z"
+
+/** Sync's own setting for writing the address out after a link it has drawn. */
+private const val WRITES_THE_ADDRESS_OUT = "commentsLinksExpanded"
+
 /**
  * What Sync asks giphy for when it draws one of Reddit's own giphy pictures: a hundred pixels
  * of it. That is a thumbnail, not the picture, which is why one drawn where it sits looked like
@@ -114,13 +121,34 @@ val inlineCommentMediaPatch = bytecodePatch(
             }
             val decisionRegister = getInstruction<OneRegisterInstruction>(guardIndex).registerA
 
+            // What Sync does here is add the link to a list it draws as cards — a small picture
+            // with the address beside it. Where the picture itself was asked for, it is put in
+            // the way Sync's own giphy handling puts one in, and the card is not made.
+            val builderRegister = (implementation!!.registerCount - parameters.size)
             addInstructions(
                 guardIndex,
                 """
-                invoke-static       { v$decisionRegister, v$linkRegister }, $EXTENSION_CLASS_DESCRIPTOR->$SHOULD_INLINE_METHOD
+                invoke-static       { v$decisionRegister, p0, v$linkRegister }, $EXTENSION_CLASS_DESCRIPTOR->$DRAW_IT_HERE_METHOD
                 move-result         v$decisionRegister
                 """
             )
+
+            // Sync writes the address out after a link when that is turned on, which would
+            // stand under the picture just put in.
+            val writesIndex = instructions.indexOfFirst {
+                it.opcode == Opcode.IGET_BOOLEAN &&
+                        it.getReference<FieldReference>()?.name == WRITES_THE_ADDRESS_OUT
+            }
+            if (writesIndex >= 0) {
+                val writes = getInstruction<OneRegisterInstruction>(writesIndex).registerA
+                addInstructions(
+                    writesIndex + 1,
+                    """
+                    invoke-static       { v$writes, v$writes }, $EXTENSION_CLASS_DESCRIPTOR->$STILL_SHOW_METHOD
+                    move-result         v$writes
+                    """
+                )
+            }
 
             // The first of the two, and the one that actually turned a gif away: anything not
             // on Imgur leaves here, long before the test above is reached.

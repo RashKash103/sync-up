@@ -49,10 +49,11 @@ public final class ExtraFabActions {
     private static final String ITS_OWN_SETTING = "main_fab_action";
 
     /**
-     * What is added to an action's number when it is stored in that setting, so that 0, 1 and 2
-     * go on meaning the three things Sync has always meant by them.
+     * Where our actions begin in that setting. The three Sync already meant keep the numbers
+     * they had, and ours follow straight on: Sync looks the number up in its own list of names
+     * by position, so anything past the end of it is a crash rather than a number it ignores.
      */
-    private static final int OURS_START_AT = 100;
+    private static final int OURS_START_AT = 3;
 
     private static final String SLOT = "sync_up_fab_slot_";
     private static final String ORIENTATION = "sync_up_fab_orientation";

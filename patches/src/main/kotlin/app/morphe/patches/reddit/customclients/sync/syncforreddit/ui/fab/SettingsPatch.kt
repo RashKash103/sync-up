@@ -17,11 +17,14 @@ private const val LIST =
 private const val SLOTS = 3
 
 /**
- * What is added to an action's number when it is stored in Sync's own setting for what its
- * button is for. That setting already means three things of Sync's own by the numbers 0, 1 and
- * 2, and those are left meaning them.
+ * Where our actions begin in Sync's own setting for what its button is for. The three it
+ * already meant keep the numbers they had, and ours follow straight on from them.
+ *
+ * <p>They have to follow straight on: Sync puts the chosen number into its own list of names to
+ * work out what to show, so a number past the end of that list is not a value it does not know,
+ * it is a crash.
  */
-private const val OURS_START_AT = 100
+private const val OURS_START_AT = 3
 
 /** What Sync's own button can be, which its setting has always chosen between. */
 private val ITS_OWN = listOf("Submit", "Hide read", "More actions")
@@ -54,6 +57,26 @@ internal val extraFabActionsSettingsPatch = resourcePatch(
         document("res/values/arrays.xml").use { document ->
             val resources = document.getElementsByTagName("resources").item(0) as Element
 
+            /** Replaces the items of an array Sync already has, keeping the array itself. */
+            fun widen(name: String, items: List<String>) {
+                val existing = (0 until resources.childNodes.length)
+                    .map { resources.childNodes.item(it) }
+                    .filterIsInstance<Element>()
+                    .firstOrNull {
+                        it.tagName == "string-array" && it.getAttribute("name") == name
+                    }
+                    ?: throw PatchException("Sync no longer has a $name to widen")
+
+                while (existing.hasChildNodes()) {
+                    existing.removeChild(existing.firstChild)
+                }
+                items.forEach {
+                    val item = document.createElement("item")
+                    item.appendChild(document.createTextNode(it))
+                    existing.appendChild(item)
+                }
+            }
+
             fun array(name: String, items: List<String>) {
                 val array = document.createElement("string-array")
                 array.setAttribute("name", name)
@@ -67,13 +90,13 @@ internal val extraFabActionsSettingsPatch = resourcePatch(
 
             array("sync_up_fab_entries", listOf("None") + ACTIONS)
 
-            // Sync's own setting for what its button is for, opened up: the three it already
-            // offered, and then every action the sheet behind it knows.
-            array("sync_up_main_fab_entries", ITS_OWN + ACTIONS)
-            array(
-                "sync_up_main_fab_values",
-                ITS_OWN.indices.map { it.toString() } +
-                    ACTIONS.indices.map { (OURS_START_AT + it).toString() },
+            // Sync's own lists for what its button is for, added to in place rather than
+            // replaced. Sync looks the chosen number up in these by position, from code that
+            // names them directly, so a list of our own beside them would not be the one read.
+            widen("fab_labels", ITS_OWN + ACTIONS)
+            widen(
+                "fab_actions",
+                (ITS_OWN + ACTIONS).indices.map { it.toString() },
             )
             array(
                 "sync_up_fab_values",
@@ -107,8 +130,6 @@ internal val extraFabActionsSettingsPatch = resourcePatch(
                 ?: throw PatchException("Sync no longer chooses what its floating button is for")
 
             its.setAttribute("android:title", "Main action")
-            its.setAttribute("android:entries", "@array/sync_up_main_fab_entries")
-            its.setAttribute("android:entryValues", "@array/sync_up_main_fab_values")
             its.setAttribute("android:summary", "%s")
 
             (1..SLOTS).forEach { slot ->
