@@ -1,3 +1,9 @@
+## [1.9.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.9.0-dev.1...v1.9.0-dev.2) (2026-09-12)
+
+### ✨ New Features
+
+* Fade the media size settings that do not apply to the size in use ([592c48e](https://github.com/RashKash103/sync-up/commit/592c48e363898e79cd88c7062901d999875bef1c))
+
 ## [1.9.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.8.0...v1.9.0-dev.1) (2026-09-12)
 
 ### ✨ New Features

@@ -1,5 +1,5 @@
 {
-  "version": "1.9.0-dev.1",
+  "version": "1.9.0-dev.2",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -356,6 +356,7 @@
       "dependencies": [
         "BytecodePatch",
         "ResourcePatch",
+        "BytecodePatch",
         "BytecodePatch"
       ],
       "compatiblePackages": {
@@ -445,6 +446,7 @@
       "dependencies": [
         "BytecodePatch",
         "ResourcePatch",
+        "BytecodePatch",
         "BytecodePatch"
       ],
       "compatiblePackages": {
