@@ -1,3 +1,9 @@
+## [1.8.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.11...v1.8.0-dev.12) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* Hide the subscription rows rather than taking them out ([19474db](https://github.com/RashKash103/sync-up/commit/19474dbd2d5faef9be7ee5cfa1c81607b2261541))
+
 ## [1.8.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.10...v1.8.0-dev.11) (2026-09-12)
 
 ### 🐛 Bug Fixes
