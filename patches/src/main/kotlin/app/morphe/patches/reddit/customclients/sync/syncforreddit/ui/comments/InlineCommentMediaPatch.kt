@@ -45,6 +45,9 @@ private const val HOW_WIDE_METHOD = "howWide(Lnc/a;)V"
 
 private const val SHAPE_FOR_METHOD = "shapeFor(Lt3/a;Lnb/c;)Lt3/a;"
 
+private const val BOUND_METHOD =
+    "bound(Landroid/graphics/drawable/Drawable;IILnb/c;)V"
+
 /** What turns off the size settings that do not apply to the size in use. */
 private const val ROWS_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/ui/comments/InlineMediaRows;"
@@ -62,6 +65,9 @@ private const val GLIDE_OPTIONS = "Lt3/a;"
 
 /** The span that draws a picture and nothing else. Its sibling draws a card. */
 private const val PICTURE_SPAN = "Lnb/c;"
+
+/** What Glide decodes an animated picture into. */
+private const val ANIMATED_DRAWABLE = "Lo3/c;"
 
 /** Where Sync works out how wide a comment's text may be drawn. */
 private const val COMMENT_TEXT_VIEW =
@@ -314,6 +320,46 @@ val inlineCommentMediaPatch = bytecodePatch(
                 )
             }
 
+        }
+
+        // An animated picture is drawn only while it is running, and a GIF of a single frame
+        // never runs: Glide does not start a loop there is nothing to loop over. Such a picture
+        // was drawn as nothing at all — a blank the height of the picture, which is what a
+        // still GIF came out as. Drawn whether or not it is running; one that is not running
+        // draws the frame it is holding, which is the whole of it.
+        Fingerprint(
+            definingClass = PICTURE_SPAN,
+            name = "draw",
+            returnType = "V",
+        ).method.apply {
+            // Where the picture is laid out inside the span. The span is made taller than the
+            // picture so there is room under it for the text that follows, and the picture has
+            // to be bounded to its own height rather than the whole of that. Every path is
+            // rewritten, so the placeholder is laid out the same way as the picture it stands
+            // in for. A span this bundle did not make is left at its full height.
+            instructions.withIndex().filter { (_, instruction) ->
+                instruction.opcode == Opcode.INVOKE_VIRTUAL &&
+                    instruction.getReference<MethodReference>()?.name == "setBounds"
+            }.map { it.index }.reversed().forEach { at ->
+                val laying = getInstruction<FiveRegisterInstruction>(at)
+                replaceInstruction(
+                    at,
+                    "invoke-static { v${laying.registerC}, v${laying.registerF}, " +
+                        "v${laying.registerG}, p0 }, $EXTENSION_CLASS_DESCRIPTOR->$BOUND_METHOD",
+                )
+            }
+
+            val asks = instructions.indexOfFirst {
+                it.opcode == Opcode.INVOKE_VIRTUAL &&
+                    it.getReference<MethodReference>()?.let { asked ->
+                        asked.definingClass == ANIMATED_DRAWABLE && asked.name == "isRunning"
+                    } == true
+            }
+            if (asks < 0) {
+                throw PatchException("Nothing asks whether a picture in a comment is running")
+            }
+            val answer = getInstruction<OneRegisterInstruction>(asks + 1).registerA
+            replaceInstruction(asks + 1, "const/4 v$answer, 0x1")
         }
 
         // Which of the size settings apply depends on the size being used, and Sync's own

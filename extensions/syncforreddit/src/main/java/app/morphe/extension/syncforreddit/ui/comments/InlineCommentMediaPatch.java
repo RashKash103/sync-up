@@ -94,8 +94,66 @@ public final class InlineCommentMediaPatch {
      *
      * <p>Adding the card as well is what drew each picture twice.
      */
+    /** How much room is left under a drawn picture, so text after it is not against it. */
+    private static final int GAP_UNDER_DP = 8;
+
+    /**
+     * The gap left under each picture we drew.
+     *
+     * <p>The span stretches whatever it is given to the size it was made with, so the gap
+     * cannot simply be added to that size or the picture would be stretched into it. The span
+     * is made taller and the picture bounded inside it instead, which leaves the difference
+     * empty. Held weakly and only for the spans this bundle made: Sync draws a marker beside a
+     * translated line with the same kind of span, and a gap under that would push the line it
+     * sits in apart.
+     */
+    private static final java.util.Map<nb.c, Integer> gaps =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<nb.c, Integer>());
+
+    /** @return A span that draws this picture with room left under it. */
+    private static nb.c pictureOf(String link, int wide, int tall) {
+        int gap = Math.max(0, (int) (GAP_UNDER_DP * density()));
+        nb.c span = new nb.c(link, wide, tall + gap);
+        if (gap > 0) {
+            gaps.put(span, gap);
+        }
+        return span;
+    }
+
+    /**
+     * Called where the span sets out where to draw the picture, in place of doing it itself.
+     *
+     * @param drawable What is being drawn.
+     * @param wide     How wide the span is.
+     * @param tall     How tall the span is, which includes any gap left under the picture.
+     * @param span     The span, which says how much of that height is the gap.
+     */
+    public static void bound(android.graphics.drawable.Drawable drawable, int wide, int tall,
+                             nb.c span) {
+        if (drawable == null) {
+            return;
+        }
+        Integer said = gaps.get(span);
+        int under = said == null ? 0 : said;
+        drawable.setBounds(0, 0, wide, Math.max(1, tall - under));
+    }
+
+    /**
+     * @return Whether the picture can actually be drawn where the address stands.
+     *
+     * <p>Asked before the card is given up for it. Wanting to draw one is not the same as being
+     * able to: a video is media by its address and there is no picture in it to decode, and a
+     * picture whose size is not known yet cannot be put in proportion. Where the answer is no,
+     * Sync's own card is left exactly as it was — which is the difference between a comment
+     * whose media is a card and a comment whose media has vanished.
+     */
+    private static boolean canDraw(String link) {
+        int[] shape = shapeOf(link);
+        return shape != null && sizeFor(shape, lastWidth) != null;
+    }
+
     public static String cardOrPicture(nc.b cards, nc.b.a card, String link) {
-        if (!wanted(link)) {
+        if (!wanted(link) || !canDraw(link)) {
             return cards.c(card);
         }
         justDrew.set(Boolean.TRUE);
@@ -440,7 +498,7 @@ public final class InlineCommentMediaPatch {
                     + " in " + width);
             // The span that draws the picture and nothing else, at the shape it actually is.
             // Its sibling draws a card: a small picture with the address beside it.
-            return new Object[]{ new nb.c(link, drawWide, drawTall), new mb.d(link) };
+            return new Object[]{ pictureOf(link, drawWide, drawTall), new mb.d(link) };
         } catch (Throwable ex) {
             Logger.printInfo(() -> "inline comments: could not draw " + link + ": " + ex);
             return spans;
@@ -523,7 +581,7 @@ public final class InlineCommentMediaPatch {
             final int tall = size[1];
             Logger.printDebug(() -> "inline comments: drawing the giphy picture " + link
                     + " " + wide + "x" + tall + " of " + shape[0] + "x" + shape[1]);
-            return new Object[]{ new nb.c(link, wide, tall), new mb.d(link) };
+            return new Object[]{ pictureOf(link, wide, tall), new mb.d(link) };
         } catch (Throwable ex) {
             Logger.printInfo(() -> "inline comments: could not draw " + link + ": " + ex);
             return spans;
@@ -584,7 +642,7 @@ public final class InlineCommentMediaPatch {
         if (!isPatchIncluded() || link == null || link.isEmpty() || !inlineEverything()) {
             return false;
         }
-        boolean media = isMedia(link);
+        boolean media = isMedia(link) && canDraw(link);
         if (media) {
             Logger.printDebug(() -> "inline comments: claiming " + link
                     + " rather than letting it become a preview");
