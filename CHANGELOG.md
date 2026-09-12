@@ -1,3 +1,5 @@
+## [1.8.0-dev.18](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.17...v1.8.0-dev.18) (2026-09-12)
+
 ## [1.8.0-dev.17](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.16...v1.8.0-dev.17) (2026-09-12)
 
 ## [1.8.0-dev.16](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.15...v1.8.0-dev.16) (2026-09-12)
