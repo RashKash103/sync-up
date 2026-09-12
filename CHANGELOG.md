@@ -1,3 +1,9 @@
+## [1.8.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.12...v1.8.0-dev.13) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* Draw media in a comment as the picture, not as a card beside its address ([de5183a](https://github.com/RashKash103/sync-up/commit/de5183a707fb4b7fbdbdeab014085fd13d879571))
+
 ## [1.8.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.11...v1.8.0-dev.12) (2026-09-12)
 
 ### 🐛 Bug Fixes
