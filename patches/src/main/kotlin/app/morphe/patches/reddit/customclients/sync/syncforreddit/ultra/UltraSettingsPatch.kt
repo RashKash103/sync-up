@@ -21,10 +21,18 @@ private val KEPT_ON_THEIR_SERVERS = setOf("ultra_backup", "ultra_backup_divider"
  * kept on servers that no longer answer. A screen that can only disappoint is worse than no
  * screen at all.
  *
+ * <p>Hidden rather than taken away. Sync looks these up by name when it builds the screen and
+ * speaks to whatever comes back, so a row that is gone is not a row it skips — it is a crash on
+ * opening the screen that held it. Hiding one is Sync's own way of leaving a row out, used in
+ * four of its own screens.
+ *
  * <p>Has no name, and so is not offered on its own.
  */
+
+/** How Sync itself leaves a row out of a screen it has built. */
+private const val OUT_OF_SIGHT = "app:isPreferenceVisible"
 internal val ultraSettingsPatch = resourcePatch(
-    description = "Removes the Sync Ultra screen and the cloud backup that needs it.",
+    description = "Hides the Sync Ultra screen and the cloud backup that needs it.",
 ) {
     execute {
         document(ROOT_SCREEN).use { document ->
@@ -34,7 +42,7 @@ internal val ultraSettingsPatch = resourcePatch(
                 .firstOrNull { it.getAttribute("android:title") == THE_WAY_IN }
                 ?: throw PatchException("No way in to the subscription to take out")
 
-            theWayIn.parentNode.removeChild(theWayIn)
+            theWayIn.setAttribute(OUT_OF_SIGHT, "false")
         }
 
         document(BACKUP_SCREEN).use { document ->
@@ -46,7 +54,7 @@ internal val ultraSettingsPatch = resourcePatch(
             if (theirs.isEmpty()) {
                 throw PatchException("No cloud backup to take out")
             }
-            theirs.forEach { it.parentNode.removeChild(it) }
+            theirs.forEach { it.setAttribute(OUT_OF_SIGHT, "false") }
         }
     }
 }

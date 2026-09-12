@@ -1,3 +1,102 @@
+## [1.8.0-dev.19](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.18...v1.8.0-dev.19) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* Take the button's taps away while the surface stands in for it ([02bf0d7](https://github.com/RashKash103/sync-up/commit/02bf0d7392c7cd3f4791f935fc4bb4a79a7a94e2))
+
+## [1.8.0-dev.18](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.17...v1.8.0-dev.18) (2026-09-12)
+
+## [1.8.0-dev.17](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.16...v1.8.0-dev.17) (2026-09-12)
+
+## [1.8.0-dev.16](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.15...v1.8.0-dev.16) (2026-09-12)
+
+## [1.8.0-dev.15](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.14...v1.8.0-dev.15) (2026-09-12)
+
+## [1.8.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.13...v1.8.0-dev.14) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* Draw each picture the shape it actually is ([a270c9b](https://github.com/RashKash103/sync-up/commit/a270c9b573ce65beaf009df1cb2784e3d694b6be))
+
+## [1.8.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.12...v1.8.0-dev.13) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* Draw media in a comment as the picture, not as a card beside its address ([de5183a](https://github.com/RashKash103/sync-up/commit/de5183a707fb4b7fbdbdeab014085fd13d879571))
+
+## [1.8.0-dev.12](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.11...v1.8.0-dev.12) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* Hide the subscription rows rather than taking them out ([19474db](https://github.com/RashKash103/sync-up/commit/19474dbd2d5faef9be7ee5cfa1c81607b2261541))
+
+## [1.8.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.10...v1.8.0-dev.11) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* Add a card or draw the picture, not both, and stop offering Sort ([be612cb](https://github.com/RashKash103/sync-up/commit/be612cb2f6551016d585e30ec2413059fa85dd5b))
+
+## [1.8.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.9...v1.8.0-dev.10) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Put the picture where the card was written, not in front of the test ([51144e1](https://github.com/RashKash103/sync-up/commit/51144e11dafdf1aa27ffcc0d1a3a81ecdcaadef5))
+
+## [1.8.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.8...v1.8.0-dev.9) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Draw the picture itself, and number the button's actions where Sync looks ([aacff98](https://github.com/RashKash103/sync-up/commit/aacff988e289f40bb51c6eefa1e27ef37d0ed46d))
+
+## [1.8.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.7...v1.8.0-dev.8) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Ask giphy for the picture rather than a hundred pixels of it ([5a604ee](https://github.com/RashKash103/sync-up/commit/5a604eef55972f1510c44b2330aaf28c9c076867))
+
+## [1.8.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.6...v1.8.0-dev.7) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Stop a website preview claiming every gif, and give each button its own ([1b47df5](https://github.com/RashKash103/sync-up/commit/1b47df5c0867402607ba4a04602861960fd651a8))
+
+## [1.8.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.5...v1.8.0-dev.6) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Open Sync's own button setting up rather than taking it away ([4d858f6](https://github.com/RashKash103/sync-up/commit/4d858f65b65eb20ef53450e7fb5da7942278e613))
+
+## [1.8.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.4...v1.8.0-dev.5) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Let the button's own action be any of them, and draw a gif where it sits ([90ac5dd](https://github.com/RashKash103/sync-up/commit/90ac5dda8febed11b9c862c0cc49d87ebc144cc8))
+
+## [1.8.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.3...v1.8.0-dev.4) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Lay the extra actions over the button, and let the banner scroll away ([f9fb7f2](https://github.com/RashKash103/sync-up/commit/f9fb7f203e5acd2ec4192dafa76ef49ee3146a27))
+
+## [1.8.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.2...v1.8.0-dev.3) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Make the extra actions Sync's own buttons, and correct which they are ([a2e06c0](https://github.com/RashKash103/sync-up/commit/a2e06c05e09213961adbdb22e0dd94c27027eb77))
+
+## [1.8.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.1...v1.8.0-dev.2) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* Stand in for the floating button, and stop painting over transparency ([e855b2c](https://github.com/RashKash103/sync-up/commit/e855b2ce56c47e1e0e4d9090ee1d993667451874))
+
+## [1.8.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.7.0...v1.8.0-dev.1) (2026-09-11)
+
+### ✨ New Features
+
+* Fix an Imgur album, transparency, inline comment media and the FAB ([c626e55](https://github.com/RashKash103/sync-up/commit/c626e5535d67ba284449bda9efb671d76fcaf0f2)), closes [#15](https://github.com/RashKash103/sync-up/issues/15) [#19](https://github.com/RashKash103/sync-up/issues/19) [#17](https://github.com/RashKash103/sync-up/issues/17) [#18](https://github.com/RashKash103/sync-up/issues/18)
+* Show a subreddit's banner at the top of its feed ([2cbb027](https://github.com/RashKash103/sync-up/commit/2cbb027ed6f53f59b36dde995d0bcfb4f643a667)), closes [#16](https://github.com/RashKash103/sync-up/issues/16)
+
 ## [1.7.0](https://github.com/RashKash103/sync-up/compare/v1.6.0...v1.7.0) (2026-09-09)
 
 ### 🐛 Bug Fixes

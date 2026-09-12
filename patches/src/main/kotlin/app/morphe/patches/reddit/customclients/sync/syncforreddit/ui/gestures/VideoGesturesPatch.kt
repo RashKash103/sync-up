@@ -15,8 +15,7 @@ private const val INSTALL_METHOD = "install($PLAYER_CLASS)V"
 val videoGesturesPatch = bytecodePatch(
     name = "Gestures for the video player",
     description = "Double tap a video or GIF to play or pause it rather than zoom, drag " +
-            "sideways to seek, and drag up or down after a double tap to change the volume. " +
-            "Each gesture can be turned on or off under Gestures in Sync's settings.",
+            "sideways to seek, and drag up or down after a double tap for volume.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch, videoGestureSettingsPatch)

@@ -12,6 +12,8 @@ import app.morphe.extension.syncforreddit.http.comments.PlayCommentVideoPatch;
 import app.morphe.extension.syncforreddit.http.imgur.FixImgurProxyPatch;
 import app.morphe.extension.syncforreddit.http.posts.TappableLinksPatch;
 import app.morphe.extension.syncforreddit.http.posts.WebsitePreviewImagePatch;
+import app.morphe.extension.syncforreddit.ui.banner.SubredditBannerPatch;
+import app.morphe.extension.syncforreddit.ui.comments.CommentMediaSizes;
 import app.morphe.extension.syncforreddit.http.profile.ArchivedProfilePatch;
 import app.morphe.extension.syncforreddit.http.imgur.RecoverThumbnailsPatch;
 import app.morphe.extension.syncforreddit.http.imgur.UndeleteImgurPatch;
@@ -154,6 +156,8 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
         interceptors.add(new UndeleteImgurPatch());
         interceptors.add(RedirectGfycatPatch.get());
         interceptors.add(new WebsitePreviewImagePatch());
+        interceptors.add(new SubredditBannerPatch());
+        interceptors.add(new CommentMediaSizes());
         return interceptors;
     }
 

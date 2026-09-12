@@ -111,7 +111,7 @@ public class UndeleteRedditPatch extends PatchedditInterceptor {
 
         String served = restored != null ? restored : original;
         boolean putBack = restored != null;
-        Logger.printInfo(() -> "Answering " + url.encodedPath() + " with " + served.length()
+        Logger.printDebug(() -> "Answering " + url.encodedPath() + " with " + served.length()
                 + " characters" + (putBack ? ", some of it put back" : ""));
 
         return response.newBuilder()
