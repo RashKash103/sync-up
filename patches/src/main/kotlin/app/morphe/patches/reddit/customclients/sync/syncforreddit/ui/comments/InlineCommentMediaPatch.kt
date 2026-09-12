@@ -36,11 +36,13 @@ private const val LINK_SEEN_METHOD = "linkSeen(Ljava/lang/String;)V"
 
 private const val GIPHY_METHOD = "giphy(Ljava/lang/String;)V"
 
+private const val GIPHY_SPANS_METHOD = "giphySpans([Ljava/lang/Object;)[Ljava/lang/Object;"
+
 private const val CARD_OR_PICTURE_METHOD =
     "cardOrPicture(Lnc/b;Lnc/b\$a;Ljava/lang/String;)Ljava/lang/String;"
 
 private const val SPANS_FOR_METHOD =
-    "spansFor([Ljava/lang/Object;Ljava/lang/String;)[Ljava/lang/Object;"
+    "spansFor([Ljava/lang/Object;Ljava/lang/String;Lnc/a;)[Ljava/lang/Object;"
 
 private const val STILL_SHOW_METHOD = "stillShowTheLink(ZZ)Z"
 
@@ -128,8 +130,29 @@ val inlineCommentMediaPatch = bytecodePatch(
             // Where the card is finally written into the text. Chosen over the test that
             // guards it because a branch further up jumps to that test rather than through it,
             // so anything put in front of it is stepped over by every link but a tenor one.
-            // Where the card is added. Adding one and drawing the picture as well is what drew
-            // each of them twice, so this is the call that has to be the one or the other.
+            // Where the address itself is styled. The span that draws a picture stands in
+            // place of the text it covers, so putting one here is what turns the address into
+            // the picture rather than leaving both.
+            instructions.withIndex()
+                .filter { (_, instruction) ->
+                    instruction.getReference<MethodReference>()?.let {
+                        it.definingClass == "Lnc/d;" && it.name == "r"
+                    } == true
+                }
+                .map { (at, _) -> at }
+                .reversed()
+                .forEach { at ->
+                    val spans = getInstruction<FiveRegisterInstruction>(at).registerE
+                    addInstructions(
+                        at,
+                        """
+                        invoke-static       { v$spans, v$linkRegister, p1 }, $EXTENSION_CLASS_DESCRIPTOR->$SPANS_FOR_METHOD
+                        move-result-object  v$spans
+                        """
+                    )
+                }
+
+            // And the card underneath it, which would be the same picture again, small.
             val addsIndex = (spanIndex until instructions.count()).first { at ->
                 val called = getInstruction(at).getReference<MethodReference>()
                 called?.definingClass == "Lnc/b;" && called.name == "c"
@@ -141,17 +164,19 @@ val inlineCommentMediaPatch = bytecodePatch(
                     "$EXTENSION_CLASS_DESCRIPTOR->$CARD_OR_PICTURE_METHOD"
             )
 
-            // And what that text is drawn with: the picture itself rather than a card's label.
-            val writesCardIndex = (addsIndex until instructions.count()).first { at ->
+            // Where the card is written into the text. What Sync puts there is a card — a
+            // small picture with the address beside it — and what goes there instead is the
+            // picture itself, drawn at the width the text has.
+            val cardIndex = (spanIndex until instructions.count()).first { at ->
                 val called = getInstruction(at).getReference<MethodReference>()
                 called?.definingClass == "Loc/c;" && called.name == "c"
             }
-            val spansRegister = getInstruction<FiveRegisterInstruction>(writesCardIndex).registerE
+            val spansRegister = getInstruction<FiveRegisterInstruction>(cardIndex).registerE
 
             addInstructions(
-                writesCardIndex,
+                cardIndex,
                 """
-                invoke-static       { v$spansRegister, v$linkRegister }, $EXTENSION_CLASS_DESCRIPTOR->$SPANS_FOR_METHOD
+                invoke-static       { v$spansRegister, v$linkRegister, p1 }, $EXTENSION_CLASS_DESCRIPTOR->$SPANS_FOR_METHOD
                 move-result-object  v$spansRegister
                 """
             )
@@ -273,10 +298,28 @@ val inlineCommentMediaPatch = bytecodePatch(
                     method.getInstruction(on).opcode == Opcode.MOVE_RESULT_OBJECT &&
                             on > at + 1
                 }
+                val link = method.getInstruction<OneRegisterInstruction>(built).registerA
+
+                // Drawn as the picture rather than as a card, the same as every other one.
+                val writes = method.implementation!!.instructions.toList().indexOfFirst {
+                    it.getReference<MethodReference>()?.let { called ->
+                        called.definingClass == "Loc/c;" && called.name == "c"
+                    } == true
+                }
+                if (writes >= 0) {
+                    val spans = method.getInstruction<FiveRegisterInstruction>(writes).registerE
+                    method.addInstructions(
+                        writes,
+                        """
+                        invoke-static       { v$spans }, $EXTENSION_CLASS_DESCRIPTOR->$GIPHY_SPANS_METHOD
+                        move-result-object  v$spans
+                        """
+                    )
+                }
+
                 method.addInstructions(
                     built + 1,
-                    "invoke-static { v${method.getInstruction<OneRegisterInstruction>(built).registerA} }, " +
-                        "$EXTENSION_CLASS_DESCRIPTOR->$GIPHY_METHOD"
+                    "invoke-static { v$link }, $EXTENSION_CLASS_DESCRIPTOR->$GIPHY_METHOD"
                 )
             }
 

@@ -97,20 +97,36 @@ public final class InlineCommentMediaPatch {
             return cards.c(card);
         }
         justDrew.set(Boolean.TRUE);
-        Logger.printInfo(() -> "inline comments: drawing " + link + " where it stood");
-        return THE_PICTURE_ITSELF;
+        Logger.printInfo(() -> "inline comments: no card for " + link
+                + "; the picture stands where the address did");
+        // Nothing at all: the picture has already been drawn over the address itself, and a
+        // card would be the same picture again, small, underneath it.
+        return "";
     }
 
     /**
      * @return What to draw that text with: the picture by itself, which is what Sync's own
      *         giphy handling draws one with, rather than the card's label.
      */
-    public static Object[] spansFor(Object[] spans, String link) {
+    public static Object[] spansFor(Object[] spans, String link, nc.a where) {
         if (!wanted(link)) {
             return spans;
         }
         try {
-            return new Object[]{ new nb.d(link), new mb.d(link) };
+            int width = where == null ? 0 : where.e;
+            if (width > 0) {
+                // Remembered for Reddit's own giphy pictures, which are drawn by a path that is
+                // told the address and nothing else.
+                lastWidth = width;
+            }
+            if (width <= 0) {
+                Logger.printInfo(() -> "inline comments: no width to draw " + link + " at");
+                return spans;
+            }
+            Logger.printInfo(() -> "inline comments: drawing " + link + " " + width + " wide");
+            // The span that draws the picture and nothing else, at the width the text has.
+            // Its sibling draws a card: a small picture with the address beside it.
+            return new Object[]{ new nb.c(link, width), new mb.d(link) };
         } catch (Throwable ex) {
             Logger.printInfo(() -> "inline comments: could not draw " + link + ": " + ex);
             return spans;
@@ -136,9 +152,55 @@ public final class InlineCommentMediaPatch {
         return expanded;
     }
 
+    /** How wide the text was last drawn, for a path that is not told. */
+    private static volatile int lastWidth;
+
+    /**
+     * The giphy picture being drawn.
+     *
+     * <p>Kept here rather than read again further down: Sync builds the address into a register
+     * and then uses that same register for the character a picture stands in, so by the time
+     * the spans are written the address is no longer there to read.
+     */
+    private static volatile String giphyLink;
+
     /** Called where Sync draws one of Reddit's own giphy pictures, which it has its own path for. */
     public static void giphy(String link) {
+        giphyLink = link;
         Logger.printInfo(() -> "inline comments: a giphy picture, drawn from " + link);
+    }
+
+    /**
+     * @return What to draw Reddit's own giphy pictures with.
+     *
+     * <p>They have a path of their own, which draws a card: a small picture with the address
+     * beside it. Where the picture itself was asked for, it is drawn as the picture, at the
+     * width the text was last drawn at — that path is told the address and nothing else.
+     */
+    public static Object[] giphySpans(Object[] spans) {
+        String link = giphyLink;
+        if (!isPatchIncluded() || !inlineEverything() || link == null || link.isEmpty()) {
+            return spans;
+        }
+        int width = lastWidth;
+        if (width <= 0) {
+            try {
+                width = (int) (app.morphe.extension.shared.Utils.getContext().getResources()
+                        .getDisplayMetrics().widthPixels * 0.9f);
+            } catch (Throwable ex) {
+                Logger.printInfo(() -> "inline comments: no width for a giphy picture: " + ex);
+                return spans;
+            }
+        }
+        final int drawAt = width;
+        try {
+            Logger.printInfo(() -> "inline comments: drawing the giphy picture " + link
+                    + " " + drawAt + " wide");
+            return new Object[]{ new nb.c(link, drawAt), new mb.d(link) };
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "inline comments: could not draw " + link + ": " + ex);
+            return spans;
+        }
     }
 
     /**
