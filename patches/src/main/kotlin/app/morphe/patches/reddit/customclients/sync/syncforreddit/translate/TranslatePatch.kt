@@ -317,7 +317,7 @@ private val screenIdFingerprint = Fingerprint(
 val translatePatch = bytecodePatch(
     name = "Translate posts and comments",
     description = "Translates a post or comment where it sits, on this device or through DeepL " +
-            "or Google Cloud. Everything about it is set up under Translation in Sync's settings.",
+            "or Google Cloud.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch, translationSettingsPatch, notesInTheHeaderPatch)
