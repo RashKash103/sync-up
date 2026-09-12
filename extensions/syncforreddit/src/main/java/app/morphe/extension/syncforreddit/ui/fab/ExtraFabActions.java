@@ -654,6 +654,13 @@ public final class ExtraFabActions {
             }
             ((ImageView) part).setImageDrawable(its.icon.getConstantState() == null
                     ? its.icon : its.icon.getConstantState().newDrawable().mutate());
+            // Drawn in what the rest of them are drawn in. The button's own icon arrives after
+            // the surface was built, so it misses the colour chosen there, and the part
+            // standing for the button was the one icon still in the button's own colour.
+            ((ImageView) part).setImageTintList(tintForTheIcons(fab, colourOfTheButton(fab)));
+            if (part.getContentDescription() == null) {
+                part.setContentDescription(fab.getContentDescription());
+            }
             Logger.printInfo(() -> "fab: the button's own icon has arrived, drawing it");
             return;
         }
