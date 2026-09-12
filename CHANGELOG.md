@@ -1,3 +1,9 @@
+## [1.9.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.9.0-dev.3...v1.9.0-dev.4) (2026-09-12)
+
+### ✨ New Features
+
+* Draw a video in a comment as the frame it starts on, with a play mark ([34c3845](https://github.com/RashKash103/sync-up/commit/34c38451094743f84603cd4b16bfa252887bb9d4))
+
 ## [1.9.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.9.0-dev.2...v1.9.0-dev.3) (2026-09-12)
 
 ### 🐛 Bug Fixes
