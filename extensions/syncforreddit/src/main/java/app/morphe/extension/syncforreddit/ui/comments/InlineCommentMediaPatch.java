@@ -38,8 +38,29 @@ public final class InlineCommentMediaPatch {
 
     private static boolean said;
 
-    /** How many calls are worth writing down before the point is made. */
+    /** How the size of a drawn picture is decided. */
+    private static final String MEDIA_SIZE = "sync_up_inline_media_size";
 
+    /** How wide one may get when its size is its own. */
+    private static final String MAX_WIDTH = "sync_up_inline_media_max_width";
+
+    /** How wide one is drawn when every picture is drawn the same width. */
+    private static final String FIXED_WIDTH = "sync_up_inline_media_width";
+
+    /** How tall one is drawn when every picture is drawn the same height, in dp. */
+    private static final String FIXED_HEIGHT = "sync_up_inline_media_height";
+
+    /** Drawn at the size the picture itself is, up to {@link #MAX_WIDTH}. */
+    private static final int ITS_OWN_SIZE = 0;
+
+    /** Every picture the same width, as a share of the room its comment has. */
+    private static final int SAME_WIDTH = 1;
+
+    /** Every picture the same height, whatever shape it is. */
+    private static final int SAME_HEIGHT = 2;
+
+    /** What Sync rounds the corners of a picture by, which is what it uses everywhere else. */
+    private static final int ROUNDED_BY_DP = 8;
 
     private InlineCommentMediaPatch() {}
 
@@ -275,6 +296,116 @@ public final class InlineCommentMediaPatch {
     }
 
 
+
+    /**
+     * How big to draw a picture, given the shape it is and the room its comment has.
+     *
+     * <p>Drawn at its own size by default: a picture of few pixels blown up to the width of a
+     * comment is a blurry picture, and on a large screen an unwelcome one. What it may grow to,
+     * and whether every picture is drawn the same instead, is settled in the settings.
+     *
+     * @param shape What the picture is, in its own pixels.
+     * @param room  How wide the comment it sits in may be drawn.
+     * @return The width and height to draw at, or null where there is nothing to draw in.
+     */
+    private static int[] sizeFor(int[] shape, int room) {
+        if (shape == null || shape.length < 2 || shape[0] <= 0 || shape[1] <= 0 || room <= 0) {
+            return null;
+        }
+        int wide;
+        switch (SyncUpSettings.number(MEDIA_SIZE, ITS_OWN_SIZE)) {
+            case SAME_HEIGHT:
+                int tall = (int) (SyncUpSettings.number(FIXED_HEIGHT, 200) * density());
+                wide = (int) ((long) tall * shape[0] / shape[1]);
+                break;
+            case SAME_WIDTH:
+                wide = (int) ((long) room * share(FIXED_WIDTH) / 100);
+                break;
+            default:
+                // Its own size, which is the number of pixels it actually has, up to what it is
+                // allowed to grow to. Nothing is ever blown up past the pixels it came with.
+                wide = Math.min(shape[0], (int) ((long) room * share(MAX_WIDTH) / 100));
+                break;
+        }
+        // Never wider than the comment: what does not fit is cut off by the text it sits in.
+        wide = Math.min(wide, room);
+        if (wide <= 0) {
+            return null;
+        }
+        int high = (int) ((long) wide * shape[1] / shape[0]);
+        return high <= 0 ? null : new int[]{ wide, high };
+    }
+
+    /** @return A share out of a hundred, kept inside it. */
+    private static int share(String key) {
+        int said = SyncUpSettings.number(key, 100);
+        return said < 1 || said > 100 ? 100 : said;
+    }
+
+    private static float density() {
+        try {
+            return app.morphe.extension.shared.Utils.getContext()
+                    .getResources().getDisplayMetrics().density;
+        } catch (Throwable ex) {
+            return 1f;
+        }
+    }
+
+    /**
+     * Settles how Glide is to decode a picture that will be drawn in a comment.
+     *
+     * <p>The span draws whatever it is given stretched to the size it was made with, and Sync
+     * asked for the picture to be decoded into a square of that span's width and rounded by 8dp.
+     * The rounding is in the pixels of the decoded picture, so wherever the two sizes differed
+     * the corners were drawn at some other radius than 8dp — a giphy fetched two hundred pixels
+     * tall and drawn four times that came out with corners four times too round, and pixelated
+     * with them.
+     *
+     * <p>Asked for at the size it will be drawn, and scaled to exactly that before it is
+     * rounded, which is what Sync already does everywhere else it draws a picture.
+     *
+     * @param request What Glide has been told so far.
+     * @param span    The span the picture is being decoded for.
+     * @return What to go on building the request with.
+     */
+    public static t3.a shapeFor(t3.a request, nb.c span) {
+        if (!isPatchIncluded() || request == null || span == null) {
+            return request == null ? null : request.n0(new k3.a0(rounding()));
+        }
+        try {
+            int wide = span.e();
+            int high = heightOf(span);
+            if (wide > 0 && high > 0) {
+                request = request.Y(wide, high);
+            }
+            // Scaled to the size it is drawn at, then rounded, so the corners are the radius
+            // asked for rather than that radius times however far the picture was stretched.
+            return request.n0(new k3.i(), new k3.a0(rounding()));
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "inline comments: could not settle how to decode: " + ex);
+            return request.n0(new k3.a0(rounding()));
+        }
+    }
+
+    private static int rounding() {
+        return Math.max(1, (int) (ROUNDED_BY_DP * density()));
+    }
+
+    /**
+     * @return How tall the span draws, which it keeps to itself. Read rather than asked for,
+     *         since the app offers the width and not the height.
+     */
+    private static int heightOf(nb.c span) {
+        try {
+            java.lang.reflect.Field tall = nb.c.class.getDeclaredField("t");
+            tall.setAccessible(true);
+            return tall.getInt(span);
+        } catch (Throwable ex) {
+            Logger.printDebug(() -> "inline comments: the span will not say how tall it is: " + ex);
+            return 0;
+        }
+    }
+
     public static Object[] spansFor(Object[] spans, String link, nc.a where) {
         if (!wanted(link)) {
             return spans;
@@ -297,10 +428,16 @@ public final class InlineCommentMediaPatch {
                         + " is not known yet, leaving it as Sync drew it");
                 return spans;
             }
-            final int drawWide = width;
-            final int drawTall = (int) (width * shape[1] / shape[0]);
+            int[] size = sizeFor(shape, width);
+            if (size == null) {
+                Logger.printDebug(() -> "inline comments: nothing to draw " + link + " in");
+                return spans;
+            }
+            final int drawWide = size[0];
+            final int drawTall = size[1];
             Logger.printDebug(() -> "inline comments: drawing " + link + " "
-                    + drawWide + "x" + drawTall);
+                    + drawWide + "x" + drawTall + " of " + shape[0] + "x" + shape[1]
+                    + " in " + width);
             // The span that draws the picture and nothing else, at the shape it actually is.
             // Its sibling draws a card: a small picture with the address beside it.
             return new Object[]{ new nb.c(link, drawWide, drawTall), new mb.d(link) };
@@ -377,10 +514,16 @@ public final class InlineCommentMediaPatch {
                         + " is not known yet, leaving it as Sync drew it");
                 return spans;
             }
-            final int tall = (int) (drawAt * shape[1] / shape[0]);
+            int[] size = sizeFor(shape, drawAt);
+            if (size == null) {
+                Logger.printDebug(() -> "inline comments: nothing to draw " + link + " in");
+                return spans;
+            }
+            final int wide = size[0];
+            final int tall = size[1];
             Logger.printDebug(() -> "inline comments: drawing the giphy picture " + link
-                    + " " + drawAt + "x" + tall);
-            return new Object[]{ new nb.c(link, drawAt, tall), new mb.d(link) };
+                    + " " + wide + "x" + tall + " of " + shape[0] + "x" + shape[1]);
+            return new Object[]{ new nb.c(link, wide, tall), new mb.d(link) };
         } catch (Throwable ex) {
             Logger.printInfo(() -> "inline comments: could not draw " + link + ": " + ex);
             return spans;

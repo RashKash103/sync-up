@@ -42,6 +42,17 @@ private const val CARD_OR_PICTURE_METHOD =
 
 private const val HOW_WIDE_METHOD = "howWide(Lnc/a;)V"
 
+private const val SHAPE_FOR_METHOD = "shapeFor(Lt3/a;Lnb/c;)Lt3/a;"
+
+/** Where Sync builds the Glide request for every span it draws in a piece of text. */
+private const val TEXT_PICTURE_LOADER = "Loc/c;"
+
+/** What Glide is told to decode a picture with. */
+private const val GLIDE_OPTIONS = "Lt3/a;"
+
+/** The span that draws a picture and nothing else. Its sibling draws a card. */
+private const val PICTURE_SPAN = "Lnb/c;"
+
 /** Where Sync works out how wide a comment's text may be drawn. */
 private const val COMMENT_TEXT_VIEW =
     "Lcom/laurencedawson/reddit_sync/ui/views/comments/CommentsHtmlTextView;"
@@ -288,6 +299,48 @@ val inlineCommentMediaPatch = bytecodePatch(
                 )
             }
 
+        }
+
+        // How a picture drawn in a comment is decoded. Sync asks for it in a square of the
+        // span's width and rounds it by 8dp, and the span then stretches whatever comes back to
+        // the size it was made with; the rounding being in the decoded picture's own pixels, the
+        // corners came out that radius times however far it was stretched. Asked for at the size
+        // it is drawn and scaled to exactly that before rounding, which is what Sync already does
+        // for every other picture it draws in text.
+        Fingerprint(
+            definingClass = TEXT_PICTURE_LOADER,
+            name = "o",
+            parameters = listOf("Loc/b;"),
+            returnType = "V",
+        ).method.apply {
+            // The only picture in this method rounded on its own, without being scaled first:
+            // every other kind is given a list of two, so one transformation names this one.
+            val rounds = instructions.withIndex().filter { (_, instruction) ->
+                instruction.opcode == Opcode.INVOKE_VIRTUAL &&
+                    instruction.getReference<MethodReference>()?.let { asked ->
+                        asked.definingClass == GLIDE_OPTIONS && asked.name == "j0"
+                    } == true
+            }
+            if (rounds.size != 1) {
+                throw PatchException(
+                    "Expected one picture rounded without being scaled, found ${rounds.size}",
+                )
+            }
+            val at = rounds.single().index
+            // The receiver is the request being built; the argument beside it is the rounding
+            // itself, not the span, so the span is taken from where it was named just above.
+            val request = getInstruction<FiveRegisterInstruction>(at).registerC
+            val named = (at - 1 downTo 0).firstOrNull { step ->
+                val instruction = instructions.elementAt(step)
+                instruction.opcode == Opcode.CHECK_CAST &&
+                    instruction.getReference<TypeReference>()?.type == PICTURE_SPAN
+            } ?: throw PatchException("Nothing says which span the picture is being decoded for")
+            val span = getInstruction<OneRegisterInstruction>(named).registerA
+            replaceInstruction(
+                at,
+                "invoke-static { v$request, v$span }, " +
+                    "$EXTENSION_CLASS_DESCRIPTOR->$SHAPE_FOR_METHOD",
+            )
         }
 
         // Reddit's own giphy pictures have a path of their own, which asks for a hundred
