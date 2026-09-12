@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-12T18:52:33",
-  "description": "## [1.9.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.9.0-dev.3...v1.9.0-dev.4) (2026-09-12)\n\n### ✨ New Features\n\n* Draw a video in a comment as the frame it starts on, with a play mark ([34c3845](https://github.com/RashKash103/sync-up/commit/34c38451094743f84603cd4b16bfa252887bb9d4))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.9.0-dev.4/patches-1.9.0-dev.4.mpp",
+  "created_at": "2026-09-12T19:11:36",
+  "description": "## [1.9.0](https://github.com/RashKash103/sync-up/compare/v1.8.0...v1.9.0) (2026-09-12)\n\n### 🐛 Bug Fixes\n\n* Draw a still GIF, keep the card where nothing can be drawn, and leave a gap ([027bf9c](https://github.com/RashKash103/sync-up/commit/027bf9cddee2acc550bc3bbbba66d0f810a5681e))\n\n### ✨ New Features\n\n* Draw a video in a comment as the frame it starts on, with a play mark ([34c3845](https://github.com/RashKash103/sync-up/commit/34c38451094743f84603cd4b16bfa252887bb9d4))\n* Draw media in a comment at its own size, and round it the same everywhere ([e5dca32](https://github.com/RashKash103/sync-up/commit/e5dca32b66d9c63edbc991ef0289b0e131fb44f3))\n* Fade the media size settings that do not apply to the size in use ([592c48e](https://github.com/RashKash103/sync-up/commit/592c48e363898e79cd88c7062901d999875bef1c))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.9.0/patches-1.9.0.mpp",
   "signature_download_url": "",
-  "version": "1.9.0-dev.4"
+  "version": "1.9.0"
 }

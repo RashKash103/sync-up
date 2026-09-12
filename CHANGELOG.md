@@ -1,3 +1,15 @@
+## [1.9.0](https://github.com/RashKash103/sync-up/compare/v1.8.0...v1.9.0) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* Draw a still GIF, keep the card where nothing can be drawn, and leave a gap ([027bf9c](https://github.com/RashKash103/sync-up/commit/027bf9cddee2acc550bc3bbbba66d0f810a5681e))
+
+### ✨ New Features
+
+* Draw a video in a comment as the frame it starts on, with a play mark ([34c3845](https://github.com/RashKash103/sync-up/commit/34c38451094743f84603cd4b16bfa252887bb9d4))
+* Draw media in a comment at its own size, and round it the same everywhere ([e5dca32](https://github.com/RashKash103/sync-up/commit/e5dca32b66d9c63edbc991ef0289b0e131fb44f3))
+* Fade the media size settings that do not apply to the size in use ([592c48e](https://github.com/RashKash103/sync-up/commit/592c48e363898e79cd88c7062901d999875bef1c))
+
 ## [1.9.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.9.0-dev.3...v1.9.0-dev.4) (2026-09-12)
 
 ### ✨ New Features
