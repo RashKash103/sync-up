@@ -1,3 +1,9 @@
+## [1.8.0-dev.14](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.13...v1.8.0-dev.14) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* Draw each picture the shape it actually is ([a270c9b](https://github.com/RashKash103/sync-up/commit/a270c9b573ce65beaf009df1cb2784e3d694b6be))
+
 ## [1.8.0-dev.13](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.12...v1.8.0-dev.13) (2026-09-12)
 
 ### 🐛 Bug Fixes
