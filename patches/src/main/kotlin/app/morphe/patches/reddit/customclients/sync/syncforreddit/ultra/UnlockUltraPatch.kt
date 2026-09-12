@@ -83,9 +83,8 @@ private val BEHIND_THE_SUBSCRIPTION = listOf(
 @Suppress("unused")
 val unlockUltraPatch = bytecodePatch(
     name = "Unlock Sync Ultra",
-    description = "Turns on the parts of Sync Ultra that need nothing but this device: website " +
-            "previews, reading text out of an image, tagging a user, and others. What Sync kept " +
-            "on its own servers is left alone, and every offer to buy it is removed.",
+    description = "Turns on the Sync Ultra features that work on the device alone, and removes " +
+            "the offers to buy it.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch, ultraSettingsPatch, interceptHttpRequests)
