@@ -1,5 +1,5 @@
 {
-  "version": "1.8.0-dev.19",
+  "version": "1.8.0",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -168,7 +168,7 @@
     },
     {
       "name": "Gestures for the video player",
-      "description": "Double tap a video or GIF to play or pause it rather than zoom, drag sideways to seek, and drag up or down after a double tap to change the volume. Each gesture can be turned on or off under Gestures in Sync's settings.",
+      "description": "Double tap a video or GIF to play or pause it rather than zoom, drag sideways to seek, and drag up or down after a double tap for volume.",
       "use": true,
       "dependencies": [
         "BytecodePatch",
@@ -265,7 +265,7 @@
     },
     {
       "name": "More actions on the floating button",
-      "description": "Puts up to four of Sync's own actions beside the feed's floating button, chosen and ordered under Floating Action Button in the general settings.",
+      "description": "Puts up to four of Sync's own actions beside the feed's floating button.",
       "use": true,
       "dependencies": [
         "BytecodePatch",
@@ -299,7 +299,7 @@
     },
     {
       "name": "Redirect Gfycat links to RedGifs",
-      "description": "Loads Gfycat links from RedGifs, including the autoplaying video Sync asks its own proxy for. Gfycat's domains no longer resolve, so without this every Gfycat link fails.",
+      "description": "Loads Gfycat links from RedGifs, including the autoplaying video Sync asks its own proxy for.",
       "use": true,
       "dependencies": [
         "BytecodePatch",
@@ -316,7 +316,7 @@
     },
     {
       "name": "Show a hidden profile from the archive",
-      "description": "Fills in a profile from Project Arctic Shift when Reddit answers with nothing, which is what a hidden profile returns.",
+      "description": "Fills in a profile from Project Arctic Shift when Reddit answers with nothing.",
       "use": true,
       "dependencies": [
         "BytecodePatch",
@@ -440,7 +440,7 @@
     },
     {
       "name": "Translate posts and comments",
-      "description": "Translates a post or comment where it sits, on this device or through DeepL or Google Cloud. Everything about it is set up under Translation in Sync's settings.",
+      "description": "Translates a post or comment where it sits, on this device or through DeepL or Google Cloud.",
       "use": true,
       "dependencies": [
         "BytecodePatch",
@@ -458,7 +458,7 @@
     },
     {
       "name": "Unlock Sync Ultra",
-      "description": "Turns on the parts of Sync Ultra that need nothing but this device: website previews, reading text out of an image, tagging a user, and others. What Sync kept on its own servers is left alone, and every offer to buy it is removed.",
+      "description": "Turns on the Sync Ultra features that work on the device alone, and removes the offers to buy it.",
       "use": true,
       "dependencies": [
         "BytecodePatch",

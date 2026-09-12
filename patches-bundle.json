@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-12T03:51:27",
-  "description": "## [1.8.0-dev.19](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.18...v1.8.0-dev.19) (2026-09-12)\n\n### 🐛 Bug Fixes\n\n* Take the button's taps away while the surface stands in for it ([02bf0d7](https://github.com/RashKash103/sync-up/commit/02bf0d7392c7cd3f4791f935fc4bb4a79a7a94e2))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.8.0-dev.19/patches-1.8.0-dev.19.mpp",
+  "created_at": "2026-09-12T04:30:20",
+  "description": "## [1.8.0](https://github.com/RashKash103/sync-up/compare/v1.7.0...v1.8.0) (2026-09-12)\n\n### 🐛 Bug Fixes\n\n* Hide the Sync Ultra subscription rows rather than taking them out ([b5d24b6](https://github.com/RashKash103/sync-up/commit/b5d24b6daab79ee529c0b6aa4be53f351d74e86d))\n\n### ✨ New Features\n\n* Keep transparency in a picture ([81b5a6f](https://github.com/RashKash103/sync-up/commit/81b5a6f9f6760f28b31038860b62d7d6be04cf32))\n* Open an Imgur album in the picture viewer ([ad9e873](https://github.com/RashKash103/sync-up/commit/ad9e873b543c945d338347fb61db2ea953d6678c))\n* Put more of Sync's own actions on the floating button ([66c7cbb](https://github.com/RashKash103/sync-up/commit/66c7cbbc469c9f7cd3c0b11d2d9a5189d6f72e11))\n* Show a subreddit's banner on its feed ([93ee229](https://github.com/RashKash103/sync-up/commit/93ee22926bc4ea46bad76d0ca468547438ea919f))\n* Show media in a comment where it sits ([1a13c29](https://github.com/RashKash103/sync-up/commit/1a13c2941302ee64b4cd2cca074abf84ea621c43))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.8.0/patches-1.8.0.mpp",
   "signature_download_url": "",
-  "version": "1.8.0-dev.19"
+  "version": "1.8.0"
 }

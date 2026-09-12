@@ -1,3 +1,17 @@
+## [1.8.0](https://github.com/RashKash103/sync-up/compare/v1.7.0...v1.8.0) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* Hide the Sync Ultra subscription rows rather than taking them out ([b5d24b6](https://github.com/RashKash103/sync-up/commit/b5d24b6daab79ee529c0b6aa4be53f351d74e86d))
+
+### ✨ New Features
+
+* Keep transparency in a picture ([81b5a6f](https://github.com/RashKash103/sync-up/commit/81b5a6f9f6760f28b31038860b62d7d6be04cf32))
+* Open an Imgur album in the picture viewer ([ad9e873](https://github.com/RashKash103/sync-up/commit/ad9e873b543c945d338347fb61db2ea953d6678c))
+* Put more of Sync's own actions on the floating button ([66c7cbb](https://github.com/RashKash103/sync-up/commit/66c7cbbc469c9f7cd3c0b11d2d9a5189d6f72e11))
+* Show a subreddit's banner on its feed ([93ee229](https://github.com/RashKash103/sync-up/commit/93ee22926bc4ea46bad76d0ca468547438ea919f))
+* Show media in a comment where it sits ([1a13c29](https://github.com/RashKash103/sync-up/commit/1a13c2941302ee64b4cd2cca074abf84ea621c43))
+
 ## [1.8.0-dev.19](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.18...v1.8.0-dev.19) (2026-09-12)
 
 ### 🐛 Bug Fixes
