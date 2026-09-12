@@ -1,3 +1,9 @@
+## [1.9.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.9.0-dev.2...v1.9.0-dev.3) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* Draw a still GIF, keep the card where nothing can be drawn, and leave a gap ([027bf9c](https://github.com/RashKash103/sync-up/commit/027bf9cddee2acc550bc3bbbba66d0f810a5681e))
+
 ## [1.9.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.9.0-dev.1...v1.9.0-dev.2) (2026-09-12)
 
 ### ✨ New Features

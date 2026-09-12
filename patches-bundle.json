@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-12T18:00:48",
-  "description": "## [1.9.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.9.0-dev.1...v1.9.0-dev.2) (2026-09-12)\n\n### ✨ New Features\n\n* Fade the media size settings that do not apply to the size in use ([592c48e](https://github.com/RashKash103/sync-up/commit/592c48e363898e79cd88c7062901d999875bef1c))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.9.0-dev.2/patches-1.9.0-dev.2.mpp",
+  "created_at": "2026-09-12T18:34:46",
+  "description": "## [1.9.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.9.0-dev.2...v1.9.0-dev.3) (2026-09-12)\n\n### 🐛 Bug Fixes\n\n* Draw a still GIF, keep the card where nothing can be drawn, and leave a gap ([027bf9c](https://github.com/RashKash103/sync-up/commit/027bf9cddee2acc550bc3bbbba66d0f810a5681e))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.9.0-dev.3/patches-1.9.0-dev.3.mpp",
   "signature_download_url": "",
-  "version": "1.9.0-dev.2"
+  "version": "1.9.0-dev.3"
 }
