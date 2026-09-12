@@ -1,3 +1,9 @@
+## [1.9.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.8.0...v1.9.0-dev.1) (2026-09-12)
+
+### ✨ New Features
+
+* Draw media in a comment at its own size, and round it the same everywhere ([e5dca32](https://github.com/RashKash103/sync-up/commit/e5dca32b66d9c63edbc991ef0289b0e131fb44f3))
+
 ## [1.8.0](https://github.com/RashKash103/sync-up/compare/v1.7.0...v1.8.0) (2026-09-12)
 
 ### 🐛 Bug Fixes
