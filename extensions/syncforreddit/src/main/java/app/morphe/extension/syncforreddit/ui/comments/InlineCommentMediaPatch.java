@@ -108,6 +108,87 @@ public final class InlineCommentMediaPatch {
      * @return What to draw that text with: the picture by itself, which is what Sync's own
      *         giphy handling draws one with, rather than the card's label.
      */
+    /**
+     * How big each picture is, once it has been asked.
+     *
+     * <p>The span that draws a picture is told a width and a height when it is made and never
+     * changes them, so a guess at the shape is a picture drawn wrong for as long as it is on
+     * screen. Sync draws one inline only where the address itself carries both numbers and
+     * falls back to a card otherwise, which is why a card is what most of them were.
+     */
+    private static final java.util.Map<String, int[]> shapes =
+            java.util.Collections.synchronizedMap(new java.util.HashMap<String, int[]>());
+
+    /** Pictures already being measured, so a list redrawing does not ask again. */
+    private static final java.util.Set<String> measuring =
+            java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
+
+    private static final java.util.concurrent.Executor MEASURING =
+            java.util.concurrent.Executors.newFixedThreadPool(2);
+
+    /**
+     * @return The picture's size, or null where it is not known yet. Asking is done off to one
+     *         side; until there is an answer the picture is left as Sync drew it, a card being
+     *         better than a picture of the wrong shape.
+     */
+    private static int[] shapeOf(String link) {
+        int[] known = shapes.get(link);
+        if (known != null) {
+            return known;
+        }
+        // What the address says, where it says anything. Sync reads these too.
+        try {
+            android.net.Uri asked = android.net.Uri.parse(link);
+            String wide = asked.getQueryParameter("width");
+            String tall = asked.getQueryParameter("height");
+            if (wide != null && tall != null) {
+                int[] shape = { Integer.parseInt(wide), Integer.parseInt(tall) };
+                shapes.put(link, shape);
+                return shape;
+            }
+        } catch (Exception ignored) {
+            // Measured below instead.
+        }
+        measure(link);
+        return null;
+    }
+
+    /** Reads the size out of the picture's own header, without decoding the picture. */
+    private static void measure(String link) {
+        if (!measuring.add(link)) {
+            return;
+        }
+        MEASURING.execute(() -> {
+            java.net.HttpURLConnection asking = null;
+            try {
+                asking = (java.net.HttpURLConnection) new java.net.URL(link).openConnection();
+                asking.setConnectTimeout(8000);
+                asking.setReadTimeout(10000);
+                asking.setInstanceFollowRedirects(true);
+                android.graphics.BitmapFactory.Options only =
+                        new android.graphics.BitmapFactory.Options();
+                only.inJustDecodeBounds = true;
+                try (java.io.InputStream reading = asking.getInputStream()) {
+                    android.graphics.BitmapFactory.decodeStream(reading, null, only);
+                }
+                if (only.outWidth > 0 && only.outHeight > 0) {
+                    shapes.put(link, new int[]{ only.outWidth, only.outHeight });
+                    Logger.printInfo(() -> "inline comments: " + link + " is "
+                            + only.outWidth + "x" + only.outHeight);
+                } else {
+                    Logger.printInfo(() -> "inline comments: could not measure " + link);
+                }
+            } catch (Throwable ex) {
+                Logger.printInfo(() -> "inline comments: could not measure " + link + ": " + ex);
+            } finally {
+                if (asking != null) {
+                    asking.disconnect();
+                }
+                measuring.remove(link);
+            }
+        });
+    }
+
     public static Object[] spansFor(Object[] spans, String link, nc.a where) {
         if (!wanted(link)) {
             return spans;
@@ -123,10 +204,20 @@ public final class InlineCommentMediaPatch {
                 Logger.printInfo(() -> "inline comments: no width to draw " + link + " at");
                 return spans;
             }
-            Logger.printInfo(() -> "inline comments: drawing " + link + " " + width + " wide");
-            // The span that draws the picture and nothing else, at the width the text has.
+            int[] shape = shapeOf(link);
+            if (shape == null) {
+                // A picture of the wrong shape is worse than the card Sync would have drawn.
+                Logger.printDebug(() -> "inline comments: the shape of " + link
+                        + " is not known yet, leaving it as Sync drew it");
+                return spans;
+            }
+            final int drawWide = width;
+            final int drawTall = (int) (width * shape[1] / shape[0]);
+            Logger.printInfo(() -> "inline comments: drawing " + link + " "
+                    + drawWide + "x" + drawTall);
+            // The span that draws the picture and nothing else, at the shape it actually is.
             // Its sibling draws a card: a small picture with the address beside it.
-            return new Object[]{ new nb.c(link, width), new mb.d(link) };
+            return new Object[]{ new nb.c(link, drawWide, drawTall), new mb.d(link) };
         } catch (Throwable ex) {
             Logger.printInfo(() -> "inline comments: could not draw " + link + ": " + ex);
             return spans;
@@ -194,9 +285,16 @@ public final class InlineCommentMediaPatch {
         }
         final int drawAt = width;
         try {
+            int[] shape = shapeOf(link);
+            if (shape == null) {
+                Logger.printDebug(() -> "inline comments: the shape of " + link
+                        + " is not known yet, leaving it as Sync drew it");
+                return spans;
+            }
+            final int tall = (int) (drawAt * shape[1] / shape[0]);
             Logger.printInfo(() -> "inline comments: drawing the giphy picture " + link
-                    + " " + drawAt + " wide");
-            return new Object[]{ new nb.c(link, drawAt), new mb.d(link) };
+                    + " " + drawAt + "x" + tall);
+            return new Object[]{ new nb.c(link, drawAt, tall), new mb.d(link) };
         } catch (Throwable ex) {
             Logger.printInfo(() -> "inline comments: could not draw " + link + ": " + ex);
             return spans;
