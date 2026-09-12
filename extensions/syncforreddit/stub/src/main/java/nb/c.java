@@ -16,4 +16,9 @@ public class c {
     public c(String link, int width, int height) {
         throw new UnsupportedOperationException("Stub");
     }
+
+    /** @return How wide it draws. The height it keeps to itself. */
+    public int e() {
+        throw new UnsupportedOperationException("Stub");
+    }
 }

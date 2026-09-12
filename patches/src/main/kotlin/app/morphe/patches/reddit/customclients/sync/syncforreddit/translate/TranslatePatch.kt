@@ -23,6 +23,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
+import app.morphe.patches.reddit.customclients.sync.syncforreddit.settings.fadeDisabledRowsPatch
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.ui.notes.notesInTheHeaderPatch
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 
@@ -243,12 +244,6 @@ private val turnedOnFromAfarFingerprint = Fingerprint(
     strings = listOf("ultra_translate"),
 )
 
-private const val ROWS_CLASS_DESCRIPTOR =
-    "Lapp/morphe/extension/syncforreddit/translate/SettingsRows;"
-
-private const val DRAW_ENABLED_METHOD =
-    "drawEnabled(Landroidx/preference/Preference;Landroidx/preference/h;)V"
-
 /**
  * Where Sync asks for a translation. It has worked out the text and what it is written in by
  * this point, and what comes back goes on to be written where the app reads its text from, so
@@ -263,22 +258,6 @@ private val asksForATranslationFingerprint = Fingerprint(
                 ?.definingClass
                 ?.startsWith("Lcom/google/mlkit/nl/translate/") == true
         } >= 0
-    },
-)
-
-/** The kinds of row Sync draws itself, each of which sets its own colours as it does. */
-private val rowKinds = listOf(
-    "SyncPreference;",
-    "SyncListPreference;",
-    "SyncCheckBoxPreference;",
-)
-
-/** Where a row of a given kind draws itself. */
-private fun drawsRow(kind: String) = Fingerprint(
-    parameters = listOf("Landroidx/preference/h;"),
-    returnType = "V",
-    custom = { method, classDef ->
-        classDef.type.endsWith(kind) && method.name == "S"
     },
 )
 
@@ -320,7 +299,12 @@ val translatePatch = bytecodePatch(
             "or Google Cloud.",
     default = true
 ) {
-    dependsOn(sharedExtensionPatch, translationSettingsPatch, notesInTheHeaderPatch)
+    dependsOn(
+        sharedExtensionPatch,
+        translationSettingsPatch,
+        notesInTheHeaderPatch,
+        fadeDisabledRowsPatch,
+    )
 
     compatibleWith(*SyncForRedditCompatible)
 
@@ -337,7 +321,6 @@ val translatePatch = bytecodePatch(
             LABELS_CLASS_DESCRIPTOR,
             COMMENT_BUTTONS_CLASS_DESCRIPTOR,
             COMMENT_MENU_CLASS_DESCRIPTOR,
-            ROWS_CLASS_DESCRIPTOR,
             SCREEN_CLASS_DESCRIPTOR,
         ).forEach { reached ->
             val extension = classDefByOrNull(reached)
@@ -695,18 +678,5 @@ val translatePatch = bytecodePatch(
             }
         }
 
-        // A row that cannot be used should look like it. Sync sets the colour of every row's
-        // words as it draws them, whatever state the row is in, so the whole row is faded
-        // instead, once for every kind of row there is.
-        //
-        // Said before the row draws itself rather than after: by the end of drawing, the
-        // register the holder arrived in has been put to another use and holds a view, and
-        // nothing in the drawing touches what is set here.
-        rowKinds.forEach { kind ->
-            drawsRow(kind).method.addInstructions(
-                0,
-                "invoke-static { p0, p1 }, $ROWS_CLASS_DESCRIPTOR->$DRAW_ENABLED_METHOD"
-            )
-        }
     }
 }

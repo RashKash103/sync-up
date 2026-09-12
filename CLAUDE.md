@@ -97,6 +97,19 @@ those Kotlin string literals is not assembled until a patch executes against an 
 malformed instruction compiles perfectly and fails only at patch time. A patch that has only
 been built has not been tested in any meaningful sense.
 
+### A patch that touches the settings must be tested against Backup
+
+**Back up and restore on a device before shipping anything that adds, moves, hides or changes a
+settings row.** Sync's Backup screen walks every setting it knows and writes them out, and its
+Restore reads them back, so a row that is not where the app expects breaks a screen that has
+nothing to do with the patch. Taking the Ultra subscription rows out is what crashed the Backup
+screen the moment it opened, and that shipped in v1.7.0 because the change was tested on the
+screen it altered and nowhere else.
+
+Open Settings → Backup, *Backup now* through to **Backup complete**, then *Restore from backup*
+through to **Settings restored**, and check the written file is valid JSON holding the new keys.
+It is a couple of minutes and it is the only thing that catches this.
+
 ### Measure, do not infer
 
 Reading the app is how a patch gets written. It is not how a broken one gets diagnosed, and
@@ -244,6 +257,19 @@ find out which client actually issues it.
 
 **Thread URLs are `/r/<sub>/comments/<id>/_/...json`** against `oauth.reddit.com`. Patcheddit's
 Boost patches match `^https?://\w+\.reddit\.com/comments/`, which never fires on Sync.
+
+**Every settings screen is a `pa.d`, and `pa.d.t3(int)` is where its rows come to exist.**
+A screen of Sync's own is its own fragment, so there is nowhere of ours to run code from on one
+— unlike the translation screen, which is a fragment of ours and can therefore turn its own rows
+on and off directly. `t3` loads the screen's XML, has a single return that every path reaches,
+and runs for every screen there is, so a call placed before that return is handed the fragment
+with its rows already loaded. A screen that does not hold the rows in question is left alone.
+`y(key)` is `findPreference` and `Preference.q0(boolean)` is `setEnabled`; `SettingsRows` fades
+whatever is turned off, since Sync colours every row's words as it draws them whatever state the
+row is in.
+
+**Note that `android:dependency` is not an answer here.** It only keys off a checkbox, so a row
+that should follow a list preference's value has to be turned on and off in code.
 
 **Menus are layouts, not lists.** The post overflow sheet is
 `res/layout/dialog_bottom_post_more.xml`, a `LinearLayout` of `MaterialRow` views dispatched by

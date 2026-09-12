@@ -35,7 +35,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.8.0](https://github.com/RashKash103/sync-up/releases/tag/v1.8.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;28 patches total
+> **[v1.9.0-dev.4](https://github.com/RashKash103/sync-up/releases/tag/v1.9.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;28 patches total
 <details open>
 <summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;27 patches</summary>
 <br>
@@ -203,6 +203,25 @@ service being asked.
   older posts, leaving a blank tile even where opening the post still works. The linked
   image is fetched from the Wayback Machine, and only once the preview has actually failed.
 - **Fix video downloads** — Corrects Sync's MPD parser, which saved only the audio track.
+- **Show media in a comment where it sits** — Sync draws a link in a comment inline only
+  where the address ends in one of five extensions or names one of a handful of services;
+  everything else becomes a chip naming where it goes. This widens that to everything Sync
+  can draw, and draws the picture itself rather than a card beside the address. Sizes come
+  from what Reddit sends alongside the comments, so a picture is in proportion the first
+  time rather than standing as a card until it has been measured. A video is drawn as the
+  frame it starts on with a play mark over it, since a player cannot live in a line of
+  text; tapping it opens it and it plays. Anything that cannot be drawn — a picture whose
+  size is not known yet, a video with no frame to take — is left exactly as Sync drew it,
+  which is a card. Off by default, under *Comment options*.
+
+  How large media is drawn is settled by three settings beside it. By default each picture
+  is drawn at **its own size** — the pixels it actually has — so a low-resolution image is
+  small rather than blown up to the width of the comment, and *Largest media size* caps how
+  far one may grow. *Media size* can instead hold every picture to the same width or the
+  same height, set by *Media width* and *Media height*. Whichever two do not apply to the
+  size in use are faded, and they change as the size is chosen. Nothing is ever drawn wider
+  than the comment it sits in.
+
 - **Show videos posted in comments** — Reddit writes a video posted in a comment as a link
   to a player page on its own site, which opens in a browser and is answered with a banned
   notice. The link is pointed at the video itself, so it is drawn beside the comment like

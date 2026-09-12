@@ -9,6 +9,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.http.interceptHttpRequests
+import app.morphe.patches.reddit.customclients.sync.syncforreddit.settings.fadeDisabledRowsPatch
 import app.morphe.util.getReference
 import app.morphe.util.returnEarly
 import com.android.tools.smali.dexlib2.Opcode
@@ -41,6 +42,34 @@ private const val CARD_OR_PICTURE_METHOD =
     "cardOrPicture(Lnc/b;Lnc/b\$a;Ljava/lang/String;)Ljava/lang/String;"
 
 private const val HOW_WIDE_METHOD = "howWide(Lnc/a;)V"
+
+private const val SHAPE_FOR_METHOD = "shapeFor(Lt3/a;Lnb/c;)Lt3/a;"
+
+private const val BOUND_METHOD =
+    "bound(Landroid/graphics/drawable/Drawable;IILnb/c;)V"
+
+private const val OVERLAY_METHOD = "overlay(Landroid/graphics/Canvas;Lnb/c;)V"
+
+/** What turns off the size settings that do not apply to the size in use. */
+private const val ROWS_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/ui/comments/InlineMediaRows;"
+
+private const val SETTLE_ROWS_METHOD = "settle(Lpa/d;)V"
+
+/** The fragment every screen of Sync's settings is, and where it loads its rows. */
+private const val SETTINGS_SCREEN = "Lpa/d;"
+
+/** Where Sync builds the Glide request for every span it draws in a piece of text. */
+private const val TEXT_PICTURE_LOADER = "Loc/c;"
+
+/** What Glide is told to decode a picture with. */
+private const val GLIDE_OPTIONS = "Lt3/a;"
+
+/** The span that draws a picture and nothing else. Its sibling draws a card. */
+private const val PICTURE_SPAN = "Lnb/c;"
+
+/** What Glide decodes an animated picture into. */
+private const val ANIMATED_DRAWABLE = "Lo3/c;"
 
 /** Where Sync works out how wide a comment's text may be drawn. */
 private const val COMMENT_TEXT_VIEW =
@@ -88,7 +117,12 @@ val inlineCommentMediaPatch = bytecodePatch(
             "as a chip naming where it goes.",
     default = true
 ) {
-    dependsOn(sharedExtensionPatch, inlineCommentMediaSettingsPatch, interceptHttpRequests)
+    dependsOn(
+        sharedExtensionPatch,
+        inlineCommentMediaSettingsPatch,
+        interceptHttpRequests,
+        fadeDisabledRowsPatch,
+    )
 
     compatibleWith(*SyncForRedditCompatible)
 
@@ -288,6 +322,127 @@ val inlineCommentMediaPatch = bytecodePatch(
                 )
             }
 
+        }
+
+        // An animated picture is drawn only while it is running, and a GIF of a single frame
+        // never runs: Glide does not start a loop there is nothing to loop over. Such a picture
+        // was drawn as nothing at all — a blank the height of the picture, which is what a
+        // still GIF came out as. Drawn whether or not it is running; one that is not running
+        // draws the frame it is holding, which is the whole of it.
+        Fingerprint(
+            definingClass = PICTURE_SPAN,
+            name = "draw",
+            returnType = "V",
+        ).method.apply {
+            // Where the picture is laid out inside the span. The span is made taller than the
+            // picture so there is room under it for the text that follows, and the picture has
+            // to be bounded to its own height rather than the whole of that. Every path is
+            // rewritten, so the placeholder is laid out the same way as the picture it stands
+            // in for. A span this bundle did not make is left at its full height.
+            instructions.withIndex().filter { (_, instruction) ->
+                instruction.opcode == Opcode.INVOKE_VIRTUAL &&
+                    instruction.getReference<MethodReference>()?.name == "setBounds"
+            }.map { it.index }.reversed().forEach { at ->
+                val laying = getInstruction<FiveRegisterInstruction>(at)
+                replaceInstruction(
+                    at,
+                    "invoke-static { v${laying.registerC}, v${laying.registerF}, " +
+                        "v${laying.registerG}, p0 }, $EXTENSION_CLASS_DESCRIPTOR->$BOUND_METHOD",
+                )
+            }
+
+            // A video is drawn as the frame it starts on, which on its own looks like any
+            // other picture. Said after the picture is drawn, so a play mark goes over it.
+            instructions.withIndex().filter { (_, instruction) ->
+                instruction.opcode == Opcode.INVOKE_VIRTUAL &&
+                    instruction.getReference<MethodReference>()?.let { drew ->
+                        drew.name == "draw" && drew.parameterTypes.singleOrNull() ==
+                            "Landroid/graphics/Canvas;"
+                    } == true
+            }.map { it.index }.reversed().forEach { at ->
+                val drawing = getInstruction<FiveRegisterInstruction>(at)
+                addInstructions(
+                    at + 1,
+                    "invoke-static { v${drawing.registerD}, p0 }, " +
+                        "$EXTENSION_CLASS_DESCRIPTOR->$OVERLAY_METHOD",
+                )
+            }
+
+            val asks = instructions.indexOfFirst {
+                it.opcode == Opcode.INVOKE_VIRTUAL &&
+                    it.getReference<MethodReference>()?.let { asked ->
+                        asked.definingClass == ANIMATED_DRAWABLE && asked.name == "isRunning"
+                    } == true
+            }
+            if (asks < 0) {
+                throw PatchException("Nothing asks whether a picture in a comment is running")
+            }
+            val answer = getInstruction<OneRegisterInstruction>(asks + 1).registerA
+            replaceInstruction(asks + 1, "const/4 v$answer, 0x1")
+        }
+
+        // Which of the size settings apply depends on the size being used, and Sync's own
+        // settings screens are its own fragments, so there is nowhere of ours to say so from.
+        // Said as a screen finishes loading its rows, which is the one place every screen
+        // passes through: the rows exist by then, and a screen without them is left alone.
+        Fingerprint(
+            definingClass = SETTINGS_SCREEN,
+            name = "t3",
+            parameters = listOf("I"),
+            returnType = "V",
+        ).method.apply {
+            // One return, reached by every path, and the rows are loaded by the call above it.
+            addInstructions(
+                instructions.count() - 1,
+                "invoke-static { p0 }, $ROWS_CLASS_DESCRIPTOR->$SETTLE_ROWS_METHOD",
+            )
+        }
+
+        Fingerprint(
+            definingClass = ROWS_CLASS_DESCRIPTOR,
+            name = "isPatchIncluded",
+        ).method.returnEarly(true)
+
+        // How a picture drawn in a comment is decoded. Sync asks for it in a square of the
+        // span's width and rounds it by 8dp, and the span then stretches whatever comes back to
+        // the size it was made with; the rounding being in the decoded picture's own pixels, the
+        // corners came out that radius times however far it was stretched. Asked for at the size
+        // it is drawn and scaled to exactly that before rounding, which is what Sync already does
+        // for every other picture it draws in text.
+        Fingerprint(
+            definingClass = TEXT_PICTURE_LOADER,
+            name = "o",
+            parameters = listOf("Loc/b;"),
+            returnType = "V",
+        ).method.apply {
+            // The only picture in this method rounded on its own, without being scaled first:
+            // every other kind is given a list of two, so one transformation names this one.
+            val rounds = instructions.withIndex().filter { (_, instruction) ->
+                instruction.opcode == Opcode.INVOKE_VIRTUAL &&
+                    instruction.getReference<MethodReference>()?.let { asked ->
+                        asked.definingClass == GLIDE_OPTIONS && asked.name == "j0"
+                    } == true
+            }
+            if (rounds.size != 1) {
+                throw PatchException(
+                    "Expected one picture rounded without being scaled, found ${rounds.size}",
+                )
+            }
+            val at = rounds.single().index
+            // The receiver is the request being built; the argument beside it is the rounding
+            // itself, not the span, so the span is taken from where it was named just above.
+            val request = getInstruction<FiveRegisterInstruction>(at).registerC
+            val named = (at - 1 downTo 0).firstOrNull { step ->
+                val instruction = instructions.elementAt(step)
+                instruction.opcode == Opcode.CHECK_CAST &&
+                    instruction.getReference<TypeReference>()?.type == PICTURE_SPAN
+            } ?: throw PatchException("Nothing says which span the picture is being decoded for")
+            val span = getInstruction<OneRegisterInstruction>(named).registerA
+            replaceInstruction(
+                at,
+                "invoke-static { v$request, v$span }, " +
+                    "$EXTENSION_CLASS_DESCRIPTOR->$SHAPE_FOR_METHOD",
+            )
         }
 
         // Reddit's own giphy pictures have a path of their own, which asks for a hundred

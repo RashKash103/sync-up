@@ -110,7 +110,8 @@ public final class SyncUpSettings {
         }
     }
 
-    private static SharedPreferences store() {
+    /** @return Where Sync keeps the settings in use, which is a file per account. */
+    public static SharedPreferences store() {
         Context context = Utils.getContext();
         if (context == null) {
             return null;

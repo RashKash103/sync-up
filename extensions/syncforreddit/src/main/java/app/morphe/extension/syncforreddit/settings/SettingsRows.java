@@ -1,4 +1,4 @@
-package app.morphe.extension.syncforreddit.translate;
+package app.morphe.extension.syncforreddit.settings;
 
 import androidx.preference.Preference;
 import androidx.preference.h;
