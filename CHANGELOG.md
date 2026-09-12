@@ -1,3 +1,9 @@
+## [1.8.0-dev.11](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.10...v1.8.0-dev.11) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* Add a card or draw the picture, not both, and stop offering Sort ([be612cb](https://github.com/RashKash103/sync-up/commit/be612cb2f6551016d585e30ec2413059fa85dd5b))
+
 ## [1.8.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.8.0-dev.9...v1.8.0-dev.10) (2026-09-11)
 
 ### 🐛 Bug Fixes
