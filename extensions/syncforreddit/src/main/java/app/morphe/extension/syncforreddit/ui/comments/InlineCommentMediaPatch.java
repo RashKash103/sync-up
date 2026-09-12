@@ -263,6 +263,44 @@ public final class InlineCommentMediaPatch {
         }
     }
 
+    /**
+     * Remembers how wide the comment about to be drawn may be.
+     *
+     * <p>Sync works this out for every comment, taking the indent and the margins off the width
+     * of the screen, and it is right: a reply gets less room than what it replies to. It is only
+     * handed to the parse, though, and Reddit's own giphy pictures are drawn by a path that is
+     * told the address and nothing else. That path was left guessing — the width of the last
+     * comment that happened to hold a link, or nine tenths of the screen — so a giphy in a reply
+     * was built wider than the room it had and cut off on the right.
+     *
+     * <p>Called where the width is settled, which is once per comment and before any of it is
+     * parsed, so what it records is this comment's own.
+     *
+     * @param where What Sync is about to draw the text with.
+     */
+    public static void howWide(nc.a where) {
+        if (!isPatchIncluded() || !inlineEverything() || where == null) {
+            return;
+        }
+        try {
+            final int room = where.e;
+            if (room <= 0) {
+                return;
+            }
+            lastWidth = room;
+            if (measured < WORTH_SAYING) {
+                measured++;
+                Logger.printInfo(() -> "inline comments: this comment may be drawn "
+                        + room + " wide");
+            }
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "inline comments: could not tell how wide the text is: " + ex);
+        }
+    }
+
+    /** How many times the width has been reported, so a capture is not flooded. */
+    private static int measured;
+
     public static Object[] spansFor(Object[] spans, String link, nc.a where) {
         if (!wanted(link)) {
             return spans;

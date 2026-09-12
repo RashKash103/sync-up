@@ -46,6 +46,12 @@ private const val GIPHY_SPANS_METHOD = "giphySpans([Ljava/lang/Object;)[Ljava/la
 private const val CARD_OR_PICTURE_METHOD =
     "cardOrPicture(Lnc/b;Lnc/b\$a;Ljava/lang/String;)Ljava/lang/String;"
 
+private const val HOW_WIDE_METHOD = "howWide(Lnc/a;)V"
+
+/** Where Sync works out how wide a comment's text may be drawn. */
+private const val COMMENT_TEXT_VIEW =
+    "Lcom/laurencedawson/reddit_sync/ui/views/comments/CommentsHtmlTextView;"
+
 private const val SPANS_FOR_METHOD =
     "spansFor([Ljava/lang/Object;Ljava/lang/String;Lnc/a;)[Ljava/lang/Object;"
 
@@ -106,6 +112,32 @@ val inlineCommentMediaPatch = bytecodePatch(
             definingClass = SIZES_CLASS_DESCRIPTOR,
             name = "isPatchIncluded",
         ).method.returnEarly(true)
+
+        // How wide the text may be drawn. Sync takes the paddings off the width of the screen,
+        // which at a reply to a reply comes back larger than the room actually there, so a
+        // picture built to it is cut off on the right. Corrected where it is settled, which is
+        // the one place the text view itself is to hand.
+        Fingerprint(
+            definingClass = COMMENT_TEXT_VIEW,
+            name = "J",
+            parameters = listOf("Lxa/d;", "Ljava/lang/String;"),
+            returnType = "V",
+        ).method.apply {
+            val saysHowWide = instructions.indexOfFirst {
+                it.opcode == Opcode.INVOKE_VIRTUAL &&
+                    it.getReference<MethodReference>()?.let { asked ->
+                        asked.definingClass == WHERE_IT_IS && asked.name == "d"
+                    } == true
+            }
+            if (saysHowWide < 0) {
+                throw PatchException("Sync no longer says how wide a comment's text may be")
+            }
+            val where = getInstruction<FiveRegisterInstruction>(saysHowWide).registerC
+            addInstructions(
+                saysHowWide + 1,
+                "invoke-static { v$where }, $EXTENSION_CLASS_DESCRIPTOR->$HOW_WIDE_METHOD",
+            )
+        }
 
         // Where a link in a comment is turned into either a drawn picture or a chip. Anchored on
         // the span itself, since the decision around it is a long run of unnamed tests.
