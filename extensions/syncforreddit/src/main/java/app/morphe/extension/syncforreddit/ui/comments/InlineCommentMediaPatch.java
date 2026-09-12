@@ -94,6 +94,70 @@ public final class InlineCommentMediaPatch {
      *
      * <p>Adding the card as well is what drew each picture twice.
      */
+    /** What an address ends with when it is a video rather than a picture. */
+    private static final String[] VIDEO_ENDINGS = { ".mp4", ".webm", ".mov", ".m4v" };
+
+    /** The spans drawn from a video's still, which are marked as playable. */
+    private static final java.util.Set<nb.c> playable =
+            java.util.Collections.newSetFromMap(
+                    new java.util.WeakHashMap<nb.c, Boolean>());
+
+    /** @return Whether this address is a video, which is drawn as its opening frame. */
+    private static boolean isVideo(String link) {
+        String plain = link.toLowerCase(Locale.ROOT);
+        int asked = plain.indexOf('?');
+        if (asked > 0) {
+            plain = plain.substring(0, asked);
+        }
+        for (String ending : VIDEO_ENDINGS) {
+            if (plain.endsWith(ending)) {
+                return true;
+            }
+        }
+        return plain.contains("v.redd.it/");
+    }
+
+    /**
+     * Called where the span has drawn what it holds, so a video says that it is one.
+     *
+     * <p>What is drawn is the frame the video starts on, which on its own is a picture like any
+     * other and gives no sign that tapping it would play anything. A play mark is drawn over
+     * it, the same one anything else showing a video draws.
+     */
+    public static void overlay(android.graphics.Canvas canvas, nb.c span) {
+        if (canvas == null || span == null || !playable.contains(span)) {
+            return;
+        }
+        try {
+            Integer gap = gaps.get(span);
+            int under = gap == null ? 0 : gap;
+            int wide = span.e();
+            int tall = heightOf(span) - under;
+            if (wide <= 0 || tall <= 0) {
+                return;
+            }
+            float middleX = wide / 2f;
+            float middleY = tall / 2f;
+            float radius = Math.max(1f, Math.min(wide, tall) * 0.14f);
+
+            android.graphics.Paint paint = new android.graphics.Paint(
+                    android.graphics.Paint.ANTI_ALIAS_FLAG);
+            paint.setColor(android.graphics.Color.argb(140, 0, 0, 0));
+            canvas.drawCircle(middleX, middleY, radius, paint);
+
+            paint.setColor(android.graphics.Color.WHITE);
+            android.graphics.Path play = new android.graphics.Path();
+            float reach = radius * 0.52f;
+            play.moveTo(middleX - reach * 0.62f, middleY - reach);
+            play.lineTo(middleX - reach * 0.62f, middleY + reach);
+            play.lineTo(middleX + reach * 0.9f, middleY);
+            play.close();
+            canvas.drawPath(play, paint);
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "inline comments: could not mark a video: " + ex);
+        }
+    }
+
     /** How much room is left under a drawn picture, so text after it is not against it. */
     private static final int GAP_UNDER_DP = 8;
 
@@ -148,8 +212,20 @@ public final class InlineCommentMediaPatch {
      * whose media is a card and a comment whose media has vanished.
      */
     private static boolean canDraw(String link) {
-        int[] shape = shapeOf(link);
+        String drawn = drawnFrom(link);
+        if (drawn == null) {
+            return false;
+        }
+        int[] shape = shapeOf(drawn);
         return shape != null && sizeFor(shape, lastWidth) != null;
+    }
+
+    /**
+     * @return The address the picture is actually fetched from, which for a video is the still
+     *         taken of its opening frame, or null where there is not one yet.
+     */
+    private static String drawnFrom(String link) {
+        return isVideo(link) ? VideoPosters.stillFor(link) : link;
     }
 
     public static String cardOrPicture(nc.b cards, nc.b.a card, String link) {
@@ -479,7 +555,13 @@ public final class InlineCommentMediaPatch {
                 Logger.printInfo(() -> "inline comments: no width to draw " + link + " at");
                 return spans;
             }
-            int[] shape = shapeOf(link);
+            String drawn = drawnFrom(link);
+            if (drawn == null) {
+                Logger.printDebug(() -> "inline comments: no still of " + link + " yet, "
+                        + "leaving it as Sync drew it");
+                return spans;
+            }
+            int[] shape = shapeOf(drawn);
             if (shape == null) {
                 // A picture of the wrong shape is worse than the card Sync would have drawn.
                 Logger.printDebug(() -> "inline comments: the shape of " + link
@@ -498,7 +580,13 @@ public final class InlineCommentMediaPatch {
                     + " in " + width);
             // The span that draws the picture and nothing else, at the shape it actually is.
             // Its sibling draws a card: a small picture with the address beside it.
-            return new Object[]{ pictureOf(link, drawWide, drawTall), new mb.d(link) };
+            // Drawn from the still where it is a video; the link itself is what a tap opens,
+            // which is the player.
+            nb.c picture = pictureOf(drawn, drawWide, drawTall);
+            if (isVideo(link)) {
+                playable.add(picture);
+            }
+            return new Object[]{ picture, new mb.d(link) };
         } catch (Throwable ex) {
             Logger.printInfo(() -> "inline comments: could not draw " + link + ": " + ex);
             return spans;

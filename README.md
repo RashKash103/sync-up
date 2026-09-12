@@ -208,8 +208,11 @@ service being asked.
   everything else becomes a chip naming where it goes. This widens that to everything Sync
   can draw, and draws the picture itself rather than a card beside the address. Sizes come
   from what Reddit sends alongside the comments, so a picture is in proportion the first
-  time rather than standing as a card until it has been measured. Off by default, under
-  *Comment options*.
+  time rather than standing as a card until it has been measured. A video is drawn as the
+  frame it starts on with a play mark over it, since a player cannot live in a line of
+  text; tapping it opens it and it plays. Anything that cannot be drawn — a picture whose
+  size is not known yet, a video with no frame to take — is left exactly as Sync drew it,
+  which is a card. Off by default, under *Comment options*.
 
   How large media is drawn is settled by three settings beside it. By default each picture
   is drawn at **its own size** — the pixels it actually has — so a low-resolution image is

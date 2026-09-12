@@ -48,6 +48,8 @@ private const val SHAPE_FOR_METHOD = "shapeFor(Lt3/a;Lnb/c;)Lt3/a;"
 private const val BOUND_METHOD =
     "bound(Landroid/graphics/drawable/Drawable;IILnb/c;)V"
 
+private const val OVERLAY_METHOD = "overlay(Landroid/graphics/Canvas;Lnb/c;)V"
+
 /** What turns off the size settings that do not apply to the size in use. */
 private const val ROWS_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/ui/comments/InlineMediaRows;"
@@ -346,6 +348,23 @@ val inlineCommentMediaPatch = bytecodePatch(
                     at,
                     "invoke-static { v${laying.registerC}, v${laying.registerF}, " +
                         "v${laying.registerG}, p0 }, $EXTENSION_CLASS_DESCRIPTOR->$BOUND_METHOD",
+                )
+            }
+
+            // A video is drawn as the frame it starts on, which on its own looks like any
+            // other picture. Said after the picture is drawn, so a play mark goes over it.
+            instructions.withIndex().filter { (_, instruction) ->
+                instruction.opcode == Opcode.INVOKE_VIRTUAL &&
+                    instruction.getReference<MethodReference>()?.let { drew ->
+                        drew.name == "draw" && drew.parameterTypes.singleOrNull() ==
+                            "Landroid/graphics/Canvas;"
+                    } == true
+            }.map { it.index }.reversed().forEach { at ->
+                val drawing = getInstruction<FiveRegisterInstruction>(at)
+                addInstructions(
+                    at + 1,
+                    "invoke-static { v${drawing.registerD}, p0 }, " +
+                        "$EXTENSION_CLASS_DESCRIPTOR->$OVERLAY_METHOD",
                 )
             }
 
