@@ -123,8 +123,47 @@ public final class InlineCommentMediaPatch {
     private static final java.util.Set<String> measuring =
             java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
 
-    private static final java.util.concurrent.Executor MEASURING =
-            java.util.concurrent.Executors.newFixedThreadPool(2);
+    private static final java.util.concurrent.ExecutorService MEASURING =
+            java.util.concurrent.Executors.newFixedThreadPool(6);
+
+    /** The pictures being asked about, so the comments can wait for the answers. */
+    private static final java.util.Map<String, java.util.concurrent.Future<?>> pending =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Writes down how big a picture is, as Reddit itself said when it sent the comments.
+     *
+     * <p>This is where the sizes are meant to come from: Reddit sends them beside the text, so
+     * they are known before anything is drawn, and the picture goes in the right shape the first
+     * time. Sync draws one inline on exactly the same grounds.
+     */
+    public static void remember(String link, int wide, int tall) {
+        if (link == null || link.isEmpty() || wide <= 0 || tall <= 0) {
+            return;
+        }
+        String plain = link.replace("&amp;", "&");
+        if (shapes.put(plain, new int[]{ wide, tall }) == null) {
+            Logger.printDebug(() -> "inline comments: Reddit says " + plain
+                    + " is " + wide + "x" + tall);
+        }
+        // Kept under both spellings: Reddit writes its addresses with the ampersands escaped
+        // and asks for them unescaped.
+        shapes.put(link, new int[]{ wide, tall });
+    }
+
+    /**
+     * Starts measuring a picture Reddit said nothing about, as its comments arrive.
+     *
+     * <p>Reddit gives sizes for what it hosts itself and nothing for a giphy picture, so that
+     * one has to be asked. Asked now rather than when it is drawn, since the comments arrive
+     * well before any of them are on screen.
+     */
+    public static void measureSoon(String link) {
+        if (link == null || link.isEmpty() || shapes.containsKey(link)) {
+            return;
+        }
+        measure(link);
+    }
 
     /**
      * @return The picture's size, or null where it is not known yet. Asking is done off to one
@@ -158,7 +197,7 @@ public final class InlineCommentMediaPatch {
         if (!measuring.add(link)) {
             return;
         }
-        MEASURING.execute(() -> {
+        pending.put(link, MEASURING.submit(() -> {
             java.net.HttpURLConnection asking = null;
             try {
                 asking = (java.net.HttpURLConnection) new java.net.URL(link).openConnection();
@@ -185,8 +224,43 @@ public final class InlineCommentMediaPatch {
                     asking.disconnect();
                 }
                 measuring.remove(link);
+                pending.remove(link);
             }
-        });
+        }));
+    }
+
+    /**
+     * Waits for the pictures that had to be measured, so the comments they are in are drawn
+     * knowing how big they are.
+     *
+     * <p>Called where the comments arrive, off the screen's thread and before Sync has seen
+     * them. Reddit sends its own sizes, so this is only ever the few it says nothing about;
+     * waiting there costs the reply the time of one small request and saves every picture in
+     * it standing as a card until it has been asked about. Bounded, since a picture drawn late
+     * is better than comments that do not arrive.
+     *
+     * @param millis How long to wait altogether.
+     */
+    public static void awaitMeasures(long millis) {
+        long until = android.os.SystemClock.uptimeMillis() + millis;
+        for (String link : new java.util.ArrayList<>(pending.keySet())) {
+            java.util.concurrent.Future<?> asking = pending.get(link);
+            if (asking == null) {
+                continue;
+            }
+            long left = until - android.os.SystemClock.uptimeMillis();
+            if (left <= 0) {
+                Logger.printDebug(() -> "inline comments: still measuring " + link
+                        + " when the comments were wanted");
+                break;
+            }
+            try {
+                asking.get(left, java.util.concurrent.TimeUnit.MILLISECONDS);
+            } catch (Exception ignored) {
+                // Drawn as a card this once, and in shape the next time it is on screen.
+            }
+            pending.remove(link);
+        }
     }
 
     public static Object[] spansFor(Object[] spans, String link, nc.a where) {

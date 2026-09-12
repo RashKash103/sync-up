@@ -8,6 +8,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
+import app.morphe.patches.reddit.customclients.sync.syncforreddit.http.interceptHttpRequests
 import app.morphe.util.getReference
 import app.morphe.util.returnEarly
 import com.android.tools.smali.dexlib2.Opcode
@@ -21,6 +22,10 @@ import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/ui/comments/InlineCommentMediaPatch;"
+
+/** Reads the sizes Reddit sends beside the comments, so a picture is drawn right the first time. */
+private const val SIZES_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/ui/comments/CommentMediaSizes;"
 
 private const val SHOULD_INLINE_METHOD = "shouldInline(ZLjava/lang/String;)Z"
 
@@ -87,13 +92,18 @@ val inlineCommentMediaPatch = bytecodePatch(
             "as a chip naming where it goes.",
     default = true
 ) {
-    dependsOn(sharedExtensionPatch, inlineCommentMediaSettingsPatch)
+    dependsOn(sharedExtensionPatch, inlineCommentMediaSettingsPatch, interceptHttpRequests)
 
     compatibleWith(*SyncForRedditCompatible)
 
     execute {
         Fingerprint(
             definingClass = EXTENSION_CLASS_DESCRIPTOR,
+            name = "isPatchIncluded",
+        ).method.returnEarly(true)
+
+        Fingerprint(
+            definingClass = SIZES_CLASS_DESCRIPTOR,
             name = "isPatchIncluded",
         ).method.returnEarly(true)
 
