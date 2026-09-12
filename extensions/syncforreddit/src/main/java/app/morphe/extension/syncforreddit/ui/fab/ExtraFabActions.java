@@ -245,8 +245,8 @@ public final class ExtraFabActions {
         }
 
         int size = fab.getHeight() > 0 ? fab.getHeight() : (int) fromDp(context, 56);
-        ColorStateList tint = fab instanceof ImageView
-                ? ((ImageView) fab).getImageTintList() : null;
+        int ground = colourOfTheButton(fab);
+        ColorStateList tint = tintForTheIcons(fab, ground);
 
         LinearLayout surface = new LinearLayout(context);
         surface.setTag(TAG);
@@ -263,12 +263,12 @@ public final class ExtraFabActions {
                 continue;
             }
             if (separators && surface.getChildCount() > 0) {
-                surface.addView(separator(context, size, vertical));
+                surface.addView(separator(context, size, vertical, ground));
             }
             surface.addView(part);
         }
         if (separators && surface.getChildCount() > 0) {
-            surface.addView(separator(context, size, vertical));
+            surface.addView(separator(context, size, vertical, ground));
         }
         surface.addView(itsOwn(context, fab, size, tint));
         return surface;
@@ -303,9 +303,7 @@ public final class ExtraFabActions {
         if (its.icon != null) {
             part.setImageDrawable(its.icon.getConstantState() == null
                     ? its.icon : its.icon.getConstantState().newDrawable().mutate());
-            if (fab instanceof ImageView) {
-                part.setImageTintList(((ImageView) fab).getImageTintList());
-            }
+            part.setImageTintList(tint);
         } else {
             Logger.printInfo(() -> "fab: the button is drawn with nothing to copy");
         }
@@ -354,7 +352,28 @@ public final class ExtraFabActions {
      * on one pass and not on the next, so which of the two was used depended on when the surface
      * happened to be built, and the ends did not match.
      */
+    /**
+     * What the surface is drawn on, which is what the button is drawn on.
+     *
+     * <p>The button's own background, copied and stretched across the whole surface. Taken
+     * rather than rebuilt, so the ground and the corner are the button's by construction: a
+     * rounded square stays a rounded square at the width of several of them, where one built
+     * here was a guess at both and looked like neither.
+     */
     private static Drawable surfaceFor(Context context, View fab, int size) {
+        try {
+            Drawable its = of(fab).background;
+            if (its != null && its.getConstantState() != null) {
+                Drawable copy = its.getConstantState().newDrawable().mutate();
+                copy.setState(new int[]{ android.R.attr.state_enabled });
+                Logger.printInfo(() -> "fab: the surface is drawn on the button's own "
+                        + copy.getClass().getSimpleName());
+                return copy;
+            }
+        } catch (Throwable ex) {
+            Logger.printDebug(() -> "fab: the button's own background cannot be used: " + ex);
+        }
+
         float radius = cornerOf(fab, size);
         Logger.printInfo(() -> "fab: rounding the surface by " + radius + " at every corner");
         GradientDrawable shape = new GradientDrawable();
@@ -387,16 +406,84 @@ public final class ExtraFabActions {
         } catch (Throwable ex) {
             Logger.printDebug(() -> "fab: the button will not say what corner it has: " + ex);
         }
-        Logger.printInfo(() -> "fab: the button says nothing about its corner, rounding fully");
-        return size / 2f;
+        // What Material draws a button of this kind with, rather than a semicircle: Sync's is
+        // a rounded square, and an end rounded fully looks nothing like it.
+        float rounded = fromDp(fab.getContext(), 16);
+        Logger.printInfo(() -> "fab: the button says nothing about its corner, rounding by "
+                + rounded);
+        return Math.min(rounded, size / 2f);
+    }
+
+    /**
+     * What to draw the icons in, which is what the button draws its own in.
+     *
+     * <p>Sync's button does not always say: its icon is often a drawable that is already the
+     * colour it should be, with no tint on the view at all. Asked for one and given none, an
+     * icon of ours keeps the colour it was drawn in, which is dark, and a dark button then has
+     * dark icons on it. What the ground is, is known, so the fallback is the colour that shows
+     * against it — the same choice Material makes for what sits on a coloured surface.
+     */
+    private static ColorStateList tintForTheIcons(View fab, int ground) {
+        ColorStateList said = fab instanceof ImageView
+                ? ((ImageView) fab).getImageTintList() : null;
+        if (said != null) {
+            // Asked for the colour it draws an icon it can be tapped in, not the list's own
+            // default: the default of Sync's is the greyed out one, a near black at a third of
+            // its alpha, which on a coloured button is barely there at all.
+            int enabled = said.getColorForState(
+                    new int[]{ android.R.attr.state_enabled }, said.getDefaultColor());
+            if (shows(enabled, ground)) {
+                Logger.printInfo(() -> "fab: the button draws its icons in " + hex(enabled)
+                        + ", on a ground of " + hex(ground));
+                return ColorStateList.valueOf(enabled);
+            }
+            Logger.printInfo(() -> "fab: the button says it draws its icons in " + hex(enabled)
+                    + ", which does not show on " + hex(ground));
+        }
+        int chosen = onTop(ground);
+        Logger.printInfo(() -> "fab: drawing the icons in " + hex(chosen)
+                + ", on a ground of " + hex(ground));
+        return ColorStateList.valueOf(chosen);
+    }
+
+    /**
+     * @return Whether an icon of this colour would be seen on this ground. Something faint, or
+     *         something as dark as what it sits on, is drawn in what does show instead.
+     */
+    private static boolean shows(int icon, int ground) {
+        return Color.alpha(icon) >= 200 && Math.abs(lightness(icon) - lightness(ground)) >= 0.35;
+    }
+
+    private static double lightness(int colour) {
+        return (0.299 * Color.red(colour)
+                + 0.587 * Color.green(colour)
+                + 0.114 * Color.blue(colour)) / 255d;
+    }
+
+    /** @return Black or white, whichever shows on this colour. */
+    private static int onTop(int ground) {
+        return lightness(ground) > 0.6 ? Color.BLACK : Color.WHITE;
+    }
+
+    private static String hex(int colour) {
+        return String.format("#%08X", colour);
     }
 
     private static int colourOfTheButton(View fab) {
         try {
             ColorStateList tint = fab.getBackgroundTintList();
             if (tint != null) {
-                return tint.getDefaultColor();
+                // The state it is in while it can be tapped, for the same reason the icons are
+                // asked for that one: the list's own default is the greyed out entry.
+                int said = tint.getColorForState(
+                        new int[]{ android.R.attr.state_enabled }, tint.getDefaultColor());
+                Logger.printInfo(() -> "fab: the button is drawn on " + hex(said)
+                        + ", which it said itself");
+                return said;
             }
+            Logger.printDebug(() -> "fab: the button says nothing about its ground; its "
+                    + "background is " + (fab.getBackground() == null ? "nothing"
+                    : fab.getBackground().getClass().getName()));
         } catch (Throwable ignored) {
             // Asked below instead.
         }
@@ -412,14 +499,17 @@ public final class ExtraFabActions {
         return Color.parseColor("#333333");
     }
 
-    private static View separator(Context context, int size, boolean vertical) {
+    private static View separator(Context context, int size, boolean vertical, int ground) {
         View line = new View(context);
         int thickness = (int) fromDp(context, SEPARATOR_DP);
         int length = (int) (size * 0.5f);
         line.setLayoutParams(vertical
                 ? new LinearLayout.LayoutParams(length, thickness)
                 : new LinearLayout.LayoutParams(thickness, length));
-        line.setBackgroundColor(Color.argb(60, 255, 255, 255));
+        // Drawn in what the icons are drawn in, so it shows on a light ground as well as a
+        // dark one rather than being the white line that only a dark button ever showed.
+        line.setBackgroundColor(Color.argb(60,
+                Color.red(onTop(ground)), Color.green(onTop(ground)), Color.blue(onTop(ground))));
         return line;
     }
 
