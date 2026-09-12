@@ -215,8 +215,9 @@ service being asked.
   is drawn at **its own size** — the pixels it actually has — so a low-resolution image is
   small rather than blown up to the width of the comment, and *Largest media size* caps how
   far one may grow. *Media size* can instead hold every picture to the same width or the
-  same height, set by *Media width* and *Media height*. Nothing is ever drawn wider than the
-  comment it sits in.
+  same height, set by *Media width* and *Media height*. Whichever two do not apply to the
+  size in use are faded, and they change as the size is chosen. Nothing is ever drawn wider
+  than the comment it sits in.
 
 - **Show videos posted in comments** — Reddit writes a video posted in a comment as a link
   to a player page on its own site, which opens in a browser and is answered with a banned

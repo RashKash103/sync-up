@@ -9,6 +9,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.http.interceptHttpRequests
+import app.morphe.patches.reddit.customclients.sync.syncforreddit.settings.fadeDisabledRowsPatch
 import app.morphe.util.getReference
 import app.morphe.util.returnEarly
 import com.android.tools.smali.dexlib2.Opcode
@@ -43,6 +44,15 @@ private const val CARD_OR_PICTURE_METHOD =
 private const val HOW_WIDE_METHOD = "howWide(Lnc/a;)V"
 
 private const val SHAPE_FOR_METHOD = "shapeFor(Lt3/a;Lnb/c;)Lt3/a;"
+
+/** What turns off the size settings that do not apply to the size in use. */
+private const val ROWS_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/syncforreddit/ui/comments/InlineMediaRows;"
+
+private const val SETTLE_ROWS_METHOD = "settle(Lpa/d;)V"
+
+/** The fragment every screen of Sync's settings is, and where it loads its rows. */
+private const val SETTINGS_SCREEN = "Lpa/d;"
 
 /** Where Sync builds the Glide request for every span it draws in a piece of text. */
 private const val TEXT_PICTURE_LOADER = "Loc/c;"
@@ -99,7 +109,12 @@ val inlineCommentMediaPatch = bytecodePatch(
             "as a chip naming where it goes.",
     default = true
 ) {
-    dependsOn(sharedExtensionPatch, inlineCommentMediaSettingsPatch, interceptHttpRequests)
+    dependsOn(
+        sharedExtensionPatch,
+        inlineCommentMediaSettingsPatch,
+        interceptHttpRequests,
+        fadeDisabledRowsPatch,
+    )
 
     compatibleWith(*SyncForRedditCompatible)
 
@@ -300,6 +315,28 @@ val inlineCommentMediaPatch = bytecodePatch(
             }
 
         }
+
+        // Which of the size settings apply depends on the size being used, and Sync's own
+        // settings screens are its own fragments, so there is nowhere of ours to say so from.
+        // Said as a screen finishes loading its rows, which is the one place every screen
+        // passes through: the rows exist by then, and a screen without them is left alone.
+        Fingerprint(
+            definingClass = SETTINGS_SCREEN,
+            name = "t3",
+            parameters = listOf("I"),
+            returnType = "V",
+        ).method.apply {
+            // One return, reached by every path, and the rows are loaded by the call above it.
+            addInstructions(
+                instructions.count() - 1,
+                "invoke-static { p0 }, $ROWS_CLASS_DESCRIPTOR->$SETTLE_ROWS_METHOD",
+            )
+        }
+
+        Fingerprint(
+            definingClass = ROWS_CLASS_DESCRIPTOR,
+            name = "isPatchIncluded",
+        ).method.returnEarly(true)
 
         // How a picture drawn in a comment is decoded. Sync asks for it in a square of the
         // span's width and rounds it by 8dp, and the span then stretches whatever comes back to
