@@ -1,3 +1,9 @@
+## [1.9.1-dev.1](https://github.com/RashKash103/sync-up/compare/v1.9.0...v1.9.1-dev.1) (2026-10-10)
+
+### 🐛 Bug Fixes
+
+* Stop an archive that is down holding every thread's comments ([a50f528](https://github.com/RashKash103/sync-up/commit/a50f528402dc5046c2737e6442a366a5623eabf0))
+
 ## [1.9.0](https://github.com/RashKash103/sync-up/compare/v1.8.0...v1.9.0) (2026-09-12)
 
 ### 🐛 Bug Fixes

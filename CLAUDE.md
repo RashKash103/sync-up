@@ -145,7 +145,13 @@ the setup time, since it turns a CI round trip into a few seconds.
    Packages. Export as `GITHUB_ACTOR` / `GITHUB_TOKEN`. Without the scope the plugin will not
    resolve and the build fails before it starts.
 4. **morphe-desktop** — the patcher, for actually applying patches. Grab the `-all.jar` from
-   the latest release of `MorpheApp/morphe-desktop`.
+   the latest release of `MorpheApp/morphe-desktop`. **Sign with the keystore kept at
+   `~/.android/sync-up/morphe.keystore`** — pass `--keystore=$HOME/.android/sync-up/morphe.keystore`
+   — rather than letting the patcher make one. It lives outside the scratch directory on purpose:
+   a scratch directory is wiped between sessions, and a new key means `adb install -r` is refused
+   as a signature mismatch, which costs an uninstall and a reinstall of the app's data to get
+   back to a device that is still signed in. The copy there signs as `CN=Morphe`, SHA-256
+   `dde016e1…b482`, which is what is on the test device.
 5. **A Sync APK** — the supported build, `v23.06.30-13:39`. One is at
    `~/Downloads/sync-revanced/` on this machine.
 
@@ -478,6 +484,14 @@ Current, from this project's own patches:
 - The undelete patches call Arctic Shift and the Wayback Machine, both free community
   services. Results are cached and only fetched when a thread actually contains removed
   content. Keep it that way; do not add speculative prefetching.
+- **The undelete interceptor holds the comments while it asks.** It reads the reply, calls the
+  archive, and only then hands the thread back, so whatever the archive takes is time the
+  comments are not on screen. Arctic Shift went down for an afternoon and every thread holding
+  anything removed sat for sixteen seconds — the old fifteen second read timeout, paid again on
+  each thread, since only a success was remembered. The wait is five seconds now and a host that
+  has failed twice is left alone for five minutes, so an outage costs one wait rather than one
+  per thread. Anything added here has to stay bounded the same way: these services are free and
+  being briefly down is normal, not exceptional.
 - Restored text is marked by a coloured note appended to the line under the author, built with
   Sync's own header builder, because Sync has no equivalent of the model field Boost renders its
   markers in. The wording comes from Reddit's own placeholder (`[ Removed by moderator ]`), so
