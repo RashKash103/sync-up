@@ -145,7 +145,13 @@ the setup time, since it turns a CI round trip into a few seconds.
    Packages. Export as `GITHUB_ACTOR` / `GITHUB_TOKEN`. Without the scope the plugin will not
    resolve and the build fails before it starts.
 4. **morphe-desktop** — the patcher, for actually applying patches. Grab the `-all.jar` from
-   the latest release of `MorpheApp/morphe-desktop`.
+   the latest release of `MorpheApp/morphe-desktop`. **Sign with the keystore kept at
+   `~/.android/sync-up/morphe.keystore`** — pass `--keystore=$HOME/.android/sync-up/morphe.keystore`
+   — rather than letting the patcher make one. It lives outside the scratch directory on purpose:
+   a scratch directory is wiped between sessions, and a new key means `adb install -r` is refused
+   as a signature mismatch, which costs an uninstall and a reinstall of the app's data to get
+   back to a device that is still signed in. The copy there signs as `CN=Morphe`, SHA-256
+   `dde016e1…b482`, which is what is on the test device.
 5. **A Sync APK** — the supported build, `v23.06.30-13:39`. One is at
    `~/Downloads/sync-revanced/` on this machine.
 
