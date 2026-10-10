@@ -478,6 +478,14 @@ Current, from this project's own patches:
 - The undelete patches call Arctic Shift and the Wayback Machine, both free community
   services. Results are cached and only fetched when a thread actually contains removed
   content. Keep it that way; do not add speculative prefetching.
+- **The undelete interceptor holds the comments while it asks.** It reads the reply, calls the
+  archive, and only then hands the thread back, so whatever the archive takes is time the
+  comments are not on screen. Arctic Shift went down for an afternoon and every thread holding
+  anything removed sat for sixteen seconds — the old fifteen second read timeout, paid again on
+  each thread, since only a success was remembered. The wait is five seconds now and a host that
+  has failed twice is left alone for five minutes, so an outage costs one wait rather than one
+  per thread. Anything added here has to stay bounded the same way: these services are free and
+  being briefly down is normal, not exceptional.
 - Restored text is marked by a coloured note appended to the line under the author, built with
   Sync's own header builder, because Sync has no equivalent of the model field Boost renders its
   markers in. The wording comes from Reddit's own placeholder (`[ Removed by moderator ]`), so
