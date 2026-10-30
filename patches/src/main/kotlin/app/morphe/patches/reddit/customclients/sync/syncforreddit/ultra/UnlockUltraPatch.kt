@@ -8,9 +8,9 @@ import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patcher.Fingerprint
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.http.interceptHttpRequests
-import app.morphe.util.returnEarly
+import app.morphe.patcher.util.returnEarly
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.util.getReference
+import app.morphe.patcher.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference

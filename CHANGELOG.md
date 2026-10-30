@@ -1,3 +1,9 @@
+## [1.9.3-dev.1](https://github.com/RashKash103/sync-up/compare/v1.9.2...v1.9.3-dev.1) (2026-10-30)
+
+### 🚀 Updated App Support
+
+* Build against Morphe Patcher 2.1.0 ([bbefb86](https://github.com/RashKash103/sync-up/commit/bbefb86c9a2aff8da36bbc6d9cb74332a8c3ab8b))
+
 ## [1.9.2](https://github.com/RashKash103/sync-up/compare/v1.9.1...v1.9.2) (2026-10-30)
 
 ### 🐛 Bug Fixes

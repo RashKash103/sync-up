@@ -13,12 +13,14 @@ patches {
     }
 }
 
-dependencies {
-    // Used by the patch list generator.
-    implementation(libs.gson)
+// Separate configuration so gson is available at runtime for the generatePatchesList task
+// but is never bundled into the patched APK.
+val patchListGeneratorClasspath = configurations.create("patchListGeneratorClasspath")
 
-    // Required due to smali, or build fails. Can be removed once smali is bumped.
-    implementation(libs.guava)
+dependencies {
+    // Used by the patch list generator, which runs on the host rather than on a device.
+    compileOnly(libs.gson)
+    patchListGeneratorClasspath(libs.gson)
 
     implementation(libs.morphe.patches.library)
 }
@@ -29,18 +31,12 @@ tasks {
 
         dependsOn(build)
 
-        classpath = sourceSets["main"].runtimeClasspath
+        classpath = sourceSets["main"].runtimeClasspath + patchListGeneratorClasspath
         mainClass.set("app.morphe.util.PatchListGeneratorKt")
     }
 
     // Used by gradle-semantic-release-plugin.
     publish {
         dependsOn("generatePatchesList")
-    }
-}
-
-kotlin {
-    compilerOptions {
-        freeCompilerArgs = listOf("-Xcontext-parameters")
     }
 }

@@ -5,7 +5,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.http.interceptHttpRequests
-import app.morphe.util.returnEarly
+import app.morphe.patcher.util.returnEarly
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/syncforreddit/http/posts/TappableLinksPatch;"

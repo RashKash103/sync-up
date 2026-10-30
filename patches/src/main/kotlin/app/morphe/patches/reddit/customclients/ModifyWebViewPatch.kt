@@ -13,7 +13,7 @@ import app.morphe.patcher.methodCall
 import app.morphe.patcher.patch.Compatibility
 import app.morphe.patcher.patch.Patch
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.util.registersUsed
+import app.morphe.patches.util.registersUsed
 
 fun modifyWebViewPatch(
     extensionPatch: Array<Patch<*>>,
