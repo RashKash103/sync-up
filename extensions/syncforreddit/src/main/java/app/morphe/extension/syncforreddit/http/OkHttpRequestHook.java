@@ -8,6 +8,7 @@ import java.util.Map;
 import app.morphe.extension.shared.requests.BaseOkHttpRequestHook;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.syncforreddit.RedirectGfycatPatch;
+import app.morphe.extension.syncforreddit.http.comments.FixMoreCommentsPatch;
 import app.morphe.extension.syncforreddit.http.comments.PlayCommentVideoPatch;
 import app.morphe.extension.syncforreddit.http.imgur.FixImgurProxyPatch;
 import app.morphe.extension.syncforreddit.http.posts.FixPostLookupPatch;
@@ -162,6 +163,7 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
         // Last, so that the listing it builds is seen by everything above that reads one,
         // exactly as the response it stands in for would have been.
         interceptors.add(new FixPostLookupPatch());
+        interceptors.add(new FixMoreCommentsPatch());
         return interceptors;
     }
 

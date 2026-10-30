@@ -231,6 +231,13 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   beyond the patch's own stack frame. Naming the register by number rather than as `pN` does not
   help, since the signature is built either way. `RedditProvider.bulkInsert(Uri, ContentValues[])`
   cannot be hooked; its callers, which take no arrays, can.
+- **okio is in the app under another name, so never name it.** okhttp is there under its own
+  name and compiles fine against the extension, but `okio.Buffer` throws
+  `NoClassDefFoundError: Lokio/Buffer;` the first time it is reached and takes the app down —
+  which for an interceptor means a crash on whatever the user just tapped. Reading a request
+  body is where this comes up, since writing one to a sink is the documented way. Read the bytes
+  off the body object instead: what `RequestBody.create(MediaType, byte[])` returns holds them
+  in a field, found by its type rather than its name, since the names do not survive R8.
 - **Two methods on a class can have the same signature.** `Loc/c;` has both `u()V` and `p()V`,
   so a predicate matching "no parameters, returns void, on `Loc/c;`" finds the wrong one. Anchor
   on what guards or surrounds the call instead.

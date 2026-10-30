@@ -186,6 +186,11 @@ service being asked.
   up by, and refuses `/by_id` beside it, so an album raised an error instead of opening. The
   post is read from its own thread, which publishes the same gallery, and the reply is cut back
   to the shape the old endpoint answered in. Ordinary listings were never affected.
+- **Fix loading more comments** — Reddit stopped answering `/api/morechildren` as well, so a
+  "view more" only ever raised an error. The comments behind it are read from the thread, where
+  Reddit still serves any comment and everything hanging from it, and the reply is flattened the
+  way the old endpoint answered. The comments already on screen are left out, so nothing is
+  drawn twice.
 - **Modify login WebView** — Routes the login page through the extension so that signing in
   completes.
 - **Disable ads**, **Disable Sync for Lemmy bottom sheet** — Removes the ads shown between
