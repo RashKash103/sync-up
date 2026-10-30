@@ -179,6 +179,10 @@ service being asked.
   than failing.
 - **Use /user/ endpoint** — Profiles are fetched from `/user/`; the `/u/` form Sync used is
   no longer served.
+- **Fix opening albums** — Reddit stopped answering `/api/info`, the endpoint Sync looks a post
+  up by, and refuses `/by_id` beside it, so an album raised an error instead of opening. The
+  post is read from its own thread, which publishes the same gallery, and the reply is cut back
+  to the shape the old endpoint answered in. Ordinary listings were never affected.
 - **Modify login WebView** — Routes the login page through the extension so that signing in
   completes.
 - **Disable ads**, **Disable Sync for Lemmy bottom sheet** — Removes the ads shown between
