@@ -1,5 +1,5 @@
 {
-  "version": "1.9.1",
+  "version": "1.9.2-dev.5",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -137,10 +137,60 @@
       "options": []
     },
     {
+      "name": "Fix loading more comments",
+      "description": "Loads the comments behind a \"view more\" from the thread instead of the endpoint Reddit stopped answering.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Fix opening albums",
+      "description": "Looks a post up through Reddit's thread endpoint instead of the one Reddit stopped answering, which is what an album is opened by.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
       "name": "Fix post thumbnails",
       "description": "Fixes loading post thumbnails by correcting their URLs.",
       "use": true,
       "dependencies": [],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Fix revealing spoilers",
+      "description": "Opens a spoiler where it sits when it is tapped, which Sync otherwise answers with \"Missing post information\".",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": {
         "com.laurencedawson.reddit_sync": [
           "v23.06.30-13:39"

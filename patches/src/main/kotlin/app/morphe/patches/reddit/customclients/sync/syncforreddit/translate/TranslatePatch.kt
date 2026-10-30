@@ -175,6 +175,11 @@ private const val INSTEAD_OF_ALL_METHOD =
 /**
  * Where a sheet about one post or comment is opened, given its id rather than a bundle. The
  * sheet that translates a whole thread is opened this way.
+ *
+ * <p>The class carries four of these, one per kind of thing a sheet can be opened about, and
+ * they are alike in everything but the key they put the argument under and what they complain
+ * about when it is missing. The complaint is the only whole string that tells them apart, so it
+ * is what this matches on; the shape alone would take whichever came first.
  */
 private val opensASheetAboutOneFingerprint = Fingerprint(
     parameters = listOf(
@@ -183,6 +188,7 @@ private val opensASheetAboutOneFingerprint = Fingerprint(
         "Ljava/lang/String;",
     ),
     returnType = "V",
+    strings = listOf("Missing post ID: "),
     custom = { method, classDef ->
         classDef.type == SHOWS_A_SHEET_CLASS && method.implementation != null
     },
@@ -213,11 +219,26 @@ private const val INSTEAD_OF_COMPOSING_METHOD =
 /** What Sync writes at the end of a translation, and draws as a picture from a dead domain. */
 private const val NAMES_THE_SERVICE = "[Translated by Google](translate)"
 
-/** Where what is stored after a translation is composed, once for a post and once for a comment. */
+/**
+ * Where what is stored after a translation is composed, once for a post and once for a comment.
+ *
+ * <p>Only the class is taken from this; both of them are rewritten afterwards by walking it. The
+ * two are alike apart from which body they read, so the one that reads the body as written is
+ * named here to settle which is matched. Leaving it to the shape alone matches both and takes
+ * whichever came first, which is the same class either way but is not something to rely on.
+ */
 private val composesWhatIsStoredFingerprint = Fingerprint(
     parameters = listOf("Lxa/d;", "Ljava/lang/String;", "Ljava/lang/String;"),
     returnType = "Ljava/lang/String;",
     strings = listOf(NAMES_THE_SERVICE),
+    custom = { method, _ ->
+        method.implementation?.instructions?.any {
+            it.getReference<MethodReference>()?.let { reference ->
+                reference.definingClass == "Lxa/d;" && reference.parameterTypes.isEmpty() &&
+                        reference.returnType == "Ljava/lang/String;" && reference.name == "o"
+            } == true
+        } == true
+    },
 )
 
 /**
@@ -282,13 +303,22 @@ private val titleForFingerprint = Fingerprint(
     strings = listOf(UNKNOWN_SCREEN),
 )
 
-/** The id of the screen being shown, which the name is looked up by. */
+/**
+ * The id of the screen being shown, which the name is looked up by.
+ *
+ * <p>The class has two methods of this shape, and taking either would have been arbitrary: the
+ * screen it is showing is held in a field and read out, while the other answers with a layout id
+ * written into it. Reading the field is what makes this the right one, so that is what is
+ * matched on rather than the shape alone.
+ */
 private val screenIdFingerprint = Fingerprint(
     parameters = emptyList(),
     returnType = "I",
     custom = { method, classDef ->
         classDef.type.endsWith("preferences/PreferenceWrapperFragment;") &&
-                method.implementation?.instructions?.count() == 2
+                method.implementation?.instructions?.toList()?.let { instructions ->
+                    instructions.size == 2 && instructions.first().opcode == Opcode.IGET
+                } == true
     },
 )
 

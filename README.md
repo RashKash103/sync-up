@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.9.1](https://github.com/RashKash103/sync-up/releases/tag/v1.9.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;28 patches total
+> **[v1.9.2-dev.5](https://github.com/RashKash103/sync-up/releases/tag/v1.9.2-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;31 patches total
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;27 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;30 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -55,7 +55,10 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix /s/ links](#fix-s-links) | Opens Reddit's shortened /s/ share links in the app. |  |
 | [Fix Imgur links](#fix-imgur-links) | Resolves Imgur links in the app instead of through Sync's proxy, which no longer exists. |  |
 | [Fix Redgifs API](#fix-redgifs-api) | Fixes loading RedGifs media, which RedGifs otherwise refuses. |  |
+| [Fix loading more comments](#fix-loading-more-comments) | Loads the comments behind a "view more" from the thread instead of the endpoint Reddit stopped answering. |  |
+| [Fix opening albums](#fix-opening-albums) | Looks a post up through Reddit's thread endpoint instead of the one Reddit stopped answering, which is what an album is opened by. |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
+| [Fix revealing spoilers](#fix-revealing-spoilers) | Opens a spoiler where it sits when it is tapped, which Sync otherwise answers with "Missing post information". |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
 | [Gestures for the video player](#gestures-for-the-video-player) | Double tap a video or GIF to play or pause it rather than zoom, drag sideways to seek, and drag up or down after a double tap for volume. |  |
 | [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps the formatting and links in the body shown under a post, which Sync otherwise discards. |  |
@@ -78,7 +81,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;26 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;29 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -90,7 +93,10 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix /s/ links](#fix-s-links) | Opens Reddit's shortened /s/ share links in the app. |  |
 | [Fix Imgur links](#fix-imgur-links) | Resolves Imgur links in the app instead of through Sync's proxy, which no longer exists. |  |
 | [Fix Redgifs API](#fix-redgifs-api) | Fixes loading RedGifs media, which RedGifs otherwise refuses. |  |
+| [Fix loading more comments](#fix-loading-more-comments) | Loads the comments behind a "view more" from the thread instead of the endpoint Reddit stopped answering. |  |
+| [Fix opening albums](#fix-opening-albums) | Looks a post up through Reddit's thread endpoint instead of the one Reddit stopped answering, which is what an album is opened by. |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
+| [Fix revealing spoilers](#fix-revealing-spoilers) | Opens a spoiler where it sits when it is tapped, which Sync otherwise answers with "Missing post information". |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
 | [Gestures for the video player](#gestures-for-the-video-player) | Double tap a video or GIF to play or pause it rather than zoom, drag sideways to seek, and drag up or down after a double tap for volume. |  |
 | [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps the formatting and links in the body shown under a post, which Sync otherwise discards. |  |
@@ -113,7 +119,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;26 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;29 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -125,7 +131,10 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix /s/ links](#fix-s-links) | Opens Reddit's shortened /s/ share links in the app. |  |
 | [Fix Imgur links](#fix-imgur-links) | Resolves Imgur links in the app instead of through Sync's proxy, which no longer exists. |  |
 | [Fix Redgifs API](#fix-redgifs-api) | Fixes loading RedGifs media, which RedGifs otherwise refuses. |  |
+| [Fix loading more comments](#fix-loading-more-comments) | Loads the comments behind a "view more" from the thread instead of the endpoint Reddit stopped answering. |  |
+| [Fix opening albums](#fix-opening-albums) | Looks a post up through Reddit's thread endpoint instead of the one Reddit stopped answering, which is what an album is opened by. |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
+| [Fix revealing spoilers](#fix-revealing-spoilers) | Opens a spoiler where it sits when it is tapped, which Sync otherwise answers with "Missing post information". |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
 | [Gestures for the video player](#gestures-for-the-video-player) | Double tap a video or GIF to play or pause it rather than zoom, drag sideways to seek, and drag up or down after a double tap for volume. |  |
 | [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps the formatting and links in the body shown under a post, which Sync otherwise discards. |  |
@@ -179,6 +188,15 @@ service being asked.
   than failing.
 - **Use /user/ endpoint** — Profiles are fetched from `/user/`; the `/u/` form Sync used is
   no longer served.
+- **Fix opening albums** — Reddit stopped answering `/api/info`, the endpoint Sync looks a post
+  up by, and refuses `/by_id` beside it, so an album raised an error instead of opening. The
+  post is read from its own thread, which publishes the same gallery, and the reply is cut back
+  to the shape the old endpoint answered in. Ordinary listings were never affected.
+- **Fix loading more comments** — Reddit stopped answering `/api/morechildren` as well, so a
+  "view more" only ever raised an error. The comments behind it are read from the thread, where
+  Reddit still serves any comment and everything hanging from it, and the reply is flattened the
+  way the old endpoint answered. The comments already on screen are left out, so nothing is
+  drawn twice.
 - **Modify login WebView** — Routes the login page through the extension so that signing in
   completes.
 - **Disable ads**, **Disable Sync for Lemmy bottom sheet** — Removes the ads shown between
@@ -255,6 +273,13 @@ service being asked.
   menu behind a post's overflow button and to the one behind a link, next to *Open in
   browser*, for reading a page since taken down or put behind a paywall. Nothing is
   requested until one is tapped.
+
+- **Fix revealing spoilers** — Tapping a spoiler opens it where it sits. Sync answers a tap by
+  taking the markers out of the body it stores for the post and writing that back, which only
+  runs for one kind of post and reads a body the markers have already been taken out of, so a
+  tap said "Missing post information" instead. A spoiler is hidden by being painted in the
+  colour it sits on, so the one tapped is remembered and that painting is skipped. Nothing is
+  fetched, stored or rewritten, and a spoiler closes again if the text is built afresh.
 
 #### Gestures
 

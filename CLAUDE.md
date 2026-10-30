@@ -231,6 +231,13 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   beyond the patch's own stack frame. Naming the register by number rather than as `pN` does not
   help, since the signature is built either way. `RedditProvider.bulkInsert(Uri, ContentValues[])`
   cannot be hooked; its callers, which take no arrays, can.
+- **okio is in the app under another name, so never name it.** okhttp is there under its own
+  name and compiles fine against the extension, but `okio.Buffer` throws
+  `NoClassDefFoundError: Lokio/Buffer;` the first time it is reached and takes the app down —
+  which for an interceptor means a crash on whatever the user just tapped. Reading a request
+  body is where this comes up, since writing one to a sink is the documented way. Read the bytes
+  off the body object instead: what `RequestBody.create(MediaType, byte[])` returns holds them
+  in a field, found by its type rather than its name, since the names do not survive R8.
 - **Two methods on a class can have the same signature.** `Loc/c;` has both `u()V` and `p()V`,
   so a predicate matching "no parameters, returns void, on `Loc/c;`" finds the wrong one. Anchor
   on what guards or surrounds the call instead.
@@ -366,6 +373,38 @@ since JSON may escape the slashes in a URL. Writing them back unescaped is valid
 `1.0.2-dev.2`, which is what Patcheddit was last built against (April 2026). Current upstream
 is far ahead — patcher `1.11.x`, library `1.6.x`. **This is deliberate**: the ported patch
 sources were written against the older API, and pinning keeps them compilable.
+
+**A newer bundle loaded beside this one brings its patcher's behaviour with it.** Morphe
+applies the behaviour of the newest patcher any loaded bundle was built for to *every* bundle,
+and says so in a warning rather than an error:
+
+```
+WARNING: Patches built for an older version of Morphe Patcher are applied with the behavior of
+Morphe Patcher 2.0.0 that Morphe Patches 1.48.0 was built for, and may not work as intended:
+  Sync Up 1.9.2-dev.1, built for Morphe Patcher 1.3.3
+    - Fingerprint strings must equal a string of the method, instead of only being contained in one
+```
+
+Almost nobody runs this bundle alone — it is loaded alongside Morphe Patches for the Clone app
+patch — so **a fingerprint string has to equal a whole string of the method, not a fragment of
+one.** `Spoof client` broke exactly this way: it matched on `"authorize.compact?client_id"` and
+on `"Basic"` where the app holds the whole authorization url and `"Basic "` with its trailing
+space. An exact string matches under both behaviours, so writing them out is compatible either
+way and costs nothing.
+
+Checking this against the APK is not enough on its own: a string can be an exact string of the
+app somewhere else while being only a fragment within the class the fingerprint targets, which
+is what `"Basic"` was — exact in okhttp's `Credentials`, a fragment in Sync's own. Read the
+strings of the *target* class. Where the whole string cannot be written down because it names
+the package or the version — the user agent does both, and this bundle is offered for the Pro
+and Dev packages at any version — match with `custom` over the method's instructions instead,
+which is not string matching at all and so reads the same under either behaviour.
+
+The cheapest way to catch all of it is to patch with both bundles loaded:
+`java -jar morphe-desktop.jar patch -p patches-*.mpp -p patches-<morphe>.mpp --options-file
+opts.json --continue-on-error`. Options are keyed per bundle, so generate `opts.json` with
+`--options-update` *while both are loaded* or `-O client-id=` never reaches the patch and the
+run dies on a missing option long before it reaches a fingerprint.
 
 Modernising the dependency stack is the largest known follow-up. It is an API migration, not a
 version bump, and it should be done as its own change with a real build behind it. `morphe-patcher`
