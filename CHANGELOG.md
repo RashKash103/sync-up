@@ -1,3 +1,9 @@
+## [1.9.2-dev.3](https://github.com/RashKash103/sync-up/compare/v1.9.2-dev.2...v1.9.2-dev.3) (2026-10-30)
+
+### 🐛 Bug Fixes
+
+* Load more comments after Reddit stopped answering /api/morechildren ([cda6ee7](https://github.com/RashKash103/sync-up/commit/cda6ee7f2d0433eace9ea07e0832882f4c4c0b7a))
+
 ## [1.9.2-dev.2](https://github.com/RashKash103/sync-up/compare/v1.9.2-dev.1...v1.9.2-dev.2) (2026-10-30)
 
 ### 🐛 Bug Fixes

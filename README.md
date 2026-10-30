@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.9.2-dev.2](https://github.com/RashKash103/sync-up/releases/tag/v1.9.2-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;29 patches total
+> **[v1.9.2-dev.3](https://github.com/RashKash103/sync-up/releases/tag/v1.9.2-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;30 patches total
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;28 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync&nbsp;&nbsp;•&nbsp;&nbsp;29 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -55,6 +55,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix /s/ links](#fix-s-links) | Opens Reddit's shortened /s/ share links in the app. |  |
 | [Fix Imgur links](#fix-imgur-links) | Resolves Imgur links in the app instead of through Sync's proxy, which no longer exists. |  |
 | [Fix Redgifs API](#fix-redgifs-api) | Fixes loading RedGifs media, which RedGifs otherwise refuses. |  |
+| [Fix loading more comments](#fix-loading-more-comments) | Loads the comments behind a "view more" from the thread instead of the endpoint Reddit stopped answering. |  |
 | [Fix opening albums](#fix-opening-albums) | Looks a post up through Reddit's thread endpoint instead of the one Reddit stopped answering, which is what an album is opened by. |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
@@ -79,7 +80,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;27 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.pro&nbsp;&nbsp;•&nbsp;&nbsp;28 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -91,6 +92,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix /s/ links](#fix-s-links) | Opens Reddit's shortened /s/ share links in the app. |  |
 | [Fix Imgur links](#fix-imgur-links) | Resolves Imgur links in the app instead of through Sync's proxy, which no longer exists. |  |
 | [Fix Redgifs API](#fix-redgifs-api) | Fixes loading RedGifs media, which RedGifs otherwise refuses. |  |
+| [Fix loading more comments](#fix-loading-more-comments) | Loads the comments behind a "view more" from the thread instead of the endpoint Reddit stopped answering. |  |
 | [Fix opening albums](#fix-opening-albums) | Looks a post up through Reddit's thread endpoint instead of the one Reddit stopped answering, which is what an album is opened by. |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
@@ -115,7 +117,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;27 patches</summary>
+<summary>📦 com.laurencedawson.reddit_sync.dev&nbsp;&nbsp;•&nbsp;&nbsp;28 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -127,6 +129,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix /s/ links](#fix-s-links) | Opens Reddit's shortened /s/ share links in the app. |  |
 | [Fix Imgur links](#fix-imgur-links) | Resolves Imgur links in the app instead of through Sync's proxy, which no longer exists. |  |
 | [Fix Redgifs API](#fix-redgifs-api) | Fixes loading RedGifs media, which RedGifs otherwise refuses. |  |
+| [Fix loading more comments](#fix-loading-more-comments) | Loads the comments behind a "view more" from the thread instead of the endpoint Reddit stopped answering. |  |
 | [Fix opening albums](#fix-opening-albums) | Looks a post up through Reddit's thread endpoint instead of the one Reddit stopped answering, which is what an album is opened by. |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |

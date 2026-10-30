@@ -1,5 +1,5 @@
 {
-  "version": "1.9.2-dev.2",
+  "version": "1.9.2-dev.3",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -122,6 +122,23 @@
     {
       "name": "Fix Redgifs API",
       "description": "Fixes loading RedGifs media, which RedGifs otherwise refuses.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.laurencedawson.reddit_sync": [
+          "v23.06.30-13:39"
+        ],
+        "com.laurencedawson.reddit_sync.pro": null,
+        "com.laurencedawson.reddit_sync.dev": null
+      },
+      "options": []
+    },
+    {
+      "name": "Fix loading more comments",
+      "description": "Loads the comments behind a \"view more\" from the thread instead of the endpoint Reddit stopped answering.",
       "use": true,
       "dependencies": [
         "BytecodePatch",
