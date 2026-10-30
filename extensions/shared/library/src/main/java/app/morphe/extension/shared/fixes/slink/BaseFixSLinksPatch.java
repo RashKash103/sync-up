@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.util.Objects;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -106,62 +105,69 @@ public abstract class BaseFixSLinksPatch {
     }
 
     private ResolveResult resolveLink(String link) {
+        URL shareUrl = RedditSLink.parse(link);
+        if (shareUrl == null) {
+            return ResolveResult.CONTINUE;
+        }
         Context context = getContext();
-        if (link.matches(".*reddit\\.com/r/[^/]+/s/[^/]+")) {
-            // A link ends with #bypass if it failed to resolve below.
-            // resolveLink is called with the same link again but this time with #bypass
-            // so that the link is opened in the app browser instead of trying to resolve it again.
-            if (link.endsWith("#bypass")) {
-                openInAppBrowser(context, link);
-
-                return ResolveResult.DO_NOTHING;
-            }
-
-            Logger.printDebug(() -> "Resolving " + link);
-
-            if (accessToken == null) {
-                // This is not optimal.
-                // However, an accessToken is necessary to make an authenticated request to Reddit.
-                // in case Reddit has banned the IP - e.g. VPN.
-                Intent startIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
-                context.startActivity(startIntent);
-
-                return ResolveResult.ACCESS_TOKEN_START;
-            }
-
-
-            Utils.runOnBackgroundThread(() -> {
-                String bypassLink = link + "#bypass";
-
-                String finalLocation = bypassLink;
-                try {
-                    HttpURLConnection connection = getHttpURLConnection(link, accessToken);
-                    connection.connect();
-                    String location = connection.getHeaderField("location");
-                    connection.disconnect();
-
-                    Objects.requireNonNull(location, "Location is null");
-
-                    finalLocation = location;
-                    Logger.printDebug(() -> "Resolved " + link + " to " + location);
-                } catch (SocketTimeoutException e) {
-                    Logger.printException(() -> "Timeout when trying to resolve " + link, e);
-                    finalLocation = bypassLink;
-                } catch (Exception e) {
-                    Logger.printException(() -> "Failed to resolve " + link, e);
-                    finalLocation = bypassLink;
-                } finally {
-                    Intent startIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(finalLocation));
-                    startIntent.setPackage(context.getPackageName());
-                    startIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(startIntent);
-                }
-            });
+        // A link ends with #bypass if it failed to resolve below.
+        // resolveLink is called with the same link again but this time with #bypass
+        // so that the link is opened in the app browser instead of trying to resolve it again.
+        if ("bypass".equals(shareUrl.getRef())) {
+            openInAppBrowser(context, link);
 
             return ResolveResult.DO_NOTHING;
         }
 
-        return ResolveResult.CONTINUE;
+        Logger.printDebug(() -> "Resolving " + link);
+
+        if (accessToken == null) {
+            // This is not optimal.
+            // However, an accessToken is necessary to make an authenticated request to Reddit.
+            // in case Reddit has banned the IP - e.g. VPN.
+            Intent startIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+            context.startActivity(startIntent);
+
+            return ResolveResult.ACCESS_TOKEN_START;
+        }
+
+
+        Utils.runOnBackgroundThread(() -> {
+            String bypassLink = RedditSLink.bypass(link);
+
+            String finalLocation = bypassLink;
+            try {
+                HttpURLConnection connection = getHttpURLConnection(link, accessToken);
+                try {
+                    connection.connect();
+                    String location = connection.getHeaderField("location");
+                    if (location == null || location.isEmpty()) {
+                        throw new IOException("Missing Reddit redirect location");
+                    }
+                    URL resolved = new URL(shareUrl, location);
+                    if (RedditSLink.parseRedditUrl(resolved.toString()) == null) {
+                        throw new IOException("Untrusted Reddit redirect destination");
+                    }
+                    finalLocation = resolved.toString();
+                    Logger.printDebug(() -> "Resolved " + link + " to " + location);
+                } finally {
+                    connection.disconnect();
+                }
+            } catch (SocketTimeoutException e) {
+                Logger.printException(() -> "Timeout when trying to resolve " + link, e);
+                finalLocation = bypassLink;
+            } catch (Exception e) {
+                Logger.printException(() -> "Failed to resolve " + link, e);
+                finalLocation = bypassLink;
+            } finally {
+                Intent startIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(finalLocation));
+                startIntent.setPackage(context.getPackageName());
+                startIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(startIntent);
+            }
+        });
+
+        return ResolveResult.DO_NOTHING;
     }
 
     public void setAccessToken(String accessToken) {
@@ -189,7 +195,11 @@ public abstract class BaseFixSLinksPatch {
 
     @NonNull
     private HttpURLConnection getHttpURLConnection(String link, String accessToken) throws IOException {
-        URL url = new URL(link);
+        // Revalidate at the credential boundary, even if a future caller skips resolveLink.
+        URL url = RedditSLink.parse(link);
+        if (url == null) {
+            throw new IOException("Refusing to send Reddit credentials to an untrusted URL");
+        }
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setInstanceFollowRedirects(false);
