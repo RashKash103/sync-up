@@ -271,6 +271,13 @@ service being asked.
   browser*, for reading a page since taken down or put behind a paywall. Nothing is
   requested until one is tapped.
 
+- **Fix revealing spoilers** — Tapping a spoiler opens it where it sits. Sync answers a tap by
+  taking the markers out of the body it stores for the post and writing that back, which only
+  runs for one kind of post and reads a body the markers have already been taken out of, so a
+  tap said "Missing post information" instead. A spoiler is hidden by being painted in the
+  colour it sits on, so the one tapped is remembered and that painting is skipped. Nothing is
+  fetched, stored or rewritten, and a spoiler closes again if the text is built afresh.
+
 #### Gestures
 
 - **Gestures for the video player** — In a video or GIF: double tap to play or pause rather
