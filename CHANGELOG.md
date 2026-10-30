@@ -1,3 +1,9 @@
+## [1.9.2-dev.5](https://github.com/RashKash103/sync-up/compare/v1.9.2-dev.4...v1.9.2-dev.5) (2026-10-30)
+
+### 🐛 Bug Fixes
+
+* Open a spoiler where it sits when it is tapped ([4b09dd0](https://github.com/RashKash103/sync-up/commit/4b09dd080e6bf7a2a1fb19e941930b61c6cd50a1))
+
 ## [1.9.2-dev.4](https://github.com/RashKash103/sync-up/compare/v1.9.2-dev.3...v1.9.2-dev.4) (2026-10-30)
 
 ### 🐛 Bug Fixes
