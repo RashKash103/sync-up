@@ -1,3 +1,9 @@
+## [1.9.2-dev.4](https://github.com/RashKash103/sync-up/compare/v1.9.2-dev.3...v1.9.2-dev.4) (2026-10-30)
+
+### 🐛 Bug Fixes
+
+* Name a single method in each of the translate fingerprints ([f8abc56](https://github.com/RashKash103/sync-up/commit/f8abc56c167485c6a172dd517d9c7a7d59ba9bfb))
+
 ## [1.9.2-dev.3](https://github.com/RashKash103/sync-up/compare/v1.9.2-dev.2...v1.9.2-dev.3) (2026-10-30)
 
 ### 🐛 Bug Fixes
