@@ -1,7 +1,7 @@
 package app.morphe.patches.reddit.customclients.sync.syncforreddit.ui.selftext
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.util.getReference
+import app.morphe.patcher.util.getReference
 import app.morphe.util.indexOfFirstInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 

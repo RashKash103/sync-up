@@ -71,7 +71,7 @@ do not need to be listed in `settings.gradle.kts`.
 | Read the target APK | `uv run --with androguard==4.1.4 python ...` — see [Inspecting the APK](#inspecting-the-apk) |
 | Refresh the README patch list | `uv run .github/scripts/generate_patches_readme.py RashKash103/sync-up dev patches-list.json README.md` |
 
-Building needs **JDK 21**, an **Android SDK** with platforms 34 and 36, and a GitHub PAT with
+Building needs **JDK 21**, an **Android SDK** with platform 36, and a GitHub PAT with
 `read:packages`, exported as `GITHUB_ACTOR` / `GITHUB_TOKEN` or set as `gpr.user` / `gpr.key`
 in `~/.gradle/gradle.properties`; the Morphe plugin and libraries come from GitHub Packages.
 There is no `~/.gradle/gradle.properties` on this machine, and where `gh` is authenticated
@@ -138,9 +138,8 @@ the setup time, since it turns a CI round trip into a few seconds.
    The system JDK may be older.
    `curl -L "https://api.adoptium.net/v3/binary/latest/21/ga/linux/x64/jdk/hotspot/normal/eclipse" | tar xz`
 2. **Android SDK** — the extension modules are `com.android.library` projects and need
-   platforms 34 and 36. Install `commandlinetools-linux`, accept the licences, then
-   `sdkmanager "platforms;android-36" "platforms;android-34" "build-tools;34.0.0"`.
-   Point `ANDROID_HOME` at it.
+   platform 36. Install `commandlinetools-linux`, accept the licences, then
+   `sdkmanager "platforms;android-36" "build-tools;34.0.0"`. Point `ANDROID_HOME` at it.
 3. **A GitHub token with `read:packages`** — the Morphe plugin and libraries come from GitHub
    Packages. Export as `GITHUB_ACTOR` / `GITHUB_TOKEN`. Without the scope the plugin will not
    resolve and the build fails before it starts.
@@ -367,49 +366,65 @@ since JSON may escape the slashes in a URL. Writing them back unescaped is valid
 - `raw.githubusercontent.com/laurencedawson/reddit-sync-development`, `api.streamable.com`,
   `reddit.statuspage.io`, `syncapps.io`, `api.redgifs.com` itself — all answering.
 
-## Version pinning
+## Patcher version
 
-`gradle/libs.versions.toml` pins Morphe Patcher `1.3.3` and morphe-patches-library
-`1.0.2-dev.2`, which is what Patcheddit was last built against (April 2026). Current upstream
-is far ahead — patcher `1.11.x`, library `1.6.x`. **This is deliberate**: the ported patch
-sources were written against the older API, and pinning keeps them compilable.
+`gradle/libs.versions.toml` tracks Morphe Patcher and the patches library at **2.1.0**, which is
+what the manager ships and what the template builds against. It was pinned at patcher `1.3.3`
+for a long time because the ported sources were written against that API; that migration is
+done, and the pin is no longer something to preserve.
 
-**A newer bundle loaded beside this one brings its patcher's behaviour with it.** Morphe
-applies the behaviour of the newest patcher any loaded bundle was built for to *every* bundle,
-and says so in a warning rather than an error:
+**Build against the same major as everything else loaded.** Morphe applies the behaviour of the
+newest patcher any loaded bundle was built for to *every* loaded bundle, and a bundle built for
+an older one is called out in a warning rather than an error:
 
 ```
 WARNING: Patches built for an older version of Morphe Patcher are applied with the behavior of
-Morphe Patcher 2.0.0 that Morphe Patches 1.48.0 was built for, and may not work as intended:
-  Sync Up 1.9.2-dev.1, built for Morphe Patcher 1.3.3
+Morphe Patcher 2.0.0 that Morphe Patches 2.0.0 was built for, and may not work as intended:
+  Sync Up 1.9.2, built for Morphe Patcher 1.3.3
     - Fingerprint strings must equal a string of the method, instead of only being contained in one
+    - Fingerprint instruction filters before a filter that does not match are retried with their
+      next matching instruction, instead of only the first filter
 ```
 
 Almost nobody runs this bundle alone — it is loaded alongside Morphe Patches for the Clone app
-patch — so **a fingerprint string has to equal a whole string of the method, not a fragment of
-one.** `Spoof client` broke exactly this way: it matched on `"authorize.compact?client_id"` and
-on `"Basic"` where the app holds the whole authorization url and `"Basic "` with its trailing
-space. An exact string matches under both behaviours, so writing them out is compatible either
-way and costs nothing.
+patch — so that warning is what a user sees, and the behaviours it names are the ones that
+actually apply.
 
-Checking this against the APK is not enough on its own: a string can be an exact string of the
-app somewhere else while being only a fragment within the class the fingerprint targets, which
-is what `"Basic"` was — exact in okhttp's `Credentials`, a fragment in Sync's own. Read the
-strings of the *target* class. Where the whole string cannot be written down because it names
-the package or the version — the user agent does both, and this bundle is offered for the Pro
-and Dev packages at any version — match with `custom` over the method's instructions instead,
-which is not string matching at all and so reads the same under either behaviour.
+**A fingerprint string has to equal a whole string of the method, not a fragment of one.** This
+is true on 2.x regardless, so it is worth keeping right even though the warning is gone.
+`Spoof client` broke exactly this way before the migration: it matched on
+`"authorize.compact?client_id"` and on `"Basic"` where the app holds the whole authorization url
+and `"Basic "` with its trailing space.
 
-The cheapest way to catch all of it is to patch with both bundles loaded:
+Checking a string against the APK is not enough on its own: it can be an exact string of the app
+somewhere else while being only a fragment within the class the fingerprint targets, which is
+what `"Basic"` was — exact in okhttp's `Credentials`, a fragment in Sync's own. Read the strings
+of the *target* class. Where the whole string cannot be written down because it names the package
+or the version — the user agent does both, and this bundle is offered for the Pro and Dev
+packages at any version — match with `custom` over the method's instructions instead, which is
+not string matching at all and so reads the same under either behaviour.
+
+### What the 1.3.3 to 2.x migration moved
+
+Only four things, and the compiler finds all of them:
+
+- `returnEarly` and `getReference` moved out of the patches library into the patcher:
+  `app.morphe.util.*` becomes `app.morphe.patcher.util.*`.
+- `indexOfFirstInstruction` and `indexOfFirstInstructionOrThrow` stayed in
+  `app.morphe.util`, so those imports are left alone.
+- `writeRegister` and `registersUsed` were dropped with nothing to replace them. They are
+  reimplemented in `patches/util/Instructions.kt`, since what they say is what the ported
+  patches were written to say.
+- `PatchListGeneratorKt` is still `app.morphe.util.PatchListGeneratorKt` here. The template
+  names it `util.PatchListGeneratorKt`, but the template does not depend on the patches library
+  and takes it from the plugin instead — following the template there breaks the task.
+
+The cheapest way to check all of it is to patch with both bundles loaded and `--validate`, which
+also catches a fingerprint that matches more than one method:
 `java -jar morphe-desktop.jar patch -p patches-*.mpp -p patches-<morphe>.mpp --options-file
-opts.json --continue-on-error`. Options are keyed per bundle, so generate `opts.json` with
-`--options-update` *while both are loaded* or `-O client-id=` never reaches the patch and the
-run dies on a missing option long before it reaches a fingerprint.
-
-Modernising the dependency stack is the largest known follow-up. It is an API migration, not a
-version bump, and it should be done as its own change with a real build behind it. `morphe-patcher`
-and `smali` are read out of the version catalog by the Gradle plugin and are not listed under
-`[libraries]`, so Dependabot will not propose those bumps.
+opts.json --validate --continue-on-error`. Options are keyed per bundle, so generate `opts.json`
+with `--options-update` *while both are loaded* or `-O client-id=` never reaches the patch and
+the run dies on a missing option long before it reaches a fingerprint.
 
 ## Relationship to Patcheddit
 
