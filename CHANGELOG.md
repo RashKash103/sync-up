@@ -1,3 +1,9 @@
+## [1.9.2-dev.1](https://github.com/RashKash103/sync-up/compare/v1.9.1...v1.9.2-dev.1) (2026-10-30)
+
+### 🐛 Bug Fixes
+
+* Open albums again after Reddit stopped answering /api/info ([2a22182](https://github.com/RashKash103/sync-up/commit/2a221826f270c91cd2455aaa9b3703124b64ed09))
+
 ## [1.9.1](https://github.com/RashKash103/sync-up/compare/v1.9.0...v1.9.1) (2026-10-10)
 
 ### 🐛 Bug Fixes
