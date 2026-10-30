@@ -367,6 +367,38 @@ since JSON may escape the slashes in a URL. Writing them back unescaped is valid
 is far ahead — patcher `1.11.x`, library `1.6.x`. **This is deliberate**: the ported patch
 sources were written against the older API, and pinning keeps them compilable.
 
+**A newer bundle loaded beside this one brings its patcher's behaviour with it.** Morphe
+applies the behaviour of the newest patcher any loaded bundle was built for to *every* bundle,
+and says so in a warning rather than an error:
+
+```
+WARNING: Patches built for an older version of Morphe Patcher are applied with the behavior of
+Morphe Patcher 2.0.0 that Morphe Patches 1.48.0 was built for, and may not work as intended:
+  Sync Up 1.9.2-dev.1, built for Morphe Patcher 1.3.3
+    - Fingerprint strings must equal a string of the method, instead of only being contained in one
+```
+
+Almost nobody runs this bundle alone — it is loaded alongside Morphe Patches for the Clone app
+patch — so **a fingerprint string has to equal a whole string of the method, not a fragment of
+one.** `Spoof client` broke exactly this way: it matched on `"authorize.compact?client_id"` and
+on `"Basic"` where the app holds the whole authorization url and `"Basic "` with its trailing
+space. An exact string matches under both behaviours, so writing them out is compatible either
+way and costs nothing.
+
+Checking this against the APK is not enough on its own: a string can be an exact string of the
+app somewhere else while being only a fragment within the class the fingerprint targets, which
+is what `"Basic"` was — exact in okhttp's `Credentials`, a fragment in Sync's own. Read the
+strings of the *target* class. Where the whole string cannot be written down because it names
+the package or the version — the user agent does both, and this bundle is offered for the Pro
+and Dev packages at any version — match with `custom` over the method's instructions instead,
+which is not string matching at all and so reads the same under either behaviour.
+
+The cheapest way to catch all of it is to patch with both bundles loaded:
+`java -jar morphe-desktop.jar patch -p patches-*.mpp -p patches-<morphe>.mpp --options-file
+opts.json --continue-on-error`. Options are keyed per bundle, so generate `opts.json` with
+`--options-update` *while both are loaded* or `-O client-id=` never reaches the patch and the
+run dies on a missing option long before it reaches a fingerprint.
+
 Modernising the dependency stack is the largest known follow-up. It is an API migration, not a
 version bump, and it should be done as its own change with a real build behind it. `morphe-patcher`
 and `smali` are read out of the version catalog by the Gradle plugin and are not listed under
