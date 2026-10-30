@@ -1,3 +1,9 @@
+## [1.9.2-dev.2](https://github.com/RashKash103/sync-up/compare/v1.9.2-dev.1...v1.9.2-dev.2) (2026-10-30)
+
+### 🐛 Bug Fixes
+
+* Match the Spoof client fingerprints on whole strings ([4173953](https://github.com/RashKash103/sync-up/commit/4173953bc214d8e2b1e7cbbec88b2a2f36e3645c))
+
 ## [1.9.2-dev.1](https://github.com/RashKash103/sync-up/compare/v1.9.1...v1.9.2-dev.1) (2026-10-30)
 
 ### 🐛 Bug Fixes
