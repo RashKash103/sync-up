@@ -5,8 +5,33 @@ on:
   push:
 
 jobs:
+  # The release is gated on these: they are offline and deterministic, so a failure here is a
+  # real one, and shipping a bundle whose resolver tests fail is not worth the few seconds saved.
+  test:
+    name: Offline tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Java
+        uses: actions/setup-java@v6.0.1
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Share link resolver
+        run: uv run test/test_slink_security.py
+
+      - name: Request parsing
+        run: uv run test/test_request_parsing.py
+
   release:
     name: Release
+    needs: test
     permissions:
       contents: write
       packages: write
