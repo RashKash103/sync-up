@@ -1,3 +1,9 @@
+## [1.9.4](https://github.com/RashKash103/sync-up/compare/v1.9.3...v1.9.4) (2026-10-31)
+
+### 🐛 Bug Fixes
+
+* Validate Reddit share link destinations before sending credentials ([#30](https://github.com/RashKash103/sync-up/issues/30)) ([2d8ed03](https://github.com/RashKash103/sync-up/commit/2d8ed033d8a9ffd4e3022ad1fee4dd8f4a176be4))
+
 ## [1.9.4-dev.1](https://github.com/RashKash103/sync-up/compare/v1.9.3...v1.9.4-dev.1) (2026-10-31)
 
 ### 🐛 Bug Fixes
