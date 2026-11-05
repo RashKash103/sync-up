@@ -183,7 +183,11 @@ service being asked.
 - **Spoof client** — Replaces Sync's revoked OAuth credentials with your own client ID,
   redirect URI and user agent. Nothing else works without this. See
   [Getting started](#-getting-started). Its `Imgur client ID` option is separate and optional;
-  see [Uploading pictures to Imgur](#uploading-pictures-to-imgur).
+  see [Uploading pictures to Imgur](#uploading-pictures-to-imgur). All four can also be set in the
+  app, under Settings, Everything else, Sync Up client, which means a copy can be patched with
+  none of them given and told afterwards — useful where whatever does the patching has no
+  credentials of its own. A value set in the app wins; where none is set, what was given when
+  patching is used, and the row says which of the two it is reading.
 - **Fix /s/ links** — Reddit's shortened `/s/` share links resolve to a real thread rather
   than failing.
 - **Use /user/ endpoint** — Profiles are fetched from `/user/`; the `/u/` form Sync used is
@@ -370,6 +374,19 @@ service being asked.
     replaced rather than unlocked — see *Translation* above.
   - The **Sync Ultra screen is removed** from settings, along with the cloud backup section that
     needed it and the offer to buy it in the account switcher.
+
+#### Locks
+
+- **Lock an account with a PIN** — Sync locks an account with a fingerprint and nothing else,
+  which is of no use where someone else's finger opens the same phone. This adds a PIN to the
+  Security settings, asked for at the two places Sync asks for a fingerprint: choosing an account
+  and acting on one. It is another thing to pass rather than a replacement, so the two settings
+  together say what is asked for — neither set asks nothing, Sync's alone asks for a fingerprint,
+  a PIN alone asks for the PIN, and both ask for the fingerprint and then the PIN. A PIN belongs
+  to one account, so each can have its own or none. It is kept as a salted hash rather than as
+  itself; four digits will not survive someone determined who already has the file, but they
+  should not be sitting there in the open either. This does not cover Sync's separate lock for
+  opening the app, which is about the app rather than an account.
 
 #### Other
 
