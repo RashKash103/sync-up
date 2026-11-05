@@ -1,3 +1,10 @@
+## [1.10.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.9.4...v1.10.0-dev.1) (2026-11-05)
+
+### ✨ New Features
+
+* Lock an account with a PIN ([42e0e20](https://github.com/RashKash103/sync-up/commit/42e0e209b9b18d73dd2baad27713072fa6689e2f))
+* Set the client id, redirect URI and user agent in the app ([7ed1ff6](https://github.com/RashKash103/sync-up/commit/7ed1ff6d87f0d4ffd319cb8fe44001992430714b))
+
 ## [1.9.4](https://github.com/RashKash103/sync-up/compare/v1.9.3...v1.9.4) (2026-10-31)
 
 ### 🐛 Bug Fixes
