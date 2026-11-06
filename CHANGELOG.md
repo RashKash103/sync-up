@@ -1,3 +1,9 @@
+## [1.10.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.5...v1.10.0-dev.6) (2026-11-06)
+
+### ✨ New Features
+
+* Ask for the PIN when the app opens, over a screen it has built ([a1b27d5](https://github.com/RashKash103/sync-up/commit/a1b27d51c14f713f729e428dd79f96d520c89057))
+
 ## [1.10.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.4...v1.10.0-dev.5) (2026-11-06)
 
 ### 🐛 Bug Fixes
