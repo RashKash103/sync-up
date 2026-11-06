@@ -1,3 +1,9 @@
+## [1.10.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.6...v1.10.0-dev.7) (2026-11-06)
+
+### 🐛 Bug Fixes
+
+* Stop the PIN being asked twice when changing account ([0b46629](https://github.com/RashKash103/sync-up/commit/0b46629aff92eb765dedc6689f337e12adb97184))
+
 ## [1.10.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.5...v1.10.0-dev.6) (2026-11-06)
 
 ### ✨ New Features
