@@ -186,11 +186,19 @@ service being asked.
 - **Spoof client** — Replaces Sync's revoked OAuth credentials with your own client ID,
   redirect URI and user agent. Nothing else works without this. See
   [Getting started](#-getting-started). Its `Imgur client ID` option is separate and optional;
-  see [Uploading pictures to Imgur](#uploading-pictures-to-imgur). All four can also be set in the
-  app, under Settings, Everything else, Sync Up client, which means a copy can be patched with
-  none of them given and told afterwards — useful where whatever does the patching has no
-  credentials of its own. A value set in the app wins; where none is set, what was given when
-  patching is used, and the row says which of the two it is reading.
+  see [Uploading pictures to Imgur](#uploading-pictures-to-imgur). All four are optional and can
+  also be set in the app, under Settings, Everything else, Sync Up client, which means a copy can
+  be patched with none of them given and told afterwards — useful where whatever does the
+  patching has no credentials of its own. Each row says whether it is reading what you typed or
+  what the build was given, and offers a way back to the latter. Where no client ID is given at
+  all, the app says so on the way in: as part of the setup on a first run, before there is any
+  question of signing in, and as a notice afterwards that leads straight to the row.
+
+  What the build was given is copied onto the device the first time the app runs, so patching
+  again later without naming one keeps the ID already in use rather than emptying it. Where the
+  new build names a different one, that is taken instead; anything you typed in the app always
+  wins. None of the four, and no PIN, is written into Sync's Backup file — those are kept where a
+  backup cannot reach them.
 - **Fix /s/ links** — Reddit's shortened `/s/` share links resolve to a real thread rather
   than failing.
 - **Use /user/ endpoint** — Profiles are fetched from `/user/`; the `/u/` form Sync used is
@@ -408,6 +416,9 @@ service being asked.
    * You will need an OAuth client ID from https://www.reddit.com/prefs/apps/. Reddit is no
      longer issuing new ones without an approval process that usually ends in denial, so see
      [What if I don't have a client ID?](#what-if-i-dont-have-a-client-id) below.
+   * The `Spoof client` options may all be left empty and filled in on the device instead, under
+     Settings, Everything else, Sync Up client. The app asks for the client ID during its own
+     setup when the build was given none.
    * Make sure the redirect URI in the `Spoof client` options and on
      https://www.reddit.com/prefs/apps/ match exactly.
 5. Once patching is complete, install the app and set it up as usual.

@@ -49,6 +49,21 @@ private const val CLIENT_SETTINGS =
 private const val CLIENT_ROWS =
     "Lapp/morphe/extension/syncforreddit/api/ClientRows;"
 
+private const val CLIENT_PROMPT =
+    "Lapp/morphe/extension/syncforreddit/api/ClientPrompt;"
+
+/**
+ * The app's first run walks through the first of these, and every run ends up on the second.
+ *
+ * <p>Not `HomeActivity`, which an ordinary run opens first: it sends the app on to
+ * `MainActivity` and finishes itself, so a dialog belonging to it is taken off the screen a
+ * moment after it arrives, having already counted as asked.
+ */
+private const val ONBOARDING_ACTIVITY =
+    "Lcom/laurencedawson/reddit_sync/ui/activities/OnboardingActivity;"
+private const val MAIN_ACTIVITY =
+    "Lcom/laurencedawson/reddit_sync/ui/activities/MainActivity;"
+
 private const val SETTINGS_SCREEN = "Lpa/d;"
 
 private const val SETTLE_ROWS_METHOD = "settle(Lpa/d;)V"
@@ -205,6 +220,33 @@ val spoofClientPatch = spoofClientPatch { clientId, redirectUri, userAgent ->
                 "invoke-static { p0 }, $CLIENT_ROWS->$SETTLE_ROWS_METHOD",
             )
         }
+
+        // endregion
+
+        // region Saying so where there is no client id to sign in with.
+
+        Fingerprint(
+            definingClass = CLIENT_PROMPT,
+            name = "isPatchIncluded",
+        ).method.returnEarly(true)
+
+        // A copy can be built with no client id now, and from the inside that looks like every
+        // sign-in failing for no reason. Asked for on the first run as part of the setup, which
+        // is before anything tries to sign in, and reported on later runs.
+        fun sayIfThereIsNone(activity: String, said: String) {
+            Fingerprint(
+                definingClass = activity,
+                name = "onCreate",
+                parameters = listOf("Landroid/os/Bundle;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                "invoke-static { p0 }, $CLIENT_PROMPT->$said(Landroid/app/Activity;)V",
+            )
+        }
+
+        sayIfThereIsNone(ONBOARDING_ACTIVITY, "onboarding")
+        sayIfThereIsNone(MAIN_ACTIVITY, "atStart")
 
         // endregion
     }
