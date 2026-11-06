@@ -293,15 +293,17 @@ public final class AccountPin {
                 return false;
             }
 
-            ask(activity, account, () -> {
-                replaying = true;
-                try {
-                    activity.h0(account);
-                } catch (Throwable ex) {
-                    Logger.printInfo(() -> "pin: could not hand the app back its own start: " + ex);
-                } finally {
-                    replaying = false;
+            // On the next turn of the main loop, not here. This is called from inside the
+            // activity's own onCreate, and a dialog put up at that point belongs to a window
+            // that is not ready: the moment the activity is rebuilt — which a foldable does
+            // merely by being opened — the dialog is torn off as a leaked window and what is
+            // left is a screen with nothing on it and no way past, because the app was stopped
+            // here and never built its own.
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (activity.isFinishing() || activity.isDestroyed()) {
+                    return;
                 }
+                askOnTheWayIn(activity, account);
             });
             return true;
         } catch (Exception ex) {
@@ -311,15 +313,57 @@ public final class AccountPin {
         }
     }
 
+    /**
+     * The PIN as it is asked on the way in, where there is nothing behind it yet.
+     *
+     * <p>Turned away here means the app closes rather than sits on an empty screen: the app was
+     * stopped before it built anything, so there is nothing to go back to.
+     */
+    private static void askOnTheWayIn(
+            com.laurencedawson.reddit_sync.ui.activities.HomeActivity activity,
+            @Nullable String account) {
+        try {
+            ask(activity, account, () -> carryOn(activity, account), activity::finish);
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "pin: could not put the PIN up on the way in: " + ex);
+            carryOn(activity, account);
+        }
+    }
+
+    /** Hands the app back the decision it was stopped in the middle of. */
+    private static void carryOn(
+            com.laurencedawson.reddit_sync.ui.activities.HomeActivity activity,
+            @Nullable String account) {
+        replaying = true;
+        try {
+            activity.h0(account);
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "pin: could not hand the app back its own start: " + ex);
+        } finally {
+            replaying = false;
+        }
+    }
+
     /** Asks for the PIN, and runs what was waiting only once it is right. */
     private static void ask(Context context, @Nullable String account, Runnable then) {
+        ask(context, account, then, null);
+    }
+
+    /**
+     * @param turnedAway What to do where the prompt is refused, which is nothing at the places
+     *                   that have the app behind them to go back to.
+     */
+    private static void ask(Context context, @Nullable String account, Runnable then,
+                            @Nullable Runnable turnedAway) {
         try {
             final EditText typing = digits(context, "PIN");
 
             AlertDialog.Builder asking = new AlertDialog.Builder(context)
                     .setTitle("Enter PIN")
                     .setView(around(context, typing))
-                    .setNegativeButton("Cancel", null);
+                    .setNegativeButton("Cancel", turnedAway == null
+                            ? null
+                            : (dialog, which) -> turnedAway.run());
 
             Drawable lock = glyph(context, A_LOCK);
             if (lock != null) {
@@ -364,6 +408,10 @@ public final class AccountPin {
                 }
                 return true;
             });
+
+            if (turnedAway != null) {
+                prompt.setOnCancelListener(cancelled -> turnedAway.run());
+            }
 
             likeAnUnlockScreen(prompt, typing);
             prompt.show();
