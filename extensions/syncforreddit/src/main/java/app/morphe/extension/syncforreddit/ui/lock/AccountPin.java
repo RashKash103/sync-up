@@ -59,9 +59,6 @@ public final class AccountPin {
     /** What the hash was salted with. */
     private static final String SALT = "sync_up_pin_salt";
 
-    /** Whether the PIN is asked for when the app is opened, as well as when accounts change. */
-    public static final String AT_START = "sync_up_pin_start";
-
     /** What is asked for where both this and Sync's own fingerprint lock are set. */
     public static final String MODE = "sync_up_lock_mode";
 
@@ -114,9 +111,6 @@ public final class AccountPin {
     @Nullable
     private static volatile String unlocking;
 
-    /** Whether the app is being handed back its own decision, the PIN having been given. */
-    private static volatile boolean replaying;
-
     private AccountPin() {}
 
     public static boolean isPatchIncluded() {
@@ -133,12 +127,6 @@ public final class AccountPin {
             Logger.printInfo(() -> "pin: could not reach Sync's settings: " + ex);
             return null;
         }
-    }
-
-    /** @return Whether the PIN is asked for when the app is opened, not only when switching. */
-    public static boolean asksAtStart(Context context, @Nullable String account) {
-        SharedPreferences store = syncs(context, account);
-        return store != null && store.getBoolean(AT_START, false);
     }
 
     /** @return Whether either lock on its own opens the account, rather than both being asked. */
@@ -282,88 +270,15 @@ public final class AccountPin {
      *
      * @return Whether this has taken the question over, in which case the app stops here.
      */
-    public static boolean atAppOpen(com.laurencedawson.reddit_sync.ui.activities.HomeActivity
-                                            activity, @Nullable String account) {
-        try {
-            if (!isPatchIncluded() || replaying || activity == null) {
-                return false;
-            }
-            unlocking = account;
-            if (!isSet(activity, account) || !asksAtStart(activity, account)) {
-                return false;
-            }
-
-            // On the next turn of the main loop, not here. This is called from inside the
-            // activity's own onCreate, and a dialog put up at that point belongs to a window
-            // that is not ready: the moment the activity is rebuilt — which a foldable does
-            // merely by being opened — the dialog is torn off as a leaked window and what is
-            // left is a screen with nothing on it and no way past, because the app was stopped
-            // here and never built its own.
-            new Handler(Looper.getMainLooper()).post(() -> {
-                if (activity.isFinishing() || activity.isDestroyed()) {
-                    return;
-                }
-                askOnTheWayIn(activity, account);
-            });
-            return true;
-        } catch (Exception ex) {
-            // A lock that cannot be drawn must not become an app that will not open.
-            Logger.printInfo(() -> "pin: could not ask for the PIN on the way in: " + ex);
-            return false;
-        }
-    }
-
-    /**
-     * The PIN as it is asked on the way in, where there is nothing behind it yet.
-     *
-     * <p>Turned away here means the app closes rather than sits on an empty screen: the app was
-     * stopped before it built anything, so there is nothing to go back to.
-     */
-    private static void askOnTheWayIn(
-            com.laurencedawson.reddit_sync.ui.activities.HomeActivity activity,
-            @Nullable String account) {
-        try {
-            ask(activity, account, () -> carryOn(activity, account), activity::finish);
-        } catch (Exception ex) {
-            Logger.printInfo(() -> "pin: could not put the PIN up on the way in: " + ex);
-            carryOn(activity, account);
-        }
-    }
-
-    /** Hands the app back the decision it was stopped in the middle of. */
-    private static void carryOn(
-            com.laurencedawson.reddit_sync.ui.activities.HomeActivity activity,
-            @Nullable String account) {
-        replaying = true;
-        try {
-            activity.h0(account);
-        } catch (Throwable ex) {
-            Logger.printInfo(() -> "pin: could not hand the app back its own start: " + ex);
-        } finally {
-            replaying = false;
-        }
-    }
-
     /** Asks for the PIN, and runs what was waiting only once it is right. */
     private static void ask(Context context, @Nullable String account, Runnable then) {
-        ask(context, account, then, null);
-    }
-
-    /**
-     * @param turnedAway What to do where the prompt is refused, which is nothing at the places
-     *                   that have the app behind them to go back to.
-     */
-    private static void ask(Context context, @Nullable String account, Runnable then,
-                            @Nullable Runnable turnedAway) {
         try {
             final EditText typing = digits(context, "PIN");
 
             AlertDialog.Builder asking = new AlertDialog.Builder(context)
                     .setTitle("Enter PIN")
                     .setView(around(context, typing))
-                    .setNegativeButton("Cancel", turnedAway == null
-                            ? null
-                            : (dialog, which) -> turnedAway.run());
+                    .setNegativeButton("Cancel", null);
 
             Drawable lock = glyph(context, A_LOCK);
             if (lock != null) {
@@ -408,10 +323,6 @@ public final class AccountPin {
                 }
                 return true;
             });
-
-            if (turnedAway != null) {
-                prompt.setOnCancelListener(cancelled -> turnedAway.run());
-            }
 
             likeAnUnlockScreen(prompt, typing);
             prompt.show();
@@ -524,11 +435,6 @@ public final class AccountPin {
     private static void settleTheRest(pa.d screen, Context context) {
         try {
             boolean already = isSet(context, null);
-
-            Preference atStart = screen.y(AT_START);
-            if (atStart != null) {
-                atStart.q0(already);
-            }
 
             Preference mode = screen.y(MODE);
             if (mode != null) {

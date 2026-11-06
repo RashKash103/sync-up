@@ -301,14 +301,22 @@ worked out from such a file in no time. Both classes move anything an older buil
 in Sync's settings across on first use and take it out of Sync's, so a backup made afterwards is
 clean; check by reading the written file rather than by reasoning about it.
 
-**Where nothing is handed over, hand the decision back.** `HomeActivity.h0(account)` decides
-what to ask for before the app opens: it reads the login lock setting and either puts up a
-fingerprint prompt or calls `l0()` to carry on. Neither is a `Runnable` that can be wrapped the
-way the account-switch sites' continuations are, and `l0()` is private. What works instead is to
-ask in front of the whole decision and then call `h0` again once the answer is right, with a flag
-saying so, so that Sync's own branch runs exactly as it would have. `h0` is already public, so
-nothing has to be opened up. The flag has to be cleared after that second call returns, or the
-lock only ever asks once per process.
+**An activity that is stopped before it builds its screen has no window of its own.**
+`HomeActivity.h0` decides what to ask for before the app opens, and the path that asks calls
+neither `l0()` nor anything else that sets a content view, so until the lock is satisfied the
+activity has nothing. Sync can do that because a `BiometricPrompt` is the system's window and
+goes on taking input; a dialog of ours is the app's own, and when it goes the app has no window
+at all. Input dispatch then times out — `ANR in ... Reason: Input dispatching timed out
+(Application does not have a focused window)` — and the app is bricked until it is force stopped.
+A dialog shown from inside `onCreate` is also torn off as a leaked window the first time the
+activity is rebuilt, which a foldable does merely by being opened. Anything of ours that locks
+the way in has to let the app build its screen first, or not lock there at all.
+
+**A local bundle is named after the version in `gradle.properties`, which the release moves.**
+Patching with `patches-<the version you last typed>.mpp` goes on succeeding against a file from
+hours ago, and what is then tested is not what was just built. Take the newest instead:
+`ls -t patches/build/libs/patches-*.mpp | grep -v -e sources -e javadoc | head -1`. Two fixes
+were "verified" here against a stale bundle before this was noticed.
 
 **Sync's own fingerprint prompt can be stood down by answering the setting for it.** Each of the
 three sites reads `SharedPreferences.getBoolean("biometric"/"biometric_start", false)` with the

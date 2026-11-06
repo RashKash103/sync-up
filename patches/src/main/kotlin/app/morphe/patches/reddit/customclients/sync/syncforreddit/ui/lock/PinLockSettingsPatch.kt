@@ -9,7 +9,6 @@ private const val PREFERENCES = "com.laurencedawson.reddit_sync.ui.preferences"
 
 private const val CATEGORY_HEADER = "$PREFERENCES.defaults.CategoryHeaderPreference"
 private const val ROW = "$PREFERENCES.defaults.SyncPreference"
-private const val CHECK_BOX = "$PREFERENCES.defaults.SyncCheckBoxPreference"
 private const val LIST = "$PREFERENCES.defaults.SyncListPreference"
 
 /** Adds the PIN rows to the Locks category Sync's own account lock already sits in. */
@@ -59,16 +58,6 @@ internal val pinLockSettingsPatch = resourcePatch(
                     // Replaced as the screen loads with whether one is actually set.
                     "android:summary" to
                             "Asked for when this account is opened, beside any fingerprint",
-                ),
-            )
-            add(
-                CHECK_BOX,
-                mapOf(
-                    "android:key" to "sync_up_pin_start",
-                    "android:title" to "PIN login lock",
-                    "android:summary" to "Ask for the PIN when opening the app",
-                    "android:icon" to drawableNamed("outline_screen_lock_portrait_24"),
-                    "android:defaultValue" to "false",
                 ),
             )
             add(

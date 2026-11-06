@@ -399,13 +399,17 @@ service being asked.
   should not be sitting there in the open either, and it is kept out of Sync's Backup file for
   the same reason.
 
-  Two rows sit beside it. **PIN login lock** asks for the PIN when the app is opened, not only
-  when accounts change — without it the account already open when you launch Sync is not behind
-  the PIN at all, which is the hole Sync's own login lock fills for fingerprints. **When a PIN
-  and a fingerprint are both set** chooses between asking for both, which is the default, and
-  asking for either: with *either*, Sync's own fingerprint prompt stands down and the
-  fingerprint is offered on the same screen as the PIN, so there is one way in rather than two
-  prompts in a row.
+  A row sits beside it. **When a PIN and a fingerprint are both set** chooses between asking for
+  both, which is the default, and asking for either: with *either*, Sync's own fingerprint
+  prompt stands down and the fingerprint is offered on the same screen as the PIN, so there is
+  one way in rather than two prompts in a row.
+
+  This does not cover Sync's separate lock for opening the app. Asking for a PIN there needs
+  the app to be stopped before it builds its screen, and an activity with no screen has no
+  window of its own: the prompt is then the only window the app has, and the moment it goes —
+  which on a foldable happens merely by opening the phone — the app has no window at all and
+  stops answering touches. Sync's own login lock gets away with it because a fingerprint prompt
+  belongs to the system rather than to the app.
 
 #### Other
 
