@@ -301,6 +301,25 @@ worked out from such a file in no time. Both classes move anything an older buil
 in Sync's settings across on first use and take it out of Sync's, so a backup made afterwards is
 clean; check by reading the written file rather than by reasoning about it.
 
+**Where nothing is handed over, hand the decision back.** `HomeActivity.h0(account)` decides
+what to ask for before the app opens: it reads the login lock setting and either puts up a
+fingerprint prompt or calls `l0()` to carry on. Neither is a `Runnable` that can be wrapped the
+way the account-switch sites' continuations are, and `l0()` is private. What works instead is to
+ask in front of the whole decision and then call `h0` again once the answer is right, with a flag
+saying so, so that Sync's own branch runs exactly as it would have. `h0` is already public, so
+nothing has to be opened up. The flag has to be cleared after that second call returns, or the
+lock only ever asks once per process.
+
+**Sync's own fingerprint prompt can be stood down by answering the setting for it.** Each of the
+three sites reads `SharedPreferences.getBoolean("biometric"/"biometric_start", false)` with the
+same three registers, so that one instruction is swapped for a static of ours taking the same
+three. Answering `false` is what lets a prompt of ours offer the fingerprint *instead of* Sync's
+rather than after it. `androidx.biometric` is in the app and its callback class is public, so a
+compile-only stub naming the obfuscated members — `s` is authenticate, `e$a` is the builder with
+`d`/`c`/`b`/`a`, and the callback's `c` is onAuthenticationSucceeded — is enough to put that
+prompt up. The account being unlocked has to be remembered between the two injections, because
+the register holding its name is reused a couple of instructions later.
+
 **`HomeActivity` is not where the app ends up.** An ordinary run opens it, it sends the app on
 to `MainActivity` and finishes itself, and `MainActivity` is what stays on the screen. Anything
 shown from `HomeActivity.onCreate` is therefore taken off the screen a moment after it arrives —

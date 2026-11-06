@@ -396,8 +396,16 @@ service being asked.
   a PIN alone asks for the PIN, and both ask for the fingerprint and then the PIN. A PIN belongs
   to one account, so each can have its own or none. It is kept as a salted hash rather than as
   itself; four digits will not survive someone determined who already has the file, but they
-  should not be sitting there in the open either. This does not cover Sync's separate lock for
-  opening the app, which is about the app rather than an account.
+  should not be sitting there in the open either, and it is kept out of Sync's Backup file for
+  the same reason.
+
+  Two rows sit beside it. **PIN login lock** asks for the PIN when the app is opened, not only
+  when accounts change — without it the account already open when you launch Sync is not behind
+  the PIN at all, which is the hole Sync's own login lock fills for fingerprints. **When a PIN
+  and a fingerprint are both set** chooses between asking for both, which is the default, and
+  asking for either: with *either*, Sync's own fingerprint prompt stands down and the
+  fingerprint is offered on the same screen as the PIN, so there is one way in rather than two
+  prompts in a row.
 
 #### Other
 

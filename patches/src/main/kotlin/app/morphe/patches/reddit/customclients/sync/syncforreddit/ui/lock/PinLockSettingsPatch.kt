@@ -9,12 +9,32 @@ private const val PREFERENCES = "com.laurencedawson.reddit_sync.ui.preferences"
 
 private const val CATEGORY_HEADER = "$PREFERENCES.defaults.CategoryHeaderPreference"
 private const val ROW = "$PREFERENCES.defaults.SyncPreference"
+private const val CHECK_BOX = "$PREFERENCES.defaults.SyncCheckBoxPreference"
+private const val LIST = "$PREFERENCES.defaults.SyncListPreference"
 
-/** Adds the PIN row to the Locks category Sync's own account lock already sits in. */
+/** Adds the PIN rows to the Locks category Sync's own account lock already sits in. */
 internal val pinLockSettingsPatch = resourcePatch(
-    description = "Adds the PIN row to the Security settings.",
+    description = "Adds the PIN rows to the Security settings.",
 ) {
     execute {
+        document("res/values/arrays.xml").use { document ->
+            val resources = document.getElementsByTagName("resources").item(0) as Element
+
+            fun array(name: String, items: List<String>) {
+                val array = document.createElement("string-array")
+                array.setAttribute("name", name)
+                items.forEach {
+                    val item = document.createElement("item")
+                    item.appendChild(document.createTextNode(it))
+                    array.appendChild(item)
+                }
+                resources.appendChild(array)
+            }
+
+            array("sync_up_lock_mode_entries", listOf("Ask for both", "Ask for either"))
+            array("sync_up_lock_mode_values", listOf("both", "either"))
+        }
+
         document("res/xml/cat_security.xml").use { document ->
             val headers = document.getElementsByTagName(CATEGORY_HEADER)
             val locks = (0 until headers.length)
@@ -23,17 +43,46 @@ internal val pinLockSettingsPatch = resourcePatch(
                 ?.parentNode as? Element
                 ?: throw PatchException("No Locks category in the security settings")
 
-            val row = document.createElement(ROW)
-            row.setAttribute("android:key", "sync_up_pin")
-            row.setAttribute("android:title", "PIN account lock")
-            // Beside the two locks of Sync's own, which both carry one.
-            row.setAttribute("android:icon", drawableNamed("baseline_lock_24"))
-            // Replaced as the screen loads with whether one is actually set.
-            row.setAttribute(
-                "android:summary",
-                "Asked for when this account is opened, beside any fingerprint",
+            fun add(tag: String, attributes: Map<String, String>) {
+                val preference = document.createElement(tag)
+                attributes.forEach { (name, value) -> preference.setAttribute(name, value) }
+                locks.appendChild(preference)
+            }
+
+            add(
+                ROW,
+                mapOf(
+                    "android:key" to "sync_up_pin",
+                    "android:title" to "PIN account lock",
+                    // Beside the two locks of Sync's own, which both carry one.
+                    "android:icon" to drawableNamed("baseline_lock_24"),
+                    // Replaced as the screen loads with whether one is actually set.
+                    "android:summary" to
+                            "Asked for when this account is opened, beside any fingerprint",
+                ),
             )
-            locks.appendChild(row)
+            add(
+                CHECK_BOX,
+                mapOf(
+                    "android:key" to "sync_up_pin_start",
+                    "android:title" to "PIN login lock",
+                    "android:summary" to "Ask for the PIN when opening the app",
+                    "android:icon" to drawableNamed("outline_screen_lock_portrait_24"),
+                    "android:defaultValue" to "false",
+                ),
+            )
+            add(
+                LIST,
+                mapOf(
+                    "android:key" to "sync_up_lock_mode",
+                    "android:title" to "When a PIN and a fingerprint are both set",
+                    "android:entries" to "@array/sync_up_lock_mode_entries",
+                    "android:entryValues" to "@array/sync_up_lock_mode_values",
+                    "android:defaultValue" to "both",
+                    "android:summary" to "%s",
+                    "android:icon" to drawableNamed("outline_lock_24"),
+                ),
+            )
         }
     }
 }

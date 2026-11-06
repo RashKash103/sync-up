@@ -2,8 +2,18 @@ package app.morphe.patches.reddit.customclients.sync.syncforreddit.ui.lock
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.util.indexOfFirstInstructionOrThrow
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import app.morphe.patcher.util.returnEarly
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
@@ -15,6 +25,49 @@ private const val GUARD_METHOD =
     "guard(Landroid/content/Context;Ljava/lang/String;Ljava/lang/Runnable;)Ljava/lang/Runnable;"
 
 private const val SETTLE_ROW_METHOD = "settle(Lpa/d;)V"
+
+private const val AT_APP_OPEN_METHOD =
+    "atAppOpen(Lcom/laurencedawson/reddit_sync/ui/activities/HomeActivity;Ljava/lang/String;)Z"
+
+private const val FINGERPRINT_WANTED_METHOD =
+    "fingerprintWanted(Landroid/content/SharedPreferences;Ljava/lang/String;Z)Z"
+
+/** Where Sync decides what to ask for before the app opens. */
+private val appOpenLockFingerprint = Fingerprint(
+    definingClass = "Lcom/laurencedawson/reddit_sync/ui/activities/HomeActivity;",
+    name = "h0",
+    parameters = listOf("Ljava/lang/String;"),
+    returnType = "V",
+)
+
+/**
+ * Puts our own reading of Sync's fingerprint setting in front of Sync's, so that the prompt can
+ * be stood down where the PIN is offered instead of it rather than beside it.
+ *
+ * <p>The call being replaced reads the setting out of an account's own settings, and takes the
+ * three registers this one takes, so it is swapped for ours where it stands.
+ */
+private fun MutableMethod.readTheFingerprintSettingThroughUs(extension: String) {
+    val at = indexOfFirstInstructionOrThrow {
+        opcode == Opcode.INVOKE_INTERFACE &&
+                (this as? ReferenceInstruction)?.reference.let {
+                    it is MethodReference &&
+                            it.definingClass == "Landroid/content/SharedPreferences;" &&
+                            it.name == "getBoolean"
+                }
+    }
+
+    val reading = getInstruction<FiveRegisterInstruction>(at)
+    if (reading.registerCount != 3) {
+        throw PatchException("The fingerprint setting is not read the way this expects")
+    }
+
+    replaceInstruction(
+        at,
+        "invoke-static { v${reading.registerC}, v${reading.registerD}, " +
+                "v${reading.registerE} }, $extension->$FINGERPRINT_WANTED_METHOD",
+    )
+}
 
 private const val SETTINGS_SCREEN = "Lpa/d;"
 
@@ -47,7 +100,8 @@ private val accountActionsLockFingerprint = Fingerprint(
 val pinLockPatch = bytecodePatch(
     name = "Lock an account with a PIN",
     description = "Adds a PIN to the Security settings that is asked for when an account is " +
-            "opened, beside or instead of Sync's fingerprint lock.",
+            "opened and, if you like, when the app is opened, beside or instead of Sync's " +
+            "fingerprint lock.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch, pinLockSettingsPatch)
@@ -80,6 +134,32 @@ val pinLockPatch = bytecodePatch(
             move-result-object  p2
             """
         )
+
+        // Where either lock on its own is enough, Sync's prompt stands down and the fingerprint
+        // is offered beside the PIN instead, on the one screen.
+        accountPickerLockFingerprint.method
+            .readTheFingerprintSettingThroughUs(EXTENSION_CLASS_DESCRIPTOR)
+        accountActionsLockFingerprint.method
+            .readTheFingerprintSettingThroughUs(EXTENSION_CLASS_DESCRIPTOR)
+
+        // Opening the app hands nothing over to wrap: Sync decides for itself and carries on
+        // inside itself. So the PIN is asked in front of that decision, and the decision is
+        // handed back once it is given.
+        appOpenLockFingerprint.method.apply {
+            addInstructionsWithLabels(
+                0,
+                """
+                invoke-static   { p0, p1 }, $EXTENSION_CLASS_DESCRIPTOR->$AT_APP_OPEN_METHOD
+                move-result     v0
+                if-eqz          v0, :carry_on
+                return-void
+                :carry_on
+                nop
+                """
+            )
+
+            readTheFingerprintSettingThroughUs(EXTENSION_CLASS_DESCRIPTOR)
+        }
 
         // Sync's settings screens are its own fragments, so the row is wired as a screen
         // finishes loading its rows; a screen without it is left alone.

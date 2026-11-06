@@ -1,11 +1,14 @@
 package app.morphe.extension.syncforreddit.ui.lock;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -14,10 +17,13 @@ import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+import androidx.biometric.BiometricPrompt;
+import androidx.fragment.app.FragmentActivity;
 import androidx.preference.Preference;
 
 import java.nio.charset.StandardCharsets;
@@ -52,6 +58,15 @@ public final class AccountPin {
 
     /** What the hash was salted with. */
     private static final String SALT = "sync_up_pin_salt";
+
+    /** Whether the PIN is asked for when the app is opened, as well as when accounts change. */
+    public static final String AT_START = "sync_up_pin_start";
+
+    /** What is asked for where both this and Sync's own fingerprint lock are set. */
+    public static final String MODE = "sync_up_lock_mode";
+
+    /** The mode in which either one of the two opens the account, rather than both. */
+    private static final String EITHER = "either";
 
     /** The name this gives when it asks Sync for an account's settings. */
     private static final String ASKING = "SyncUp";
@@ -88,11 +103,48 @@ public final class AccountPin {
     /** The lock drawn beside the prompt, which is one of the app's own. */
     private static final String A_LOCK = "outline_lock_24";
 
+    /**
+     * Which account is being unlocked, as the call that starts the unlocking last said.
+     *
+     * <p>Sync reads its own fingerprint setting a few instructions after handing over what to
+     * do next, in the same method and on the same thread, and by then the register that held
+     * the account name has been reused for something else. So the name is kept here between
+     * those two moments rather than read twice.
+     */
+    @Nullable
+    private static volatile String unlocking;
+
+    /** Whether the app is being handed back its own decision, the PIN having been given. */
+    private static volatile boolean replaying;
+
     private AccountPin() {}
 
     public static boolean isPatchIncluded() {
         // Overridden by patch.
         return false;
+    }
+
+    /** @return Sync's own settings for an account, which is where the two switches are kept. */
+    @Nullable
+    private static SharedPreferences syncs(Context context, @Nullable String account) {
+        try {
+            return context == null ? null : t7.z.h(context, named(account), ASKING);
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "pin: could not reach Sync's settings: " + ex);
+            return null;
+        }
+    }
+
+    /** @return Whether the PIN is asked for when the app is opened, not only when switching. */
+    public static boolean asksAtStart(Context context, @Nullable String account) {
+        SharedPreferences store = syncs(context, account);
+        return store != null && store.getBoolean(AT_START, false);
+    }
+
+    /** @return Whether either lock on its own opens the account, rather than both being asked. */
+    private static boolean eitherWillDo(Context context, @Nullable String account) {
+        SharedPreferences store = syncs(context, account);
+        return store != null && EITHER.equals(store.getString(MODE, "both"));
     }
 
     /** @return Our own file, which Sync neither reads nor backs up. */
@@ -186,10 +238,77 @@ public final class AccountPin {
      * without one behaving exactly as it did.
      */
     public static Runnable guard(Context context, @Nullable String account, Runnable then) {
+        // Remembered whether or not there is a PIN, so that what is read a moment later is
+        // answered about this account rather than about whichever one was asked about last.
+        unlocking = account;
+
         if (then == null || !isPatchIncluded() || !isSet(context, account)) {
             return then;
         }
         return () -> ask(context, account, then);
+    }
+
+    /**
+     * Whether Sync should go on and ask for a fingerprint.
+     *
+     * <p>Put in front of Sync's own reading of the setting. The answer is Sync's own except
+     * where one lock or the other is enough: there the fingerprint is ours to offer, beside the
+     * PIN and in the same breath, so Sync's prompt stands down and the choice is made in one
+     * place instead of two prompts arriving one after the other.
+     */
+    public static boolean fingerprintWanted(SharedPreferences store, String key, boolean byDefault) {
+        boolean asSyncHasIt = store != null && store.getBoolean(key, byDefault);
+        try {
+            if (!isPatchIncluded() || !asSyncHasIt) {
+                return asSyncHasIt;
+            }
+            Context context = Utils.getContext();
+            if (isSet(context, unlocking) && eitherWillDo(context, unlocking)) {
+                return false;
+            }
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "pin: could not tell whether to leave the fingerprint: " + ex);
+        }
+        return asSyncHasIt;
+    }
+
+    /**
+     * Asked before the app opens, where the PIN is wanted then as well as when accounts change.
+     *
+     * <p>Nothing is handed over here to wrap: the app decides for itself what to ask for and
+     * then carries on inside itself. So the decision is handed back to it once the PIN is
+     * right, by calling the same method again with the PIN marked as given, and the rest of
+     * what it does runs exactly as it would have.
+     *
+     * @return Whether this has taken the question over, in which case the app stops here.
+     */
+    public static boolean atAppOpen(com.laurencedawson.reddit_sync.ui.activities.HomeActivity
+                                            activity, @Nullable String account) {
+        try {
+            if (!isPatchIncluded() || replaying || activity == null) {
+                return false;
+            }
+            unlocking = account;
+            if (!isSet(activity, account) || !asksAtStart(activity, account)) {
+                return false;
+            }
+
+            ask(activity, account, () -> {
+                replaying = true;
+                try {
+                    activity.h0(account);
+                } catch (Throwable ex) {
+                    Logger.printInfo(() -> "pin: could not hand the app back its own start: " + ex);
+                } finally {
+                    replaying = false;
+                }
+            });
+            return true;
+        } catch (Exception ex) {
+            // A lock that cannot be drawn must not become an app that will not open.
+            Logger.printInfo(() -> "pin: could not ask for the PIN on the way in: " + ex);
+            return false;
+        }
     }
 
     /** Asks for the PIN, and runs what was waiting only once it is right. */
@@ -205,6 +324,13 @@ public final class AccountPin {
             Drawable lock = glyph(context, A_LOCK);
             if (lock != null) {
                 asking.setIcon(lock);
+            }
+
+            // Where one lock or the other is enough, Sync's own prompt has stood down and the
+            // fingerprint is offered from here instead, so that both ways in are on the one
+            // screen rather than arriving one after the other.
+            if (eitherWillDo(context, account) && fingerprintIsOn(context, account)) {
+                asking.setNeutralButton("Use fingerprint", null);
             }
 
             final AlertDialog prompt = asking.create();
@@ -241,10 +367,62 @@ public final class AccountPin {
 
             likeAnUnlockScreen(prompt, typing);
             prompt.show();
+
+            // Wired after showing, so that a finger that is not recognised leaves the prompt
+            // where it is rather than closing it, which is what a button does on its own.
+            Button fingerprint = prompt.getButton(AlertDialog.BUTTON_NEUTRAL);
+            if (fingerprint != null) {
+                fingerprint.setOnClickListener(tapped ->
+                        askForAFinger(context, () -> {
+                            prompt.dismiss();
+                            then.run();
+                        }));
+            }
         } catch (Exception ex) {
             // A lock that cannot be drawn must not become a door that cannot be opened.
             Logger.printInfo(() -> "pin: could not ask for the PIN: " + ex);
             then.run();
+        }
+    }
+
+    /** @return Whether Sync's own fingerprint lock is on for this account. */
+    private static boolean fingerprintIsOn(Context context, @Nullable String account) {
+        SharedPreferences store = syncs(context, account);
+        if (store == null) {
+            return false;
+        }
+        return store.getBoolean("biometric", false) || store.getBoolean("biometric_start", false);
+    }
+
+    /**
+     * Puts Sync's own fingerprint prompt up, which is ours to put up where Sync's reading of
+     * the setting has been answered no on its behalf.
+     */
+    private static void askForAFinger(Context context, Runnable then) {
+        try {
+            if (!(context instanceof FragmentActivity)) {
+                Utils.showToastShort("No fingerprint here");
+                return;
+            }
+
+            BiometricPrompt prompt = new BiometricPrompt(
+                    (FragmentActivity) context,
+                    runnable -> new Handler(Looper.getMainLooper()).post(runnable),
+                    new BiometricPrompt.b() {
+                        @Override
+                        public void c(BiometricPrompt.c result) {
+                            then.run();
+                        }
+                    });
+
+            prompt.s(new BiometricPrompt.e.a()
+                    .d("Biometric account lock")
+                    .c(true)
+                    .b(false)
+                    .a());
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "pin: could not ask for a fingerprint: " + ex);
+            Utils.showToastShort("Could not ask for a fingerprint");
         }
     }
 
@@ -278,11 +456,42 @@ public final class AccountPin {
             }
             say(row);
             row.A0(tapped -> {
-                choose(tapped.k(), () -> say(tapped));
+                choose(tapped.k(), () -> {
+                    say(tapped);
+                    settleTheRest(screen, tapped.k());
+                });
                 return true;
             });
+            settleTheRest(screen, row.k());
         } catch (Exception ex) {
             Logger.printInfo(() -> "pin: could not wire the row: " + ex);
+        }
+    }
+
+    /**
+     * Turns the two rows that only mean something beside a PIN on and off with it. Sync colours
+     * every row's words as it draws them whatever state the row is in, so one that is off is
+     * faded by what draws the screen rather than by being told to be.
+     */
+    private static void settleTheRest(pa.d screen, Context context) {
+        try {
+            boolean already = isSet(context, null);
+
+            Preference atStart = screen.y(AT_START);
+            if (atStart != null) {
+                atStart.q0(already);
+            }
+
+            Preference mode = screen.y(MODE);
+            if (mode != null) {
+                // Turned on and off with the PIN alone. Whether a fingerprint is set as well
+                // is not looked at here: Sync's own switches are its to draw, and reading them
+                // once as this screen loads would leave the row faded until the screen was
+                // left and come back to. Its own words say when it applies.
+                mode.q0(already);
+            }
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "pin: could not settle the rows beside the PIN: " + ex);
         }
     }
 

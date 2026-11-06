@@ -37,8 +37,8 @@ fun spoofClientPatch(
         "OAuth client ID",
         "The Reddit OAuth client ID. Refer to Sync Up documentation for more " +
                 "information on what to put here. It can be left empty and set in the app " +
-                "afterwards, under Settings, Other, Sync Up client; the app cannot sign in " +
-                "until one is given in one place or the other.",
+                "afterwards, under Settings, Everything else, Sync Up client; the app " +
+                "cannot sign in until one is given in one place or the other.",
         false,
         validator = { value ->
             // Empty is allowed: it can be set in the app instead, which is what lets a copy be
@@ -53,7 +53,8 @@ fun spoofClientPatch(
         "Redirect URI",
         "The Reddit OAuth redirect URI. Refer to Sync Up documentation for more " +
                 "information on what to put here. Default value is RedReader's redirect URI. " +
-                "It can also be changed in the app, under Settings, Other, Sync Up client.",
+                "It can also be changed in the app, under Settings, Everything else, " +
+                "Sync Up client.",
         false,
     )
     val userAgentOption = stringOption(
@@ -63,7 +64,7 @@ fun spoofClientPatch(
         "User agent",
         "The app's user agent. Refer to Sync Up documentation for more information " +
                 "on what to put here. Default value is RedReader's user agent. It can also be " +
-                "changed in the app, under Settings, Other, Sync Up client.",
+                "changed in the app, under Settings, Everything else, Sync Up client.",
         false
     )
 
