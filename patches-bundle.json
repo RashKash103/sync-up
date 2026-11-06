@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-06T04:34:55",
-  "description": "## [1.10.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.2...v1.10.0-dev.3) (2026-11-06)\n\n### ✨ New Features\n\n* Ask for the PIN when the app opens, or instead of a fingerprint ([8c471d8](https://github.com/RashKash103/sync-up/commit/8c471d8f66f1d564eaccd4614af563ce4ce62242))",
-  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.10.0-dev.3/patches-1.10.0-dev.3.mpp",
+  "created_at": "2026-11-06T04:59:04",
+  "description": "## [1.10.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.3...v1.10.0-dev.4) (2026-11-06)\n\n### 🐛 Bug Fixes\n\n* Put the PIN up after the app has a window to put it on ([e210549](https://github.com/RashKash103/sync-up/commit/e210549a86a49b3e8aaa870b97a8aa8b5877c97e))",
+  "download_url": "https://github.com/RashKash103/sync-up/releases/download/v1.10.0-dev.4/patches-1.10.0-dev.4.mpp",
   "signature_download_url": "",
-  "version": "1.10.0-dev.3"
+  "version": "1.10.0-dev.4"
 }

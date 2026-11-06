@@ -1,3 +1,9 @@
+## [1.10.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.3...v1.10.0-dev.4) (2026-11-06)
+
+### 🐛 Bug Fixes
+
+* Put the PIN up after the app has a window to put it on ([e210549](https://github.com/RashKash103/sync-up/commit/e210549a86a49b3e8aaa870b97a8aa8b5877c97e))
+
 ## [1.10.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.2...v1.10.0-dev.3) (2026-11-06)
 
 ### ✨ New Features
