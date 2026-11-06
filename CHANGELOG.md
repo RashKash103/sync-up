@@ -1,3 +1,9 @@
+## [1.10.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.2...v1.10.0-dev.3) (2026-11-06)
+
+### ✨ New Features
+
+* Ask for the PIN when the app opens, or instead of a fingerprint ([8c471d8](https://github.com/RashKash103/sync-up/commit/8c471d8f66f1d564eaccd4614af563ce4ce62242))
+
 ## [1.10.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.1...v1.10.0-dev.2) (2026-11-06)
 
 ### 🐛 Bug Fixes
