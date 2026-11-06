@@ -1,3 +1,14 @@
+## [1.10.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.1...v1.10.0-dev.2) (2026-11-06)
+
+### 🐛 Bug Fixes
+
+* Give the Sync Up rows icons, plainer wording and a credit ([8c2f16d](https://github.com/RashKash103/sync-up/commit/8c2f16ddbeb61eec684e037c62077be6a2f12c77))
+* Keep the client credentials and the account PIN out of Sync's backup ([2f764e1](https://github.com/RashKash103/sync-up/commit/2f764e163ff502edcda486909a18a67aa3f948a1))
+
+### ✨ New Features
+
+* Ask for the OAuth client ID when the app has none ([fb1ed85](https://github.com/RashKash103/sync-up/commit/fb1ed8567459ca45b4c39d8dda86c2280a9db09e))
+
 ## [1.10.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.9.4...v1.10.0-dev.1) (2026-11-05)
 
 ### ✨ New Features
