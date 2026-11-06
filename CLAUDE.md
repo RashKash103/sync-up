@@ -324,6 +324,15 @@ out is pushed off the bottom with the keyboard up. **Force a rotation** —
 stand-in for a device that folds; both of those were found that way and neither shows in
 portrait.
 
+**Changing account builds the screen again, and sometimes the whole process again.** The logs
+say `Start proc` for the one and leave `MainActivity` created afresh for the other, and which of
+the two happens is not consistent. Anything hooked on `MainActivity.onCreate` therefore runs a
+moment after an account has been changed, so a lock asked there asks a second time for what the
+account switch has just been given. A flag in the process does not survive the restart; what
+does is a note left in our own settings and thrown away as it is read, so that it can only ever
+excuse the one prompt, with a minute's expiry in case nothing reads it. Keep the in-process flag
+as well for the rebuilds that do not restart anything — a foldable being opened is one.
+
 **A local bundle is named after the version in `gradle.properties`, which the release moves.**
 Patching with `patches-<the version you last typed>.mpp` goes on succeeding against a file from
 hours ago, and what is then tested is not what was just built. Take the newest instead:

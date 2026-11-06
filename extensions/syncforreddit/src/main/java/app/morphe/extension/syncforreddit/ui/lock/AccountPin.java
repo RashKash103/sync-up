@@ -71,6 +71,21 @@ public final class AccountPin {
     /** Whether the PIN is asked for when the app is opened, as well as when accounts change. */
     public static final String AT_START = "sync_up_pin_start";
 
+    /**
+     * Written when the PIN has just been given to change accounts, and read once by the lock on
+     * the way in.
+     *
+     * <p>Changing account builds the screen again — sometimes the whole process again — so the
+     * lock on the way in runs a moment after the one that was just answered, and asks for the
+     * same PIN a second time. A note left behind survives both, and is thrown away as it is
+     * read so that it can only ever excuse the one prompt.
+     */
+    private static final String JUST_PROVED = "sync_up_just_proved";
+    private static final String JUST_PROVED_AT = "sync_up_just_proved_at";
+
+    /** How long such a note is worth anything, in case nothing ever reads it. */
+    private static final long WHILE_IT_LASTS = 60_000L;
+
     /** What Sync calls its own two locks. */
     private static final String ACCOUNT_LOCK = "biometric";
     private static final String LOGIN_LOCK = "biometric_start";
@@ -141,6 +156,16 @@ public final class AccountPin {
     /** The row that follows Sync's own switches, held weakly since nothing takes it back. */
     @Nullable
     private static WeakReference<Preference> theModeRow;
+
+    /**
+     * Whether the lock on the way in has already been answered while this run of the app has
+     * been going.
+     *
+     * <p>The screen being built again does not mean the app has been opened again: a foldable
+     * being opened can do it, and so can anything else that rebuilds the activity. Asking a
+     * second time for what was just given reads as the lock being broken.
+     */
+    private static volatile boolean wayInAnswered;
 
     /** What follows them, kept once rather than once per visit to the screen. */
     @Nullable
@@ -268,7 +293,48 @@ public final class AccountPin {
         if (then == null || !isPatchIncluded() || !isSet(context, account)) {
             return then;
         }
-        return () -> ask(context, account, then);
+        return () -> ask(context, account, () -> {
+            justProved(context, account);
+            then.run();
+        });
+    }
+
+    /** Leaves the note that says the PIN was given a moment ago, to change to this account. */
+    private static void justProved(Context context, @Nullable String account) {
+        try {
+            SharedPreferences store = of(context, account);
+            if (store != null) {
+                store.edit()
+                        .putString(JUST_PROVED, named(account))
+                        .putLong(JUST_PROVED_AT, System.currentTimeMillis())
+                        .apply();
+            }
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "pin: could not note that the PIN was just given: " + ex);
+        }
+    }
+
+    /**
+     * @return Whether the PIN was given a moment ago to reach this account, in which case the
+     *         lock on the way in has already been answered. Throws the note away either way.
+     */
+    private static boolean alreadyProved(Context context, @Nullable String account) {
+        try {
+            SharedPreferences store = of(context, account);
+            if (store == null || !store.contains(JUST_PROVED)) {
+                return false;
+            }
+
+            String who = store.getString(JUST_PROVED, null);
+            long when = store.getLong(JUST_PROVED_AT, 0L);
+            store.edit().remove(JUST_PROVED).remove(JUST_PROVED_AT).apply();
+
+            return named(account).equals(who)
+                    && System.currentTimeMillis() - when < WHILE_IT_LASTS;
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "pin: could not read whether the PIN was just given: " + ex);
+            return false;
+        }
     }
 
     /**
@@ -418,6 +484,15 @@ public final class AccountPin {
             if (!isSet(activity, null) || !asksAtStart(activity, null)) {
                 return;
             }
+            if (wayInAnswered) {
+                // Answered already this run; the screen has merely been built again.
+                return;
+            }
+            if (alreadyProved(activity, null)) {
+                // Changing account has just asked for this very PIN and been answered.
+                wayInAnswered = true;
+                return;
+            }
 
             // Once the activity has finished building, which is what gives it its own window.
             new Handler(Looper.getMainLooper()).post(() -> {
@@ -462,6 +537,7 @@ public final class AccountPin {
                 @Override
                 public void afterTextChanged(Editable typed) {
                     if (typed.length() >= FEWEST && matches(activity, null, typed.toString())) {
+                        wayInAnswered = true;
                         lock.dismiss();
                     }
                 }
@@ -476,7 +552,10 @@ public final class AccountPin {
             });
 
             lock.findViewById(THE_FINGER).setOnClickListener(tapped ->
-                    askForAFinger(activity, lock::dismiss));
+                    askForAFinger(activity, () -> {
+                        wayInAnswered = true;
+                        lock.dismiss();
+                    }));
             lock.findViewById(THE_WAY_OUT).setOnClickListener(tapped -> {
                 lock.dismiss();
                 activity.finish();
