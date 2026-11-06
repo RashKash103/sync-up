@@ -1,3 +1,9 @@
+## [1.10.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.4...v1.10.0-dev.5) (2026-11-06)
+
+### 🐛 Bug Fixes
+
+* Take the PIN back off the way into the app ([1925e57](https://github.com/RashKash103/sync-up/commit/1925e57144650e32d2bb2d66194355f170705a46))
+
 ## [1.10.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.3...v1.10.0-dev.4) (2026-11-06)
 
 ### 🐛 Bug Fixes
