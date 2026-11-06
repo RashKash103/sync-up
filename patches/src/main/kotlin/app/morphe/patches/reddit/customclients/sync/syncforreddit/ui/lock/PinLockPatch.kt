@@ -26,6 +26,27 @@ private const val GUARD_METHOD =
 
 private const val SETTLE_ROW_METHOD = "settle(Lpa/d;)V"
 
+private const val AT_APP_OPEN_METHOD = "atAppOpen(Landroid/app/Activity;)V"
+
+/**
+ * The screen the app settles on, and the one the PIN covers where it is asked on the way in.
+ *
+ * <p>Not `HomeActivity`, which is opened first and then routes on and finishes itself, and not
+ * the method there that decides what to ask for: stopping the app at that decision leaves the
+ * activity with no content and therefore no window, and a prompt of ours then becomes the only
+ * window the app has. This one has built its screen by the time the cover goes over it.
+ */
+private const val MAIN_ACTIVITY =
+    "Lcom/laurencedawson/reddit_sync/ui/activities/MainActivity;"
+
+/** Where Sync reads whether to ask for a fingerprint before the app opens. */
+private val appOpenLockFingerprint = Fingerprint(
+    definingClass = "Lcom/laurencedawson/reddit_sync/ui/activities/HomeActivity;",
+    name = "h0",
+    parameters = listOf("Ljava/lang/String;"),
+    returnType = "V",
+)
+
 private const val FINGERPRINT_WANTED_METHOD =
     "fingerprintWanted(Landroid/content/SharedPreferences;Ljava/lang/String;Z)Z"
 
@@ -89,7 +110,8 @@ private val accountActionsLockFingerprint = Fingerprint(
 val pinLockPatch = bytecodePatch(
     name = "Lock an account with a PIN",
     description = "Adds a PIN to the Security settings that is asked for when an account is " +
-            "opened, beside or instead of Sync's fingerprint lock.",
+            "opened and, if you like, when the app is opened, beside or instead of Sync's " +
+            "fingerprint lock.",
     default = true
 ) {
     dependsOn(sharedExtensionPatch, pinLockSettingsPatch)
@@ -129,6 +151,23 @@ val pinLockPatch = bytecodePatch(
             .readTheFingerprintSettingThroughUs(EXTENSION_CLASS_DESCRIPTOR)
         accountActionsLockFingerprint.method
             .readTheFingerprintSettingThroughUs(EXTENSION_CLASS_DESCRIPTOR)
+
+        // Only what Sync reads there is answered, never where it goes next: the app has to
+        // reach what builds its screen or it ends up with no window at all.
+        appOpenLockFingerprint.method
+            .readTheFingerprintSettingThroughUs(EXTENSION_CLASS_DESCRIPTOR)
+
+        // Asked on the way in, over a screen the app has already built rather than in front
+        // of it being built.
+        Fingerprint(
+            definingClass = MAIN_ACTIVITY,
+            name = "onCreate",
+            parameters = listOf("Landroid/os/Bundle;"),
+            returnType = "V",
+        ).method.addInstructions(
+            0,
+            "invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->$AT_APP_OPEN_METHOD",
+        )
 
         // Sync's settings screens are its own fragments, so the row is wired as a screen
         // finishes loading its rows; a screen without it is left alone.

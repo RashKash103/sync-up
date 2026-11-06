@@ -312,6 +312,18 @@ A dialog shown from inside `onCreate` is also torn off as a leaked window the fi
 activity is rebuilt, which a foldable does merely by being opened. Anything of ours that locks
 the way in has to let the app build its screen first, or not lock there at all.
 
+What works is to cover `MainActivity` instead: hook its `onCreate`, post, and put up a full
+screen opaque `Dialog` over a screen that is already whole. Only Sync's *reading* of
+`biometric_start` is answered in `h0`, never where it goes next, so the app always reaches what
+builds its screen. Losing the cover then leaves a working app rather than a brick, which is the
+right way round. Two things that only show up once it is full screen: an `EditText` needs
+`IME_FLAG_NO_EXTRACT_UI` or the keyboard takes the whole screen for a field of its own in
+landscape and what is being asked goes with it, and the content needs a `ScrollView` or the way
+out is pushed off the bottom with the keyboard up. **Force a rotation** —
+`settings put system accelerometer_rotation 0; settings put system user_rotation 1` — as the
+stand-in for a device that folds; both of those were found that way and neither shows in
+portrait.
+
 **A local bundle is named after the version in `gradle.properties`, which the release moves.**
 Patching with `patches-<the version you last typed>.mpp` goes on succeeding against a file from
 hours ago, and what is then tested is not what was just built. Take the newest instead:

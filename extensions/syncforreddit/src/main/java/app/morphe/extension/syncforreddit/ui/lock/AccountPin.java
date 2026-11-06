@@ -2,9 +2,11 @@ package app.morphe.extension.syncforreddit.ui.lock;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
@@ -12,20 +14,27 @@ import android.os.Looper;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.view.inputmethod.EditorInfo;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.biometric.BiometricPrompt;
 import androidx.fragment.app.FragmentActivity;
 import androidx.preference.Preference;
 
+import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.security.MessageDigest;
@@ -59,6 +68,13 @@ public final class AccountPin {
     /** What the hash was salted with. */
     private static final String SALT = "sync_up_pin_salt";
 
+    /** Whether the PIN is asked for when the app is opened, as well as when accounts change. */
+    public static final String AT_START = "sync_up_pin_start";
+
+    /** What Sync calls its own two locks. */
+    private static final String ACCOUNT_LOCK = "biometric";
+    private static final String LOGIN_LOCK = "biometric_start";
+
     /** What is asked for where both this and Sync's own fingerprint lock are set. */
     public static final String MODE = "sync_up_lock_mode";
 
@@ -83,6 +99,17 @@ public final class AccountPin {
 
     /** How far the typing field is held off the edges of the dialog, in dp. */
     private static final int AN_EDGE = 20;
+
+    /** How large the lock over a covered app is drawn, and how wide its field is, in dp. */
+    private static final int A_GLYPH = 48;
+    private static final int A_FIELD = 220;
+
+    /** How large what the cover is asking is written, in sp. */
+    private static final int SAYING = 20;
+
+    /** What the two ways off the cover are called, since they are made rather than inflated. */
+    private static final int THE_FINGER = 0x7E000001;
+    private static final int THE_WAY_OUT = 0x7E000002;
 
     /** How large the digits are typed, in sp. */
     private static final int DIGITS = 22;
@@ -110,6 +137,14 @@ public final class AccountPin {
      */
     @Nullable
     private static volatile String unlocking;
+
+    /** The row that follows Sync's own switches, held weakly since nothing takes it back. */
+    @Nullable
+    private static WeakReference<Preference> theModeRow;
+
+    /** What follows them, kept once rather than once per visit to the screen. */
+    @Nullable
+    private static SharedPreferences.OnSharedPreferenceChangeListener watchingSyncsLocks;
 
     private AccountPin() {}
 
@@ -251,9 +286,17 @@ public final class AccountPin {
                 return asSyncHasIt;
             }
             Context context = Utils.getContext();
-            if (isSet(context, unlocking) && eitherWillDo(context, unlocking)) {
-                return false;
+            if (!isSet(context, unlocking) || !eitherWillDo(context, unlocking)) {
+                return asSyncHasIt;
             }
+
+            // Only where something of ours actually takes its place. The lock on the way in is
+            // ours only when the PIN is asked for there too; standing Sync's down otherwise
+            // would take the lock off the app and put nothing back.
+            if (LOGIN_LOCK.equals(key) && !asksAtStart(context, unlocking)) {
+                return asSyncHasIt;
+            }
+            return false;
         } catch (Exception ex) {
             Logger.printInfo(() -> "pin: could not tell whether to leave the fingerprint: " + ex);
         }
@@ -344,13 +387,181 @@ public final class AccountPin {
         }
     }
 
+    /** @return Whether the PIN is asked for when the app is opened, not only when switching. */
+    public static boolean asksAtStart(Context context, @Nullable String account) {
+        SharedPreferences store = syncs(context, account);
+        return store != null && store.getBoolean(AT_START, false);
+    }
+
+    /**
+     * Covers the app with the PIN once it has opened.
+     *
+     * <p>Put over a screen the app has already built, rather than in front of the building of
+     * it. Stopping the app first is how Sync's own login lock works and it cannot be copied:
+     * an activity stopped before it sets a content view has no window of its own, so a prompt
+     * of ours becomes the only window the app has, and when that goes — a tap beside it, or a
+     * foldable merely being opened — the app has no window at all and stops answering touches
+     * until it is force stopped. Sync gets away with it because a fingerprint prompt is the
+     * system's window and goes on taking input.
+     *
+     * <p>So the cover goes on top instead: opaque and full screen, so nothing shows through,
+     * and over an app that is whole underneath it. The cost is that failing to draw it leaves
+     * the app open rather than shut, which is the right way round for something that can
+     * otherwise brick it.
+     */
+    public static void atAppOpen(Activity activity) {
+        try {
+            if (!isPatchIncluded() || activity == null) {
+                return;
+            }
+            unlocking = null;
+            if (!isSet(activity, null) || !asksAtStart(activity, null)) {
+                return;
+            }
+
+            // Once the activity has finished building, which is what gives it its own window.
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (activity.isFinishing() || activity.isDestroyed()) {
+                    return;
+                }
+                cover(activity);
+            });
+        } catch (Exception ex) {
+            // A lock that cannot be drawn must not become an app that will not open.
+            Logger.printInfo(() -> "pin: could not cover the app with the PIN: " + ex);
+        }
+    }
+
+    /** The cover itself: everything behind it is hidden until the PIN is right. */
+    private static void cover(Activity activity) {
+        try {
+            final EditText typing = digits(activity, "PIN");
+            boolean offerAFinger = eitherWillDo(activity, null) && fingerprintIsOn(activity, null);
+
+            final Dialog lock = new Dialog(activity);
+            lock.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            lock.setCancelable(false);
+            lock.setContentView(behind(activity, typing, offerAFinger));
+
+            Window window = lock.getWindow();
+            if (window != null) {
+                window.setBackgroundDrawable(new ColorDrawable(behindIsHidden(activity)));
+                window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.MATCH_PARENT);
+                window.setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+            }
+
+            typing.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence text, int from, int was, int will) {}
+
+                @Override
+                public void onTextChanged(CharSequence text, int from, int before, int count) {}
+
+                @Override
+                public void afterTextChanged(Editable typed) {
+                    if (typed.length() >= FEWEST && matches(activity, null, typed.toString())) {
+                        lock.dismiss();
+                    }
+                }
+            });
+
+            typing.setOnEditorActionListener((field, action, key) -> {
+                if (!matches(activity, null, typing.getText().toString())) {
+                    Utils.showToastShort("Wrong PIN");
+                    typing.setText("");
+                }
+                return true;
+            });
+
+            lock.findViewById(THE_FINGER).setOnClickListener(tapped ->
+                    askForAFinger(activity, lock::dismiss));
+            lock.findViewById(THE_WAY_OUT).setOnClickListener(tapped -> {
+                lock.dismiss();
+                activity.finish();
+            });
+
+            typing.requestFocus();
+            lock.show();
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "pin: could not draw the cover: " + ex);
+        }
+    }
+
+    /** @return The colour the app's own screens are drawn on, so that nothing shows through. */
+    private static int behindIsHidden(Context context) {
+        try {
+            TypedValue found = new TypedValue();
+            if (context.getTheme().resolveAttribute(android.R.attr.colorBackground, found, true)) {
+                if (found.resourceId != 0) {
+                    return context.getResources().getColor(found.resourceId, context.getTheme());
+                }
+                return found.data;
+            }
+        } catch (Throwable ignored) {
+            // Falls through to something that is at least opaque.
+        }
+        return Color.BLACK;
+    }
+
+    /** What the cover holds: a lock, what it is asking, somewhere to type, and the ways out. */
+    private static View behind(Context context, EditText typing, boolean offerAFinger) {
+        int edge = Math.round(AN_EDGE * density(context));
+
+        LinearLayout holding = new LinearLayout(context);
+        holding.setOrientation(LinearLayout.VERTICAL);
+        holding.setGravity(Gravity.CENTER);
+        holding.setPadding(edge * 2, edge, edge * 2, edge);
+
+        Drawable lock = glyph(context, A_LOCK);
+        if (lock != null) {
+            ImageView drawn = new ImageView(context);
+            drawn.setImageDrawable(lock);
+            int size = Math.round(A_GLYPH * density(context));
+            holding.addView(drawn, new LinearLayout.LayoutParams(size, size));
+        }
+
+        TextView saying = new TextView(context);
+        saying.setText("Enter PIN");
+        saying.setTextColor(words(context));
+        saying.setTextSize(SAYING);
+        saying.setGravity(Gravity.CENTER);
+        saying.setPadding(0, edge, 0, edge / 2);
+        holding.addView(saying);
+
+        holding.addView(typing, new LinearLayout.LayoutParams(
+                Math.round(A_FIELD * density(context)),
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        Button finger = new Button(context);
+        finger.setId(THE_FINGER);
+        finger.setText("Use fingerprint");
+        finger.setVisibility(offerAFinger ? View.VISIBLE : View.GONE);
+        holding.addView(finger);
+
+        Button out = new Button(context);
+        out.setId(THE_WAY_OUT);
+        out.setText("Close Sync");
+        holding.addView(out);
+
+        // Lying on its side with the keyboard up there is not room for all of it at once, and
+        // the way out is the part that would be pushed off.
+        ScrollView within = new ScrollView(context);
+        within.addView(holding, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+        within.setFillViewport(true);
+        return within;
+    }
+
     /** @return Whether Sync's own fingerprint lock is on for this account. */
     private static boolean fingerprintIsOn(Context context, @Nullable String account) {
         SharedPreferences store = syncs(context, account);
         if (store == null) {
             return false;
         }
-        return store.getBoolean("biometric", false) || store.getBoolean("biometric_start", false);
+        return store.getBoolean(ACCOUNT_LOCK, false) || store.getBoolean(LOGIN_LOCK, false);
     }
 
     /**
@@ -434,19 +645,61 @@ public final class AccountPin {
      */
     private static void settleTheRest(pa.d screen, Context context) {
         try {
-            boolean already = isSet(context, null);
-
             Preference mode = screen.y(MODE);
-            if (mode != null) {
-                // Turned on and off with the PIN alone. Whether a fingerprint is set as well
-                // is not looked at here: Sync's own switches are its to draw, and reading them
-                // once as this screen loads would leave the row faded until the screen was
-                // left and come back to. Its own words say when it applies.
-                mode.q0(already);
+            if (mode == null) {
+                return;
             }
+
+            Preference atStart = screen.y(AT_START);
+            if (atStart != null) {
+                atStart.q0(isSet(context, null));
+            }
+
+            theModeRow = new WeakReference<>(mode);
+            saySoOnTheModeRow(context, mode);
+            watchSyncsOwnLocks(context);
         } catch (Exception ex) {
             Logger.printInfo(() -> "pin: could not settle the rows beside the PIN: " + ex);
         }
+    }
+
+    /** The row means something only where there are two locks for it to choose between. */
+    private static void saySoOnTheModeRow(Context context, Preference mode) {
+        mode.q0(isSet(context, null) && fingerprintIsOn(context, null));
+    }
+
+    /**
+     * Follows Sync's own two switches while the screen is open, so that turning one on stops
+     * the row beside them being faded there and then.
+     *
+     * <p>Watched through the settings file rather than by listening to the rows themselves:
+     * those are Sync's, and a listener of ours put on one would displace whatever Sync has on
+     * it. Nothing here is unregistered, so the row is held weakly and one listener is kept for
+     * the life of the process rather than one per visit to the screen.
+     */
+    private static void watchSyncsOwnLocks(Context context) {
+        SharedPreferences store = syncs(context, null);
+        if (store == null) {
+            return;
+        }
+
+        if (watchingSyncsLocks == null) {
+            watchingSyncsLocks = (changed, key) -> {
+                if (!ACCOUNT_LOCK.equals(key) && !LOGIN_LOCK.equals(key)) {
+                    return;
+                }
+                Preference mode = theModeRow == null ? null : theModeRow.get();
+                if (mode == null) {
+                    return;
+                }
+                // Drawn on the thread that draws, whichever one the change came back on.
+                new Handler(Looper.getMainLooper())
+                        .post(() -> saySoOnTheModeRow(mode.k(), mode));
+            };
+        }
+
+        store.unregisterOnSharedPreferenceChangeListener(watchingSyncsLocks);
+        store.registerOnSharedPreferenceChangeListener(watchingSyncsLocks);
     }
 
     private static void say(Preference row) {
@@ -603,6 +856,9 @@ public final class AccountPin {
         typing.setGravity(Gravity.CENTER_HORIZONTAL);
         typing.setTextSize(DIGITS);
         typing.setLetterSpacing(APART);
+        // Lying on its side, the keyboard otherwise takes the whole screen for a field of its
+        // own and what is being asked goes with it.
+        typing.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
         return typing;
     }
 

@@ -399,17 +399,24 @@ service being asked.
   should not be sitting there in the open either, and it is kept out of Sync's Backup file for
   the same reason.
 
-  A row sits beside it. **When a PIN and a fingerprint are both set** chooses between asking for
-  both, which is the default, and asking for either: with *either*, Sync's own fingerprint
-  prompt stands down and the fingerprint is offered on the same screen as the PIN, so there is
-  one way in rather than two prompts in a row.
+  Two rows sit beside it. **PIN login lock** asks for the PIN when the app is opened, not only
+  when accounts change — without it the account already open when you launch Sync is not behind
+  the PIN at all, which is the hole Sync's own login lock fills for fingerprints. **When a PIN
+  and a fingerprint are both set** chooses between asking for both, which is the default, and
+  asking for either: with *either*, Sync's own fingerprint prompt stands down and the
+  fingerprint is offered on the same screen as the PIN, so there is one way in rather than two
+  prompts in a row. That row is faded until there are two locks for it to choose between, and
+  follows Sync's own switches as they are turned on and off.
 
-  This does not cover Sync's separate lock for opening the app. Asking for a PIN there needs
-  the app to be stopped before it builds its screen, and an activity with no screen has no
-  window of its own: the prompt is then the only window the app has, and the moment it goes —
-  which on a foldable happens merely by opening the phone — the app has no window at all and
-  stops answering touches. Sync's own login lock gets away with it because a fingerprint prompt
-  belongs to the system rather than to the app.
+  The lock on the way in goes **over** a screen the app has already built, opaque and full
+  screen so that nothing shows through, rather than stopping the app before it builds one.
+  Stopping it is what Sync's own login lock does and it cannot be copied: an activity stopped
+  before it sets a content view has no window of its own, so the prompt becomes the only window
+  the app has, and the moment it goes — which on a foldable happens merely by opening the phone
+  — the app has none at all and stops answering touches until it is force stopped. Sync gets
+  away with it because a fingerprint prompt belongs to the system. The cost of doing it this way
+  round is that a lock which cannot be drawn leaves the app open rather than shut, which is the
+  right way round for something that can otherwise brick it.
 
 #### Other
 
