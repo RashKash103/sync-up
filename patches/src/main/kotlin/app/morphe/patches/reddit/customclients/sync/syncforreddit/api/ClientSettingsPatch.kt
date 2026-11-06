@@ -2,12 +2,20 @@ package app.morphe.patches.reddit.customclients.sync.syncforreddit.api
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patches.util.drawableNamed
 import org.w3c.dom.Element
 
 private const val PREFERENCES = "com.laurencedawson.reddit_sync.ui.preferences"
 
 private const val CATEGORY_HEADER = "$PREFERENCES.defaults.CategoryHeaderPreference"
 private const val ROW = "$PREFERENCES.defaults.SyncPreference"
+private const val ROOT_ROW = "$PREFERENCES.custom.RootPreference"
+
+/** The way in to the screen these rows are added to, as the main settings screen names it. */
+private const val THE_WAY_IN = "Everything else"
+
+/** The section of that screen naming who had a hand in the app. */
+private const val CREDITS = "Credits"
 
 /**
  * Adds the rows that let what the app identifies itself with be typed in.
@@ -29,11 +37,13 @@ internal val clientSettingsPatch = resourcePatch(
             header.setAttribute("app:categoryTitle", "Sync Up client")
             category.appendChild(header)
 
-            fun row(key: String, title: String, summary: String) {
+            fun row(key: String, title: String, summary: String, icon: String) {
                 val preference = document.createElement(ROW)
                 preference.setAttribute("android:key", key)
                 preference.setAttribute("android:title", title)
                 preference.setAttribute("android:summary", summary)
+                // Every row of Sync's own carries one, so one without looks like a mistake.
+                preference.setAttribute("android:icon", drawableNamed(icon))
                 category.appendChild(preference)
             }
 
@@ -42,26 +52,76 @@ internal val clientSettingsPatch = resourcePatch(
             row(
                 "sync_up_client_id",
                 "OAuth client ID",
-                "The id Reddit was asked to issue. Without one the app cannot sign in.",
+                "Sync signs in to Reddit with this.",
+                "outline_code_24",
             )
             row(
                 "sync_up_redirect_uri",
                 "Redirect URI",
                 "Where Reddit sends you back to after signing in.",
+                "outline_link_24",
             )
             row(
                 "sync_up_user_agent",
                 "User agent",
-                "What the app calls itself when it asks Reddit for anything.",
+                "How Sync introduces itself to Reddit.",
+                "outline_web_24",
             )
             row(
                 "sync_up_imgur_client_id",
                 "Imgur client ID",
-                "What uploading a picture identifies as.",
+                "Used when you upload a picture to Imgur.",
+                "outline_image_24",
             )
 
             // First, since signing in is what the rest of the app waits on.
             screen.insertBefore(category, screen.firstChild)
+
+            // Beside the people Sync credits. This is the one place in the app that says the
+            // app has been patched at all; everywhere else reads as Sync's own.
+            val headers = document.getElementsByTagName(CATEGORY_HEADER)
+            val credits = (0 until headers.length)
+                .map { headers.item(it) as Element }
+                .firstOrNull { it.getAttribute("app:categoryTitle") == CREDITS }
+                ?.parentNode as? Element
+                ?: throw PatchException("No $CREDITS section to name the patches in")
+
+            fun credit(key: String, title: String, summary: String, icon: String) {
+                val preference = document.createElement(ROW)
+                preference.setAttribute("android:key", key)
+                preference.setAttribute("android:title", title)
+                preference.setAttribute("android:summary", summary)
+                preference.setAttribute("android:icon", drawableNamed(icon))
+                credits.appendChild(preference)
+            }
+
+            credit(
+                "sync_up_credit",
+                "Sync Up patches",
+                "RashKash103",
+                "outline_person_24",
+            )
+            credit(
+                "sync_up_repository",
+                "Sync Up on GitHub",
+                "github.com/RashKash103/sync-up",
+                "outline_link_24",
+            )
+        }
+
+        // What the way in to that screen says it holds, which no longer mentions everything on
+        // it. Someone looking for where to put a client id has nothing else to go on.
+        document("res/xml/cat_root.xml").use { document ->
+            val rows = document.getElementsByTagName(ROOT_ROW)
+            val wayIn = (0 until rows.length)
+                .map { rows.item(it) as Element }
+                .firstOrNull { it.getAttribute("android:title") == THE_WAY_IN }
+                ?: throw PatchException("No $THE_WAY_IN row to say what it now holds")
+
+            wayIn.setAttribute(
+                "android:summary",
+                "App credentials, app info, licenses & credits",
+            )
         }
     }
 }

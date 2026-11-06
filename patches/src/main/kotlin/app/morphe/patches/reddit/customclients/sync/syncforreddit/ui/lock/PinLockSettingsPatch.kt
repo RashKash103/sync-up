@@ -2,6 +2,7 @@ package app.morphe.patches.reddit.customclients.sync.syncforreddit.ui.lock
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patches.util.drawableNamed
 import org.w3c.dom.Element
 
 private const val PREFERENCES = "com.laurencedawson.reddit_sync.ui.preferences"
@@ -25,6 +26,8 @@ internal val pinLockSettingsPatch = resourcePatch(
             val row = document.createElement(ROW)
             row.setAttribute("android:key", "sync_up_pin")
             row.setAttribute("android:title", "PIN account lock")
+            // Beside the two locks of Sync's own, which both carry one.
+            row.setAttribute("android:icon", drawableNamed("baseline_lock_24"))
             // Replaced as the screen loads with whether one is actually set.
             row.setAttribute(
                 "android:summary",
