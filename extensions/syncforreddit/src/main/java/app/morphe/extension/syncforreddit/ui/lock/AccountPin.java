@@ -3,7 +3,17 @@ package app.morphe.extension.syncforreddit.ui.lock;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
@@ -11,6 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 
@@ -45,11 +56,37 @@ public final class AccountPin {
     /** The name this gives when it asks Sync for an account's settings. */
     private static final String ASKING = "SyncUp";
 
+    /**
+     * The file a PIN is kept in, which is ours and not one Sync writes to.
+     *
+     * <p>Sync's Backup walks its own settings and writes them into a file people copy between
+     * devices and hand to whoever is helping them. A PIN of four digits beside the salt it was
+     * hashed with is worked out from such a file in no time, so it is kept where a backup
+     * cannot reach it. A lock that travels in a plain text file is not a lock.
+     */
+    private static final String STORE = "sync_up_locks";
+
     /** The fewest digits a PIN may be. */
     private static final int FEWEST = 4;
 
     /** How far the typing field is held off the edges of the dialog, in dp. */
     private static final int AN_EDGE = 20;
+
+    /** How large the digits are typed, in sp. */
+    private static final int DIGITS = 22;
+
+    /** How far apart they sit, as a share of their own size. */
+    private static final float APART = 0.3f;
+
+    /** How far the screen behind the prompt is blurred, in dp. */
+    private static final int A_BLUR = 48;
+
+    /** How far it is darkened where the blur is doing most of the work, and where there is none. */
+    private static final float DIM_BESIDE_BLUR = 0.3f;
+    private static final float DIM_ALONE = 0.6f;
+
+    /** The lock drawn beside the prompt, which is one of the app's own. */
+    private static final String A_LOCK = "outline_lock_24";
 
     private AccountPin() {}
 
@@ -58,25 +95,87 @@ public final class AccountPin {
         return false;
     }
 
-    /** @return The settings of one account, which is where Sync keeps its own lock setting. */
+    /** @return Our own file, which Sync neither reads nor backs up. */
     @Nullable
     private static SharedPreferences of(Context context, @Nullable String account) {
         try {
             if (context == null) {
                 return null;
             }
-            String named = account == null || account.isEmpty() ? t7.z.a() : account;
-            return t7.z.h(context, named, ASKING);
+            SharedPreferences store = context.getSharedPreferences(STORE, Context.MODE_PRIVATE);
+            carryOver(context, store, named(account));
+            return store;
         } catch (Throwable ex) {
-            Logger.printInfo(() -> "pin: could not reach the settings of an account: " + ex);
+            Logger.printInfo(() -> "pin: could not reach where a PIN is kept: " + ex);
             return null;
+        }
+    }
+
+    /**
+     * @return Which account is being asked about, which is the one in use unless named.
+     *
+     * <p>Lowercased, because Sync hands the name over in whichever case it feels like: the
+     * picker passes the name as it is written on the screen, `ASlyLawnTurtle`, while the
+     * account in use comes back as `aslylawnturtle`, which is also what it names the account's
+     * own settings file. Keeping a PIN under one of those and asking for it under the other is
+     * a lock that quietly never asks.
+     */
+    private static String named(@Nullable String account) {
+        String name = account;
+        if (name == null || name.isEmpty()) {
+            try {
+                name = t7.z.a();
+            } catch (Throwable ex) {
+                return "";
+            }
+        }
+        return name == null ? "" : name.toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * What a PIN is kept under, since one file now holds every account's. A Reddit name is
+     * letters, digits, dashes and underscores, so a slash between the two cannot be mistaken
+     * for part of either.
+     */
+    private static String under(@Nullable String account, String what) {
+        return named(account) + "/" + what;
+    }
+
+    /**
+     * Moves a PIN an older build of ours wrote into Sync's own settings over to our file, and
+     * takes it out of Sync's, so that it stops being something a backup carries. A backup made
+     * before this still restores, and is moved across the same way the next time it is read.
+     */
+    private static void carryOver(Context context, SharedPreferences store, String account) {
+        try {
+            if (account.isEmpty()) {
+                return;
+            }
+            SharedPreferences syncs = t7.z.h(context, account, ASKING);
+            if (syncs == null || !syncs.contains(PIN)) {
+                return;
+            }
+
+            String held = syncs.getString(PIN, null);
+            String salt = syncs.getString(SALT, "");
+            if (held != null && !held.isEmpty()
+                    && store.getString(account + "/" + PIN, null) == null) {
+                store.edit()
+                        .putString(account + "/" + PIN, held)
+                        .putString(account + "/" + SALT, salt)
+                        .apply();
+            }
+            syncs.edit().remove(PIN).remove(SALT).apply();
+            Logger.printInfo(() -> "pin: moved the PIN out of Sync's own settings");
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "pin: could not move what an older build kept: " + ex);
         }
     }
 
     /** @return Whether a PIN has been set for this account. */
     public static boolean isSet(Context context, @Nullable String account) {
         SharedPreferences store = of(context, account);
-        String held = store == null ? null : store.getString(PIN, null);
+        String held = store == null ? null : store.getString(under(account, PIN), null);
         return held != null && !held.isEmpty();
     }
 
@@ -96,20 +195,52 @@ public final class AccountPin {
     /** Asks for the PIN, and runs what was waiting only once it is right. */
     private static void ask(Context context, @Nullable String account, Runnable then) {
         try {
-            EditText typing = digits(context, "PIN");
+            final EditText typing = digits(context, "PIN");
 
-            new AlertDialog.Builder(context)
+            AlertDialog.Builder asking = new AlertDialog.Builder(context)
                     .setTitle("Enter PIN")
                     .setView(around(context, typing))
-                    .setPositiveButton("Unlock", (dialog, which) -> {
-                        if (matches(context, account, typing.getText().toString())) {
-                            then.run();
-                        } else {
-                            Utils.showToastShort("Wrong PIN");
-                        }
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+                    .setNegativeButton("Cancel", null);
+
+            Drawable lock = glyph(context, A_LOCK);
+            if (lock != null) {
+                asking.setIcon(lock);
+            }
+
+            final AlertDialog prompt = asking.create();
+
+            // Opens as the last digit is typed, the way a device does, rather than waiting for
+            // a button to be found. How long the PIN is was never kept, so every length it
+            // could be is tried.
+            typing.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence text, int from, int was, int will) {}
+
+                @Override
+                public void onTextChanged(CharSequence text, int from, int before, int count) {}
+
+                @Override
+                public void afterTextChanged(Editable typed) {
+                    if (typed.length() >= FEWEST
+                            && matches(context, account, typed.toString())) {
+                        prompt.dismiss();
+                        then.run();
+                    }
+                }
+            });
+
+            // And says so where the keypad is told the PIN is finished and it is wrong, rather
+            // than leaving someone typing at a prompt that never answers.
+            typing.setOnEditorActionListener((field, action, key) -> {
+                if (!matches(context, account, typing.getText().toString())) {
+                    Utils.showToastShort("Wrong PIN");
+                    typing.setText("");
+                }
+                return true;
+            });
+
+            likeAnUnlockScreen(prompt, typing);
+            prompt.show();
         } catch (Exception ex) {
             // A lock that cannot be drawn must not become a door that cannot be opened.
             Logger.printInfo(() -> "pin: could not ask for the PIN: " + ex);
@@ -123,8 +254,8 @@ public final class AccountPin {
             if (store == null) {
                 return true;
             }
-            String held = store.getString(PIN, null);
-            String salt = store.getString(SALT, "");
+            String held = store.getString(under(account, PIN), null);
+            String salt = store.getString(under(account, SALT), "");
             return held != null && held.equals(hash(typed, salt));
         } catch (Exception ex) {
             Logger.printInfo(() -> "pin: could not check the PIN: " + ex);
@@ -166,7 +297,7 @@ public final class AccountPin {
     public static void choose(Context context, Runnable afterwards) {
         try {
             boolean already = isSet(context, null);
-            EditText typing = digits(context, already ? "New PIN" : "PIN");
+            final EditText typing = digits(context, already ? "New PIN" : "PIN");
 
             AlertDialog.Builder asking = new AlertDialog.Builder(context)
                     .setTitle(already ? "Change PIN" : "Set PIN")
@@ -182,16 +313,77 @@ public final class AccountPin {
                     })
                     .setNegativeButton("Cancel", null);
 
+            Drawable lock = glyph(context, A_LOCK);
+            if (lock != null) {
+                asking.setIcon(lock);
+            }
+
             if (already) {
                 asking.setNeutralButton("Remove", (dialog, which) -> {
                     clear(context);
                     afterwards.run();
                 });
             }
-            asking.show();
+
+            AlertDialog prompt = asking.create();
+            likeAnUnlockScreen(prompt, typing);
+            prompt.show();
         } catch (Exception ex) {
             Logger.printInfo(() -> "pin: could not offer to set a PIN: " + ex);
         }
+    }
+
+    /**
+     * Dresses a prompt the way the device's own unlock screen is dressed: the keypad already up
+     * rather than waiting for the field to be tapped, and the screen behind it blurred where the
+     * device will do that and darkened where it will not.
+     */
+    private static void likeAnUnlockScreen(AlertDialog prompt, EditText typing) {
+        Context context = typing.getContext();
+        Window window = prompt.getWindow();
+        if (window == null) {
+            return;
+        }
+
+        // Both are needed: the one covers the prompt appearing, the other covers the field
+        // being the thing the keypad is for.
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        typing.requestFocus();
+        prompt.setOnShowListener(shown -> {
+            InputMethodManager keypad = (InputMethodManager)
+                    context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (keypad != null) {
+                // Asked for again once there is a window to ask from, since a prompt that
+                // arrives with the screen is sometimes shown before anything can be focused.
+                typing.post(() -> keypad.showSoftInput(typing, InputMethodManager.SHOW_IMPLICIT));
+            }
+        });
+
+        WindowManager.LayoutParams held = window.getAttributes();
+
+        boolean blurring = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try {
+                WindowManager manager =
+                        (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+                // The device may have it turned off, for battery or for want of a GPU that
+                // will do it, and then the flag draws nothing at all.
+                blurring = manager != null && manager.isCrossWindowBlurEnabled();
+                if (blurring) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
+                    held.setBlurBehindRadius(Math.round(A_BLUR * density(context)));
+                }
+            } catch (Throwable ex) {
+                Logger.printInfo(() -> "pin: could not blur behind the prompt: " + ex);
+                blurring = false;
+            }
+        }
+
+        // Darkened as well, less so where the blur is doing most of the work. Where the device
+        // will not blur this is the whole of it, which is what Sync's own dialogs look like.
+        window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        held.dimAmount = blurring ? DIM_BESIDE_BLUR : DIM_ALONE;
+        window.setAttributes(held);
     }
 
     private static void keep(Context context, String pin) {
@@ -203,7 +395,10 @@ public final class AccountPin {
             byte[] grain = new byte[16];
             new SecureRandom().nextBytes(grain);
             String salt = toHex(grain);
-            store.edit().putString(SALT, salt).putString(PIN, hash(pin, salt)).apply();
+            store.edit()
+                    .putString(under(null, SALT), salt)
+                    .putString(under(null, PIN), hash(pin, salt))
+                    .apply();
             Utils.showToastShort("PIN set");
         } catch (Exception ex) {
             Logger.printInfo(() -> "pin: could not keep the PIN: " + ex);
@@ -214,7 +409,7 @@ public final class AccountPin {
         try {
             SharedPreferences store = of(context, null);
             if (store != null) {
-                store.edit().remove(PIN).remove(SALT).apply();
+                store.edit().remove(under(null, PIN)).remove(under(null, SALT)).apply();
                 Utils.showToastShort("PIN removed");
             }
         } catch (Exception ex) {
@@ -241,14 +436,63 @@ public final class AccountPin {
         typing.setHint(hint);
         typing.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD);
         typing.setSingleLine(true);
+        // Centred and spaced out, so that what is typed reads as a PIN rather than as a word.
+        typing.setGravity(Gravity.CENTER_HORIZONTAL);
+        typing.setTextSize(DIGITS);
+        typing.setLetterSpacing(APART);
         return typing;
     }
 
     private static FrameLayout around(Context context, EditText typing) {
         FrameLayout holding = new FrameLayout(context);
-        int edge = Math.round(AN_EDGE * context.getResources().getDisplayMetrics().density);
+        int edge = Math.round(AN_EDGE * density(context));
         holding.setPadding(edge, edge / 2, edge, 0);
         holding.addView(typing);
         return holding;
+    }
+
+    /** @return One of the app's own drawables, coloured as the words around it are. */
+    @Nullable
+    private static Drawable glyph(Context context, String named) {
+        try {
+            int found = context.getResources()
+                    .getIdentifier(named, "drawable", context.getPackageName());
+            if (found == 0) {
+                return null;
+            }
+            Drawable drawn = context.getResources().getDrawable(found, context.getTheme());
+            if (drawn == null) {
+                return null;
+            }
+            drawn = drawn.mutate();
+            drawn.setTint(words(context));
+            return drawn;
+        } catch (Throwable ex) {
+            Logger.printInfo(() -> "pin: no lock to draw beside the prompt: " + ex);
+            return null;
+        }
+    }
+
+    /** @return What colour the screen's own words are, whichever theme is on. */
+    private static int words(Context context) {
+        try {
+            TypedValue found = new TypedValue();
+            if (!context.getTheme()
+                    .resolveAttribute(android.R.attr.textColorPrimary, found, true)) {
+                return Color.GRAY;
+            }
+            if (found.resourceId != 0) {
+                return context.getResources()
+                        .getColorStateList(found.resourceId, context.getTheme())
+                        .getDefaultColor();
+            }
+            return found.data;
+        } catch (Throwable ex) {
+            return Color.GRAY;
+        }
+    }
+
+    private static float density(Context context) {
+        return context.getResources().getDisplayMetrics().density;
     }
 }

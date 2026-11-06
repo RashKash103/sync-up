@@ -237,6 +237,18 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   body is where this comes up, since writing one to a sink is the documented way. Read the bytes
   off the body object instead: what `RequestBody.create(MediaType, byte[])` returns holds them
   in a field, found by its type rather than its name, since the names do not survive R8.
+- **Most of the app's drawables are not there any more.** R8's resource shrinker left every
+  unused one's name and id in place and replaced the drawing with `<x/>`, a stub whose element
+  names a class that was shrunk away too. A row given one patches perfectly and takes its whole
+  settings screen down the moment it is opened, with
+  `InflateException: Class not found x` and nothing naming the drawable. Only the drawables the
+  app still uses itself survived as a real `<vector>` — `outline_vpn_key_24` is a stub,
+  `outline_lock_24` is not — and nothing in the name says which. `patches/util/Drawables.kt`
+  reads the drawable and refuses anything that is not a `<vector>`, so pointing a row at a stub
+  is a patch failure rather than a crash on a device; name icons through it. Check the tint too:
+  a surviving vector whose `fillColor` is a literal `#FF000000` or `#FFFFFFFF` disappears in one
+  of the two themes, while the ones Sync uses on its own rows carry
+  `android:tint="?attr/..."` and follow the theme.
 - **Two methods on a class can have the same signature.** `Loc/c;` has both `u()V` and `p()V`,
   so a predicate matching "no parameters, returns void, on `Loc/c;`" finds the wrong one. Anchor
   on what guards or surrounds the call instead.
@@ -279,6 +291,22 @@ with its rows already loaded. A screen that does not hold the rows in question i
 `y(key)` is `findPreference` and `Preference.q0(boolean)` is `setEnabled`; `SettingsRows` fades
 whatever is turned off, since Sync colours every row's words as it draws them whatever state the
 row is in.
+
+**Sync's Backup writes out the per-account settings file, so anything kept there travels in
+it.** The file is handed to whoever is helping and copied between devices, so nothing of ours
+that is a secret belongs in it: the client id and the three things beside it live in
+`sync_up_client`, and a PIN in `sync_up_locks`, both files of our own that Sync has never heard
+of and therefore cannot write out. A PIN of four digits beside the salt it was hashed with is
+worked out from such a file in no time. Both classes move anything an older build of ours left
+in Sync's settings across on first use and take it out of Sync's, so a backup made afterwards is
+clean; check by reading the written file rather than by reasoning about it.
+
+**`HomeActivity` is not where the app ends up.** An ordinary run opens it, it sends the app on
+to `MainActivity` and finishes itself, and `MainActivity` is what stays on the screen. Anything
+shown from `HomeActivity.onCreate` is therefore taken off the screen a moment after it arrives —
+a dialog posted from there is gone before it can be read, while having already counted as shown.
+`OnboardingActivity` is the first run's, and it stays. Read `dumpsys activity activities` for
+`topResumedActivity` rather than assuming the first activity named is the one in front.
 
 **Note that `android:dependency` is not an answer here.** It only keys off a checkbox, so a row
 that should follow a list preference's value has to be turned on and off in code.
