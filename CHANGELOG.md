@@ -1,3 +1,9 @@
+## [1.10.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.8...v1.10.0-dev.9) (2026-11-07)
+
+### 🐛 Bug Fixes
+
+* Keep to methods every supported Android has ([c15b8b6](https://github.com/RashKash103/sync-up/commit/c15b8b63c28858577c0b7f39f75f98c943e5ad7e))
+
 ## [1.10.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.7...v1.10.0-dev.8) (2026-11-07)
 
 ### 🐛 Bug Fixes
