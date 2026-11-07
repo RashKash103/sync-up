@@ -226,6 +226,15 @@ service being asked.
 
 #### Gestures
 
+- **Show the feed while a post is swiped away** — Dragging a post aside is meant to carry the
+  feed in behind it. For the screen underneath to go on being drawn, the post has to tell the
+  system it is translucent, and Sync asks for that through `Activity.convertToTranslucent`, which
+  has never been part of the SDK. As the platform tightened up on non-SDK interfaces the call
+  stopped landing, so nothing was drawn underneath and the uncovered half of the screen was
+  simply black. Nothing in the app changed; the ground under it did. There is a supported way to
+  ask the same thing now — `Activity.setTranslucent`, public since Android 11 — and that is used
+  where it exists. On anything older nothing is claimed and Sync asks the way it always did,
+  which is where it still worked.
 - **Gestures for the video player** — In a video or GIF: double tap to play or pause rather
   than zoom, drag sideways to seek, and drag up or down after a double tap to change the
   volume. Each is read as the gesture is made, so anything here can be turned on or off under
