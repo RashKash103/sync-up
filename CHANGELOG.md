@@ -1,3 +1,9 @@
+## [1.10.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.7...v1.10.0-dev.8) (2026-11-07)
+
+### 🐛 Bug Fixes
+
+* Do not let a credit or an icon stop the app signing in ([7b68258](https://github.com/RashKash103/sync-up/commit/7b68258dd0fcaae513e350823e9b7198f6307bcc))
+
 ## [1.10.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.6...v1.10.0-dev.7) (2026-11-06)
 
 ### 🐛 Bug Fixes
