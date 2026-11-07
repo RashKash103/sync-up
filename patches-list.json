@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.10.0-dev.9",
+  "version": "1.10.0-dev.10",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -688,6 +688,33 @@
     {
       "name": "Show media in a comment where it sits",
       "description": "Draws a link in a comment as the picture or video it points at rather than as a chip naming where it goes.",
+      "default": true,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.laurencedawson.reddit_sync",
+          "name": "Sync for Reddit",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": null,
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "v23.06.30-13:39",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Show the feed while a post is swiped away",
+      "description": "Draws the screen behind a post as it is dragged aside, which is otherwise left black.",
       "default": true,
       "category": null,
       "compatiblePackages": [

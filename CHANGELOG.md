@@ -1,3 +1,9 @@
+## [1.10.0-dev.10](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.9...v1.10.0-dev.10) (2026-11-07)
+
+### ✨ New Features
+
+* Show the feed while a post is swiped away ([e42431f](https://github.com/RashKash103/sync-up/commit/e42431f179bee2faef380af217bf47f17491a290))
+
 ## [1.10.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.10.0-dev.8...v1.10.0-dev.9) (2026-11-07)
 
 ### 🐛 Bug Fixes
