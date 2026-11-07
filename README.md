@@ -199,6 +199,12 @@ service being asked.
   new build names a different one, that is taken instead; anything you typed in the app always
   wins. None of the four, and no PIN, is written into Sync's Backup file — those are kept where a
   backup cannot reach them.
+
+  The same screen gains two rows under *Credits*, naming this project and linking the
+  repository. That is the only place in the app that says it has been patched at all; everywhere
+  else reads as Sync's own. A row's icon, a credit line or the subtitle on the way in is left out
+  rather than insisted on where the app is not laid out the way this expects, so nothing
+  cosmetic can stop the app signing in.
 - **Fix /s/ links** — Reddit's shortened `/s/` share links resolve to a real thread rather
   than failing.
 - **Use /user/ endpoint** — Profiles are fetched from `/user/`; the `/u/` form Sync used is
@@ -430,7 +436,11 @@ service being asked.
    this patch source to Morphe Manager.
 3. Get the APK for Sync for Reddit. APKM bundles (aka split APKs) also work.
    * Use the last released version, `v23.06.30-13:39`. The Pro and Dev package names are
-     supported too, but no specific version of them is verified.
+     accepted at any version, but nothing here has been tested against either: every patch was
+     written against the Free build's bytecode, and the paid builds are obfuscated separately.
+     Patching one can succeed and still leave something broken that only shows itself when you
+     tap it. If you are on Pro or Dev and something misbehaves, say which in the issue — it is
+     the first thing worth ruling out.
 4. Select the patches you want, then patch.
    * You will need an OAuth client ID from https://www.reddit.com/prefs/apps/. Reddit is no
      longer issuing new ones without an approval process that usually ends in denial, so see

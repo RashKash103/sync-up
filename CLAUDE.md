@@ -97,6 +97,19 @@ those Kotlin string literals is not assembled until a patch executes against an 
 malformed instruction compiles perfectly and fails only at patch time. A patch that has only
 been built has not been tested in any meaningful sense.
 
+Note that a device is only ever *one* device. The app's `minSdk` is 23, so extension code can
+call a method that does not exist on most of the range it is offered to and still work
+perfectly on whatever is to hand. `./gradlew :extensions:syncforreddit:lintRelease` is what
+answers that question — its `NewApi` check reads every call against `minSdk` — and
+`buildAndroid` does not run it, so it has to be asked for. It found three: `Map.computeIfAbsent`,
+`List.sort` and `Outline.getRadius`, all API 24, all shipped. D8 *outlines* such a call into a
+`$$ExternalSyntheticApiModelOutline0` rather than desugaring it, so it is still the real method
+and still throws below the level it needs; seeing that name in the dex is not reassurance.
+Being inside a `catch` is not reassurance either, since a `NoSuchMethodError` is an `Error` and
+walks straight through a `catch (Exception)`. R8 does quietly fix some of it — `Map.of()`
+becomes `Collections.EMPTY_MAP` — so what the dex holds is worth reading before changing
+anything.
+
 ### A patch that touches the settings must be tested against Backup
 
 **Back up and restore on a device before shipping anything that adds, moves, hides or changes a
@@ -153,6 +166,15 @@ the setup time, since it turns a CI round trip into a few seconds.
    `dde016e1…b482`, which is what is on the test device.
 5. **A Sync APK** — the supported build, `v23.06.30-13:39`. One is at
    `~/Downloads/sync-revanced/` on this machine.
+6. **The emulator comes up locked, and a locked device has no app.** The AVD here carries a
+   device lock, so after a cold boot the user is `RUNNING_LOCKED` and credential-encrypted
+   storage is shut. In that state Sync's components are not registered at all: `am start`
+   answers `Activity class ... does not exist`, `monkey` says *No activities found to run*, and
+   `screencap` returns a black image. None of that is the patch — the stock APK does exactly
+   the same. `adb shell cmd lock_settings verify --old <pin>` unlocks the user, and
+   `input swipe` plus the PIN dismisses the keyguard. Typing with `input text` goes through the
+   keyboard's autocorrect, which mangles a username; `adb shell ime disable <the IME>` while
+   typing credentials avoids it, and it has to be enabled again afterwards.
 
 Building and patching, with all of the above exported:
 
