@@ -270,9 +270,7 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   without an icon rather than the screen coming down; name icons through it. Nothing cosmetic
   should be able to fail a patch: `Spoof client` is what lets the app sign in at all, and a
   credit line or a row's icon failing to find what it expected would take that down with it and
-  leave the app unable to reach Reddit. The Pro and Dev packages are offered here and have never
-  been read, so what their settings hold cannot be assumed from the free one's. Check the tint
-  too:
+  leave the app unable to reach Reddit. Check the tint too:
   a surviving vector whose `fillColor` is a literal `#FF000000` or `#FFFFFFFF` disappears in one
   of the two themes, while the ones Sync uses on its own rows carry
   `android:tint="?attr/..."` and follow the theme.
@@ -503,9 +501,8 @@ Checking a string against the APK is not enough on its own: it can be an exact s
 somewhere else while being only a fragment within the class the fingerprint targets, which is
 what `"Basic"` was — exact in okhttp's `Credentials`, a fragment in Sync's own. Read the strings
 of the *target* class. Where the whole string cannot be written down because it names the package
-or the version — the user agent does both, and this bundle is offered for the Pro and Dev
-packages at any version — match with `custom` over the method's instructions instead, which is
-not string matching at all and so reads the same under either behaviour.
+or the version — the user agent does both — match with `custom` over the method's instructions
+instead, which is not string matching at all and so reads the same under either behaviour.
 
 ### What the 1.3.3 to 2.x migration moved
 
@@ -534,7 +531,10 @@ the run dies on a missing option long before it reaches a fingerprint.
 The patch logic is a faithful port. Where this repository intentionally differs:
 
 - Only Sync for Reddit is targeted. All other client patches, the Sync for Lemmy target, and
-  the shared code only those used, are dropped.
+  the shared code only those used, are dropped. The `.pro` and `.dev` packages were carried over
+  as targets at first, at any version; they are dropped too. Neither was ever patched or run,
+  every fingerprint is written against the free build, and the paid builds are obfuscated
+  separately, so declaring them promised something nobody could check. See `sync/Constants.kt`.
 - Patches with no Patcheddit equivalent, written for problems specific to Sync: the RedGifs
   `/info` emulation and the Gfycat to RedGifs redirect. Both came out of endpoints Sync depends
   on that no longer exist. Also the translation patch, and `Unlock Sync Ultra`.

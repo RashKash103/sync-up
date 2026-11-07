@@ -435,12 +435,12 @@ service being asked.
 2. Click [this link](https://morphe.software/add-source?github=RashKash103/sync-up) to add
    this patch source to Morphe Manager.
 3. Get the APK for Sync for Reddit. APKM bundles (aka split APKs) also work.
-   * Use the last released version, `v23.06.30-13:39`. The Pro and Dev package names are
-     accepted at any version, but nothing here has been tested against either: every patch was
-     written against the Free build's bytecode, and the paid builds are obfuscated separately.
-     Patching one can succeed and still leave something broken that only shows itself when you
-     tap it. If you are on Pro or Dev and something misbehaves, say which in the issue — it is
-     the first thing worth ruling out.
+   * Use the last released version, `v23.06.30-13:39`, of the free app
+     (`com.laurencedawson.reddit_sync`). That is the only build these patches are written for.
+     The Pro and Dev packages are not supported: every patch here was written against the free
+     build's bytecode, and the paid builds are obfuscated separately, so little of it would
+     apply. If you have one of them and want it supported, open an issue — it needs somebody
+     with that APK to test against.
 4. Select the patches you want, then patch.
    * You will need an OAuth client ID from https://www.reddit.com/prefs/apps/. Reddit is no
      longer issuing new ones without an approval process that usually ends in denial, so see
