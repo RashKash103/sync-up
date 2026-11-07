@@ -43,19 +43,22 @@ internal val pinLockSettingsPatch = resourcePatch(
                 ?.parentNode as? Element
                 ?: throw PatchException("No Locks category in the security settings")
 
-            fun add(tag: String, attributes: Map<String, String>) {
+            // The icon is a decoration: where the app has no real drawing of that name, the
+            // row goes without one rather than the patch failing over it.
+            fun add(tag: String, icon: String, attributes: Map<String, String>) {
                 val preference = document.createElement(tag)
                 attributes.forEach { (name, value) -> preference.setAttribute(name, value) }
+                drawableNamed(icon)?.let { preference.setAttribute("android:icon", it) }
                 locks.appendChild(preference)
             }
 
             add(
                 ROW,
+                // Beside the two locks of Sync's own, which both carry one.
+                "baseline_lock_24",
                 mapOf(
                     "android:key" to "sync_up_pin",
                     "android:title" to "PIN account lock",
-                    // Beside the two locks of Sync's own, which both carry one.
-                    "android:icon" to drawableNamed("baseline_lock_24"),
                     // Replaced as the screen loads with whether one is actually set.
                     "android:summary" to
                             "Asked for when this account is opened, beside any fingerprint",
@@ -63,16 +66,17 @@ internal val pinLockSettingsPatch = resourcePatch(
             )
             add(
                 CHECK_BOX,
+                "outline_screen_lock_portrait_24",
                 mapOf(
                     "android:key" to "sync_up_pin_start",
                     "android:title" to "PIN login lock",
                     "android:summary" to "Ask for the PIN when opening the app",
-                    "android:icon" to drawableNamed("outline_screen_lock_portrait_24"),
                     "android:defaultValue" to "false",
                 ),
             )
             add(
                 LIST,
+                "outline_lock_24",
                 mapOf(
                     "android:key" to "sync_up_lock_mode",
                     "android:title" to "When a PIN and a fingerprint are both set",
@@ -80,7 +84,6 @@ internal val pinLockSettingsPatch = resourcePatch(
                     "android:entryValues" to "@array/sync_up_lock_mode_values",
                     "android:defaultValue" to "both",
                     "android:summary" to "%s",
-                    "android:icon" to drawableNamed("outline_lock_24"),
                 ),
             )
         }

@@ -43,7 +43,7 @@ internal val clientSettingsPatch = resourcePatch(
                 preference.setAttribute("android:title", title)
                 preference.setAttribute("android:summary", summary)
                 // Every row of Sync's own carries one, so one without looks like a mistake.
-                preference.setAttribute("android:icon", drawableNamed(icon))
+                drawableNamed(icon)?.let { preference.setAttribute("android:icon", it) }
                 category.appendChild(preference)
             }
 
@@ -79,49 +79,57 @@ internal val clientSettingsPatch = resourcePatch(
 
             // Beside the people Sync credits. This is the one place in the app that says the
             // app has been patched at all; everywhere else reads as Sync's own.
+            //
+            // Left out rather than insisted on where that section is not where this expects:
+            // a credit is a courtesy, and failing the patch over one would take the client id
+            // rows down with it and leave the app unable to sign in at all. The Pro and Dev
+            // packages are offered here and have never been read, so this cannot assume their
+            // settings are laid out like the free one's.
             val headers = document.getElementsByTagName(CATEGORY_HEADER)
             val credits = (0 until headers.length)
                 .map { headers.item(it) as Element }
                 .firstOrNull { it.getAttribute("app:categoryTitle") == CREDITS }
                 ?.parentNode as? Element
-                ?: throw PatchException("No $CREDITS section to name the patches in")
 
             fun credit(key: String, title: String, summary: String, icon: String) {
                 val preference = document.createElement(ROW)
                 preference.setAttribute("android:key", key)
                 preference.setAttribute("android:title", title)
                 preference.setAttribute("android:summary", summary)
-                preference.setAttribute("android:icon", drawableNamed(icon))
-                credits.appendChild(preference)
+                drawableNamed(icon)?.let { preference.setAttribute("android:icon", it) }
+                credits?.appendChild(preference)
             }
 
-            credit(
-                "sync_up_credit",
-                "Sync Up patches",
-                "RashKash103",
-                "outline_person_24",
-            )
-            credit(
-                "sync_up_repository",
-                "Sync Up on GitHub",
-                "github.com/RashKash103/sync-up",
-                "outline_link_24",
-            )
+            if (credits != null) {
+                credit(
+                    "sync_up_credit",
+                    "Sync Up patches",
+                    "RashKash103",
+                    "outline_person_24",
+                )
+                credit(
+                    "sync_up_repository",
+                    "Sync Up on GitHub",
+                    "github.com/RashKash103/sync-up",
+                    "outline_link_24",
+                )
+            }
         }
 
         // What the way in to that screen says it holds, which no longer mentions everything on
         // it. Someone looking for where to put a client id has nothing else to go on.
+        //
+        // Also left out rather than insisted on: a line of help is not worth the app not
+        // working where a package is laid out differently.
         document("res/xml/cat_root.xml").use { document ->
             val rows = document.getElementsByTagName(ROOT_ROW)
-            val wayIn = (0 until rows.length)
+            (0 until rows.length)
                 .map { rows.item(it) as Element }
                 .firstOrNull { it.getAttribute("android:title") == THE_WAY_IN }
-                ?: throw PatchException("No $THE_WAY_IN row to say what it now holds")
-
-            wayIn.setAttribute(
-                "android:summary",
-                "App credentials, app info, licenses & credits",
-            )
+                ?.setAttribute(
+                    "android:summary",
+                    "App credentials, app info, licenses & credits",
+                )
         }
     }
 }

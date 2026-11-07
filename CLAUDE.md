@@ -244,8 +244,13 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   `InflateException: Class not found x` and nothing naming the drawable. Only the drawables the
   app still uses itself survived as a real `<vector>` — `outline_vpn_key_24` is a stub,
   `outline_lock_24` is not — and nothing in the name says which. `patches/util/Drawables.kt`
-  reads the drawable and refuses anything that is not a `<vector>`, so pointing a row at a stub
-  is a patch failure rather than a crash on a device; name icons through it. Check the tint too:
+  reads the drawable and answers with nothing where there is no real drawing, so the row goes
+  without an icon rather than the screen coming down; name icons through it. Nothing cosmetic
+  should be able to fail a patch: `Spoof client` is what lets the app sign in at all, and a
+  credit line or a row's icon failing to find what it expected would take that down with it and
+  leave the app unable to reach Reddit. The Pro and Dev packages are offered here and have never
+  been read, so what their settings hold cannot be assumed from the free one's. Check the tint
+  too:
   a surviving vector whose `fillColor` is a literal `#FF000000` or `#FFFFFFFF` disappears in one
   of the two themes, while the ones Sync uses on its own rows carry
   `android:tint="?attr/..."` and follow the theme.

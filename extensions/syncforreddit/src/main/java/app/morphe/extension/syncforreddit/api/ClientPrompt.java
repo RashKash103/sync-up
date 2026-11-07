@@ -113,8 +113,8 @@ public final class ClientPrompt {
         AlertDialog prompt = new AlertDialog.Builder(activity)
                 .setTitle("One thing first")
                 .setMessage("Sync needs an OAuth client ID to sign in to Reddit.\n\nPaste "
-                        + "one below, or add it later under Settings, Everything else, Sync Up "
-                        + "client.")
+                        + "one below, or add it later under Settings > Everything else > "
+                        + "Sync Up client.")
                 .setView(around(activity, typing))
                 .setPositiveButton("Save", (dialog, which) ->
                         ClientSettings.set(ClientSettings.CLIENT_ID, typing.getText().toString()))
@@ -132,7 +132,7 @@ public final class ClientPrompt {
         new AlertDialog.Builder(activity)
                 .setTitle("No OAuth client ID")
                 .setMessage("Sync needs an OAuth client ID to sign in to Reddit.\n\nYou can "
-                        + "add one under Settings, Everything else, Sync Up client.")
+                        + "add one under Settings > Everything else > Sync Up client.")
                 .setPositiveButton("Set it now", (dialog, which) -> openTheRow(activity))
                 .setNeutralButton("How to get one", (dialog, which) -> openTheInstructions(activity))
                 .setNegativeButton("Later", null)

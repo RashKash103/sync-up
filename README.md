@@ -187,7 +187,7 @@ service being asked.
   redirect URI and user agent. Nothing else works without this. See
   [Getting started](#-getting-started). Its `Imgur client ID` option is separate and optional;
   see [Uploading pictures to Imgur](#uploading-pictures-to-imgur). All four are optional and can
-  also be set in the app, under Settings, Everything else, Sync Up client, which means a copy can
+  also be set in the app, under Settings > Everything else > Sync Up client, which means a copy can
   be patched with none of them given and told afterwards — useful where whatever does the
   patching has no credentials of its own. Each row says whether it is reading what you typed or
   what the build was given, and offers a way back to the latter. Where no client ID is given at
@@ -436,7 +436,7 @@ service being asked.
      longer issuing new ones without an approval process that usually ends in denial, so see
      [What if I don't have a client ID?](#what-if-i-dont-have-a-client-id) below.
    * The `Spoof client` options may all be left empty and filled in on the device instead, under
-     Settings, Everything else, Sync Up client. The app asks for the client ID during its own
+     Settings > Everything else > Sync Up client. The app asks for the client ID during its own
      setup when the build was given none.
    * Make sure the redirect URI in the `Spoof client` options and on
      https://www.reddit.com/prefs/apps/ match exactly.

@@ -1,6 +1,5 @@
 package app.morphe.patches.util
 
-import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.ResourcePatchContext
 
 /**
@@ -12,23 +11,20 @@ import app.morphe.patcher.patch.ResourcePatchContext
  * `InflateException: Class not found x` the moment the screen holding it is drawn. Only the
  * drawables the app still uses itself survived as `<vector>`.
  *
- * <p>Nothing says which is which from the name, and a row pointed at a stub patches perfectly
- * and takes the screen down on a device. So the check is done here instead, where it is a patch
- * that fails rather than a settings screen that will not open.
+ * <p>Nothing says which is which from the name, so the check is done here rather than on a
+ * device. An icon is a decoration, though: where there is no real drawing to point at, the row
+ * goes without one instead of the patch failing and taking the rest of the screen with it. The
+ * Pro and Dev packages are offered here and have never been read, so what they kept cannot be
+ * assumed from what the free one kept.
+ *
+ * @return What to set `android:icon` to, or null where there is nothing worth pointing at.
  */
-internal fun ResourcePatchContext.drawableNamed(name: String): String {
+internal fun ResourcePatchContext.drawableNamed(name: String): String? {
     val root = try {
         document("res/drawable/$name.xml").use { it.documentElement.tagName }
     } catch (ex: Exception) {
-        throw PatchException("The app has no drawable called $name: $ex")
+        return null
     }
 
-    if (root != "vector") {
-        throw PatchException(
-            "The drawable $name is a <$root>, not a vector: the resource shrinker took it out " +
-                    "and a row given it would bring the screen down. Name one the app still uses."
-        )
-    }
-
-    return "@drawable/$name"
+    return if (root == "vector") "@drawable/$name" else null
 }
