@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.9.4](https://github.com/RashKash103/sync-up/releases/tag/v1.9.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;31 patches total
+> **[v1.10.0-dev.8](https://github.com/RashKash103/sync-up/releases/tag/v1.10.0-dev.8)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;32 patches total
 <details open>
-<summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;30 patches</summary>
+<summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;31 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -64,6 +64,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps the formatting and links in the body shown under a post, which Sync otherwise discards. |  |
 | [Keep transparency in a picture](#keep-transparency-in-a-picture) | Draws the transparent parts of a picture opened in the viewer as the background behind it rather than as white. |  |
 | [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load when the text in it contains a dollar sign. |  |
+| [Lock an account with a PIN](#lock-an-account-with-a-pin) | Adds a PIN to the Security settings that is asked for when an account is opened and, if you like, when the app is opened, beside or instead of Sync's fingerprint lock. |  |
 | [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Draws a bare address in a post's body as a link. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [More actions on the floating button](#more-actions-on-the-floating-button) | Puts up to four of Sync's own actions beside the feed's floating button. |  |
@@ -81,7 +82,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 Sync for Reddit Pro&nbsp;&nbsp;•&nbsp;&nbsp;29 patches</summary>
+<summary>📦 Sync for Reddit Pro&nbsp;&nbsp;•&nbsp;&nbsp;30 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -102,6 +103,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps the formatting and links in the body shown under a post, which Sync otherwise discards. |  |
 | [Keep transparency in a picture](#keep-transparency-in-a-picture) | Draws the transparent parts of a picture opened in the viewer as the background behind it rather than as white. |  |
 | [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load when the text in it contains a dollar sign. |  |
+| [Lock an account with a PIN](#lock-an-account-with-a-pin) | Adds a PIN to the Security settings that is asked for when an account is opened and, if you like, when the app is opened, beside or instead of Sync's fingerprint lock. |  |
 | [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Draws a bare address in a post's body as a link. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [More actions on the floating button](#more-actions-on-the-floating-button) | Puts up to four of Sync's own actions beside the feed's floating button. |  |
@@ -119,7 +121,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 </details>
 
 <details open>
-<summary>📦 Sync for Reddit Dev&nbsp;&nbsp;•&nbsp;&nbsp;29 patches</summary>
+<summary>📦 Sync for Reddit Dev&nbsp;&nbsp;•&nbsp;&nbsp;30 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -140,6 +142,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps the formatting and links in the body shown under a post, which Sync otherwise discards. |  |
 | [Keep transparency in a picture](#keep-transparency-in-a-picture) | Draws the transparent parts of a picture opened in the viewer as the background behind it rather than as white. |  |
 | [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load when the text in it contains a dollar sign. |  |
+| [Lock an account with a PIN](#lock-an-account-with-a-pin) | Adds a PIN to the Security settings that is asked for when an account is opened and, if you like, when the app is opened, beside or instead of Sync's fingerprint lock. |  |
 | [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Draws a bare address in a post's body as a link. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [More actions on the floating button](#more-actions-on-the-floating-button) | Puts up to four of Sync's own actions beside the feed's floating button. |  |
@@ -183,7 +186,19 @@ service being asked.
 - **Spoof client** — Replaces Sync's revoked OAuth credentials with your own client ID,
   redirect URI and user agent. Nothing else works without this. See
   [Getting started](#-getting-started). Its `Imgur client ID` option is separate and optional;
-  see [Uploading pictures to Imgur](#uploading-pictures-to-imgur).
+  see [Uploading pictures to Imgur](#uploading-pictures-to-imgur). All four are optional and can
+  also be set in the app, under Settings > Everything else > Sync Up client, which means a copy can
+  be patched with none of them given and told afterwards — useful where whatever does the
+  patching has no credentials of its own. Each row says whether it is reading what you typed or
+  what the build was given, and offers a way back to the latter. Where no client ID is given at
+  all, the app says so on the way in: as part of the setup on a first run, before there is any
+  question of signing in, and as a notice afterwards that leads straight to the row.
+
+  What the build was given is copied onto the device the first time the app runs, so patching
+  again later without naming one keeps the ID already in use rather than emptying it. Where the
+  new build names a different one, that is taken instead; anything you typed in the app always
+  wins. None of the four, and no PIN, is written into Sync's Backup file — those are kept where a
+  backup cannot reach them.
 - **Fix /s/ links** — Reddit's shortened `/s/` share links resolve to a real thread rather
   than failing.
 - **Use /user/ endpoint** — Profiles are fetched from `/user/`; the `/u/` form Sync used is
@@ -371,6 +386,38 @@ service being asked.
   - The **Sync Ultra screen is removed** from settings, along with the cloud backup section that
     needed it and the offer to buy it in the account switcher.
 
+#### Locks
+
+- **Lock an account with a PIN** — Sync locks an account with a fingerprint and nothing else,
+  which is of no use where someone else's finger opens the same phone. This adds a PIN to the
+  Security settings, asked for at the two places Sync asks for a fingerprint: choosing an account
+  and acting on one. It is another thing to pass rather than a replacement, so the two settings
+  together say what is asked for — neither set asks nothing, Sync's alone asks for a fingerprint,
+  a PIN alone asks for the PIN, and both ask for the fingerprint and then the PIN. A PIN belongs
+  to one account, so each can have its own or none. It is kept as a salted hash rather than as
+  itself; four digits will not survive someone determined who already has the file, but they
+  should not be sitting there in the open either, and it is kept out of Sync's Backup file for
+  the same reason.
+
+  Two rows sit beside it. **PIN login lock** asks for the PIN when the app is opened, not only
+  when accounts change — without it the account already open when you launch Sync is not behind
+  the PIN at all, which is the hole Sync's own login lock fills for fingerprints. **When a PIN
+  and a fingerprint are both set** chooses between asking for both, which is the default, and
+  asking for either: with *either*, Sync's own fingerprint prompt stands down and the
+  fingerprint is offered on the same screen as the PIN, so there is one way in rather than two
+  prompts in a row. That row is faded until there are two locks for it to choose between, and
+  follows Sync's own switches as they are turned on and off.
+
+  The lock on the way in goes **over** a screen the app has already built, opaque and full
+  screen so that nothing shows through, rather than stopping the app before it builds one.
+  Stopping it is what Sync's own login lock does and it cannot be copied: an activity stopped
+  before it sets a content view has no window of its own, so the prompt becomes the only window
+  the app has, and the moment it goes — which on a foldable happens merely by opening the phone
+  — the app has none at all and stops answering touches until it is force stopped. Sync gets
+  away with it because a fingerprint prompt belongs to the system. The cost of doing it this way
+  round is that a lock which cannot be drawn leaves the app open rather than shut, which is the
+  right way round for something that can otherwise brick it.
+
 #### Other
 
 - **Enable Android debugging** — Inherited from upstream, off by default, and applies to any
@@ -388,6 +435,9 @@ service being asked.
    * You will need an OAuth client ID from https://www.reddit.com/prefs/apps/. Reddit is no
      longer issuing new ones without an approval process that usually ends in denial, so see
      [What if I don't have a client ID?](#what-if-i-dont-have-a-client-id) below.
+   * The `Spoof client` options may all be left empty and filled in on the device instead, under
+     Settings > Everything else > Sync Up client. The app asks for the client ID during its own
+     setup when the build was given none.
    * Make sure the redirect URI in the `Spoof client` options and on
      https://www.reddit.com/prefs/apps/ match exactly.
 5. Once patching is complete, install the app and set it up as usual.

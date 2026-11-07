@@ -237,6 +237,23 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   body is where this comes up, since writing one to a sink is the documented way. Read the bytes
   off the body object instead: what `RequestBody.create(MediaType, byte[])` returns holds them
   in a field, found by its type rather than its name, since the names do not survive R8.
+- **Most of the app's drawables are not there any more.** R8's resource shrinker left every
+  unused one's name and id in place and replaced the drawing with `<x/>`, a stub whose element
+  names a class that was shrunk away too. A row given one patches perfectly and takes its whole
+  settings screen down the moment it is opened, with
+  `InflateException: Class not found x` and nothing naming the drawable. Only the drawables the
+  app still uses itself survived as a real `<vector>` — `outline_vpn_key_24` is a stub,
+  `outline_lock_24` is not — and nothing in the name says which. `patches/util/Drawables.kt`
+  reads the drawable and answers with nothing where there is no real drawing, so the row goes
+  without an icon rather than the screen coming down; name icons through it. Nothing cosmetic
+  should be able to fail a patch: `Spoof client` is what lets the app sign in at all, and a
+  credit line or a row's icon failing to find what it expected would take that down with it and
+  leave the app unable to reach Reddit. The Pro and Dev packages are offered here and have never
+  been read, so what their settings hold cannot be assumed from the free one's. Check the tint
+  too:
+  a surviving vector whose `fillColor` is a literal `#FF000000` or `#FFFFFFFF` disappears in one
+  of the two themes, while the ones Sync uses on its own rows carry
+  `android:tint="?attr/..."` and follow the theme.
 - **Two methods on a class can have the same signature.** `Loc/c;` has both `u()V` and `p()V`,
   so a predicate matching "no parameters, returns void, on `Loc/c;`" finds the wrong one. Anchor
   on what guards or surrounds the call instead.
@@ -279,6 +296,70 @@ with its rows already loaded. A screen that does not hold the rows in question i
 `y(key)` is `findPreference` and `Preference.q0(boolean)` is `setEnabled`; `SettingsRows` fades
 whatever is turned off, since Sync colours every row's words as it draws them whatever state the
 row is in.
+
+**Sync's Backup writes out the per-account settings file, so anything kept there travels in
+it.** The file is handed to whoever is helping and copied between devices, so nothing of ours
+that is a secret belongs in it: the client id and the three things beside it live in
+`sync_up_client`, and a PIN in `sync_up_locks`, both files of our own that Sync has never heard
+of and therefore cannot write out. A PIN of four digits beside the salt it was hashed with is
+worked out from such a file in no time. Both classes move anything an older build of ours left
+in Sync's settings across on first use and take it out of Sync's, so a backup made afterwards is
+clean; check by reading the written file rather than by reasoning about it.
+
+**An activity that is stopped before it builds its screen has no window of its own.**
+`HomeActivity.h0` decides what to ask for before the app opens, and the path that asks calls
+neither `l0()` nor anything else that sets a content view, so until the lock is satisfied the
+activity has nothing. Sync can do that because a `BiometricPrompt` is the system's window and
+goes on taking input; a dialog of ours is the app's own, and when it goes the app has no window
+at all. Input dispatch then times out — `ANR in ... Reason: Input dispatching timed out
+(Application does not have a focused window)` — and the app is bricked until it is force stopped.
+A dialog shown from inside `onCreate` is also torn off as a leaked window the first time the
+activity is rebuilt, which a foldable does merely by being opened. Anything of ours that locks
+the way in has to let the app build its screen first, or not lock there at all.
+
+What works is to cover `MainActivity` instead: hook its `onCreate`, post, and put up a full
+screen opaque `Dialog` over a screen that is already whole. Only Sync's *reading* of
+`biometric_start` is answered in `h0`, never where it goes next, so the app always reaches what
+builds its screen. Losing the cover then leaves a working app rather than a brick, which is the
+right way round. Two things that only show up once it is full screen: an `EditText` needs
+`IME_FLAG_NO_EXTRACT_UI` or the keyboard takes the whole screen for a field of its own in
+landscape and what is being asked goes with it, and the content needs a `ScrollView` or the way
+out is pushed off the bottom with the keyboard up. **Force a rotation** —
+`settings put system accelerometer_rotation 0; settings put system user_rotation 1` — as the
+stand-in for a device that folds; both of those were found that way and neither shows in
+portrait.
+
+**Changing account builds the screen again, and sometimes the whole process again.** The logs
+say `Start proc` for the one and leave `MainActivity` created afresh for the other, and which of
+the two happens is not consistent. Anything hooked on `MainActivity.onCreate` therefore runs a
+moment after an account has been changed, so a lock asked there asks a second time for what the
+account switch has just been given. A flag in the process does not survive the restart; what
+does is a note left in our own settings and thrown away as it is read, so that it can only ever
+excuse the one prompt, with a minute's expiry in case nothing reads it. Keep the in-process flag
+as well for the rebuilds that do not restart anything — a foldable being opened is one.
+
+**A local bundle is named after the version in `gradle.properties`, which the release moves.**
+Patching with `patches-<the version you last typed>.mpp` goes on succeeding against a file from
+hours ago, and what is then tested is not what was just built. Take the newest instead:
+`ls -t patches/build/libs/patches-*.mpp | grep -v -e sources -e javadoc | head -1`. Two fixes
+were "verified" here against a stale bundle before this was noticed.
+
+**Sync's own fingerprint prompt can be stood down by answering the setting for it.** Each of the
+three sites reads `SharedPreferences.getBoolean("biometric"/"biometric_start", false)` with the
+same three registers, so that one instruction is swapped for a static of ours taking the same
+three. Answering `false` is what lets a prompt of ours offer the fingerprint *instead of* Sync's
+rather than after it. `androidx.biometric` is in the app and its callback class is public, so a
+compile-only stub naming the obfuscated members — `s` is authenticate, `e$a` is the builder with
+`d`/`c`/`b`/`a`, and the callback's `c` is onAuthenticationSucceeded — is enough to put that
+prompt up. The account being unlocked has to be remembered between the two injections, because
+the register holding its name is reused a couple of instructions later.
+
+**`HomeActivity` is not where the app ends up.** An ordinary run opens it, it sends the app on
+to `MainActivity` and finishes itself, and `MainActivity` is what stays on the screen. Anything
+shown from `HomeActivity.onCreate` is therefore taken off the screen a moment after it arrives —
+a dialog posted from there is gone before it can be read, while having already counted as shown.
+`OnboardingActivity` is the first run's, and it stays. Read `dumpsys activity activities` for
+`topResumedActivity` rather than assuming the first activity named is the one in front.
 
 **Note that `android:dependency` is not an answer here.** It only keys off a checkbox, so a row
 that should follow a list preference's value has to be turned on and off in code.
