@@ -143,6 +143,17 @@ service being asked.
   drawn twice.
 - **Modify login WebView** — Routes the login page through the extension so that signing in
   completes.
+- **Stop the toolbar menus closing the app** — On some devices the app closed the moment the
+  sort or overflow button in the toolbar was tapped. A menu opened from the toolbar is drawn
+  hanging from under it rather than rising from the bottom, and to place it there Sync takes the
+  behaviour off the sheet's layout parameters. Material's own edge-to-edge handling then asks
+  that same sheet for its behaviour the first time the window hands it its insets, and where
+  there is none it throws, on the main thread. Whether the insets reach the sheet at all depends
+  on the device, which is why only some copies did this; the sort chip under the subreddit title
+  never enters that mode and was never affected. This answers the one question Material asks and
+  leaves its edge-to-edge work undone for a sheet that has no behaviour to find. Sync already
+  leaves the navigation bar alone for those menus, so there is nothing of it to miss, and every
+  other sheet still has its behaviour and is untouched.
 - **Disable ads**, **Disable Sync for Lemmy bottom sheet** — Removes the ads shown between
   posts, and the prompt to sign up to Sync for Lemmy at startup.
 

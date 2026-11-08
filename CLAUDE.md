@@ -389,6 +389,22 @@ that should follow a list preference's value has to be turned on and off in code
 `view.getId()` in `onItemClicked`. Adding an entry the way Boost does is not possible; rows are
 built and inserted at runtime instead, which avoids introducing an id resource.
 
+**A menu opened from the toolbar is a different thing from the same menu opened anywhere else.**
+`Ls9/f;` is the base of Sync's sheet menus, and `P1` sets `L0` — read back through `d4()` — when
+the last touch was above the bottom of `id/toolbar`. In that mode the sheet is a *top* sheet:
+`A3()` hands back `MaterialTopSheet` rather than `MaterialBottomSheet`, `C3()` skips colouring
+the dialog's navigation bar, and `o2()` takes the behaviour off `id/design_bottom_sheet`
+(`CoordinatorLayout$f->q(null)`). Both sheet themes inherit `enableEdgeToEdge`, so Material
+registers `BottomSheetDialog$1` on the sheet, and the first insets it is handed build an
+`EdgeToEdgeCallback`, whose constructor calls `BottomSheetBehavior.from` on the sheet that no
+longer has one: `IllegalArgumentException: The view is not associated with BottomSheetBehavior`,
+on the main thread, which is the whole app. Whether the insets ever reach the sheet is
+device-dependent — the emulator here never dispatches them that deep, on either navigation style
+and with or without a cutout, so the crash cannot be reproduced locally even though the
+behaviour is demonstrably gone. `toolbarMenuCrashPatch` answers Material's lookup before it is
+made. The sort chip under the subreddit title never enters this mode, which is why only the two
+toolbar buttons were ever affected.
+
 **Text is built, then handed to a view.** `Loc/c;` is a builder: characters in a `StringBuilder`
 and a list of spans beside them. `Loc/c;->d()` returns a `SpannableString` when that list holds
 anything and a plain `String` when it does not. `Loc/b;` is the text view that reads it — `A()`
