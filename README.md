@@ -107,7 +107,7 @@ service being asked.
 
 #### Getting the app working again
 
-- **Spoof client** — Replaces Sync's revoked OAuth credentials with your own client ID,
+- <a name="spoof-client"></a>**Spoof client** — Replaces Sync's revoked OAuth credentials with your own client ID,
   redirect URI and user agent. Nothing else works without this. See
   [Getting started](#-getting-started). Its `Imgur client ID` option is separate and optional;
   see [Uploading pictures to Imgur](#uploading-pictures-to-imgur). All four are optional and can
@@ -129,22 +129,22 @@ service being asked.
   else reads as Sync's own. A row's icon, a credit line or the subtitle on the way in is left out
   rather than insisted on where the app is not laid out the way this expects, so nothing
   cosmetic can stop the app signing in.
-- **Fix /s/ links** — Reddit's shortened `/s/` share links resolve to a real thread rather
+- <a name="fix-s-links"></a>**Fix /s/ links** — Reddit's shortened `/s/` share links resolve to a real thread rather
   than failing.
-- **Use /user/ endpoint** — Profiles are fetched from `/user/`; the `/u/` form Sync used is
+- <a name="use-user-endpoint"></a>**Use /user/ endpoint** — Profiles are fetched from `/user/`; the `/u/` form Sync used is
   no longer served.
-- **Fix opening albums** — Reddit stopped answering `/api/info`, the endpoint Sync looks a post
+- <a name="fix-opening-albums"></a>**Fix opening albums** — Reddit stopped answering `/api/info`, the endpoint Sync looks a post
   up by, and refuses `/by_id` beside it, so an album raised an error instead of opening. The
   post is read from its own thread, which publishes the same gallery, and the reply is cut back
   to the shape the old endpoint answered in. Ordinary listings were never affected.
-- **Fix loading more comments** — Reddit stopped answering `/api/morechildren` as well, so a
+- <a name="fix-loading-more-comments"></a>**Fix loading more comments** — Reddit stopped answering `/api/morechildren` as well, so a
   "view more" only ever raised an error. The comments behind it are read from the thread, where
   Reddit still serves any comment and everything hanging from it, and the reply is flattened the
   way the old endpoint answered. The comments already on screen are left out, so nothing is
   drawn twice.
-- **Modify login WebView** — Routes the login page through the extension so that signing in
+- <a name="modify-login-webview"></a>**Modify login WebView** — Routes the login page through the extension so that signing in
   completes.
-- **Stop the toolbar menus closing the app** — On some devices the app closed the moment the
+- <a name="stop-the-toolbar-menus-closing-the-app"></a>**Stop the toolbar menus closing the app** — On some devices the app closed the moment the
   sort or overflow button in the toolbar was tapped. A menu opened from the toolbar is drawn
   hanging from under it rather than rising from the bottom, and to place it there Sync takes the
   behaviour off the sheet's layout parameters. Material's own edge-to-edge handling then asks
@@ -155,29 +155,29 @@ service being asked.
   leaves its edge-to-edge work undone for a sheet that has no behaviour to find. Sync already
   leaves the navigation bar alone for those menus, so there is nothing of it to miss, and every
   other sheet still has its behaviour and is untouched.
-- **Disable ads**, **Disable Sync for Lemmy bottom sheet** — Removes the ads shown between
+- <a name="disable-ads"></a>**Disable ads**, <a name="disable-sync-for-lemmy-bottom-sheet"></a>**Disable Sync for Lemmy bottom sheet** — Removes the ads shown between
   posts, and the prompt to sign up to Sync for Lemmy at startup.
 
 #### Media that no longer loads
 
-- **Fix Redgifs API** — RedGifs refuses Sync's requests as they stand; this makes them
+- <a name="fix-redgifs-api"></a>**Fix Redgifs API** — RedGifs refuses Sync's requests as they stand; this makes them
   acceptable again.
-- **Redirect Gfycat links to RedGifs** — Gfycat shut down and its domains no longer resolve.
+- <a name="redirect-gfycat-links-to-redgifs"></a>**Redirect Gfycat links to RedGifs** — Gfycat shut down and its domains no longer resolve.
   Much of its content moved to RedGifs, and Gfycat links are answered from there. Content
   that did not move stays broken.
-- **Fix Imgur links** — Sync resolves Imgur links through a proxy of its own that no longer
+- <a name="fix-imgur-links"></a>**Fix Imgur links** — Sync resolves Imgur links through a proxy of its own that no longer
   exists. Those requests are answered in the app instead. An album that still exists is read
   from its own page; one that has gone is looked for in the archive, where only albums
   captured while Imgur still rendered the list into the page can be recovered.
-- **Automatically undelete Imgur media** — Imgur removed a large amount of older content.
+- <a name="automatically-undelete-imgur-media"></a>**Automatically undelete Imgur media** — Imgur removed a large amount of older content.
   Images and videos that no longer exist are loaded from the Wayback Machine, including the
   still shown for a video in a feed. Only what the archive happens to hold is recoverable.
-- **Fix post thumbnails** — Corrects the thumbnail URLs Sync builds.
-- **Recover post thumbnails from the archive** — Reddit purges the preview it generated for
+- <a name="fix-post-thumbnails"></a>**Fix post thumbnails** — Corrects the thumbnail URLs Sync builds.
+- <a name="recover-post-thumbnails-from-the-archive"></a>**Recover post thumbnails from the archive** — Reddit purges the preview it generated for
   older posts, leaving a blank tile even where opening the post still works. The linked
   image is fetched from the Wayback Machine, and only once the preview has actually failed.
-- **Fix video downloads** — Corrects Sync's MPD parser, which saved only the audio track.
-- **Show media in a comment where it sits** — Sync draws a link in a comment inline only
+- <a name="fix-video-downloads"></a>**Fix video downloads** — Corrects Sync's MPD parser, which saved only the audio track.
+- <a name="show-media-in-a-comment-where-it-sits"></a>**Show media in a comment where it sits** — Sync draws a link in a comment inline only
   where the address ends in one of five extensions or names one of a handful of services;
   everything else becomes a chip naming where it goes. This widens that to everything Sync
   can draw, and draws the picture itself rather than a card beside the address. Sizes come
@@ -196,7 +196,7 @@ service being asked.
   size in use are faded, and they change as the size is chosen. Nothing is ever drawn wider
   than the comment it sits in.
 
-- **Show videos posted in comments** — Reddit writes a video posted in a comment as a link
+- <a name="show-videos-posted-in-comments"></a>**Show videos posted in comments** — Reddit writes a video posted in a comment as a link
   to a player page on its own site, which opens in a browser and is answered with a banned
   notice. The link is pointed at the video itself, so it is drawn beside the comment like
   any other media and plays in Sync's own player. Whether it is drawn is governed by Sync's
@@ -204,42 +204,69 @@ service being asked.
 
 #### Text that is missing or inert
 
-- **Automatically undelete Reddit content** — Restores the text of removed posts and
+- <a name="automatically-undelete-reddit-content"></a>**Automatically undelete Reddit content** — Restores the text of removed posts and
   comments from Project Arctic Shift, and the name of an author whose account has since
   been deleted. A note under the author says why the content was taken down. Only text is
   recoverable, only where the archive holds it, and media in a removed post stays gone.
-- **Show a hidden profile from the archive** — An account can hide its own posts and
+- <a name="show-a-hidden-profile-from-the-archive"></a>**Show a hidden profile from the archive** — An account can hide its own posts and
   comments from its profile, which Sync shows as a user with nothing to their name. Project
   Arctic Shift still serves what it recorded while those posts were public. Only a profile
   that comes back empty is filled in, and only its posts, comments and overview tabs.
-- **Keep the links in the text of a post** — Sync renders the body shown under a post in
+- <a name="keep-the-links-in-the-text-of-a-post"></a>**Keep the links in the text of a post** — Sync renders the body shown under a post in
   full and then discards the result, drawing bare characters. Keeping it means quotes,
   emphasis and links appear. Images are still discarded, so a feed loads no more than it
   did. A link in a post body in a feed becomes tappable, so tapping directly on one opens
   the link rather than the post.
-- **Make an address in a post tappable** — Sync turns a bare address into a link only where
+- <a name="make-an-address-in-a-post-tappable"></a>**Make an address in a post tappable** — Sync turns a bare address into a link only where
   it recognises the host, which is Reddit, Imgur and a couple besides. Any address in a
   post body is written as a link instead. An address already written as a link is left
   alone.
-- **Load threads whose text contains a dollar sign** — Sync rewrites code blocks and links
+- <a name="load-threads-whose-text-contains-a-dollar-sign"></a>**Load threads whose text contains a dollar sign** — Sync rewrites code blocks and links
   before drawing them and puts the matched text back as a replacement, where a dollar sign
   does not stand for itself. Text such as `${SYS_USER}` aborted the whole thread with
   "Error loading page".
-- **Add archive links to menus** — Adds Wayback Machine and archive.today options to the
+- <a name="add-archive-links-to-menus"></a>**Add archive links to menus** — Adds Wayback Machine and archive.today options to the
   menu behind a post's overflow button and to the one behind a link, next to *Open in
   browser*, for reading a page since taken down or put behind a paywall. Nothing is
   requested until one is tapped.
 
-- **Fix revealing spoilers** — Tapping a spoiler opens it where it sits. Sync answers a tap by
+- <a name="fix-revealing-spoilers"></a>**Fix revealing spoilers** — Tapping a spoiler opens it where it sits. Sync answers a tap by
   taking the markers out of the body it stores for the post and writing that back, which only
   runs for one kind of post and reads a body the markers have already been taken out of, so a
   tap said "Missing post information" instead. A spoiler is hidden by being painted in the
   colour it sits on, so the one tapped is remembered and that painting is skipped. Nothing is
   fetched, stored or rewritten, and a spoiler closes again if the text is built afresh.
 
+#### The feed and the viewer
+
+- <a name="show-a-subreddit-s-banner-on-its-feed"></a>**Show a subreddit's banner on its feed** — Sync shows a subreddit's banner only on its
+  About page. This draws it in a strip above the posts, which scrolls away with them and opens
+  as a picture when tapped. What a subreddit's banner is comes from Reddit's own answer about it
+  as that goes past on the wire, so nothing extra is asked for where Sync has already asked; a
+  feed opened without that having happened is asked about directly, once, borrowing the
+  credentials off a request of Sync's own. A subreddit with no banner gets no strip, and neither
+  does a front page or a multireddit, which have none of their own. A banner that cannot be
+  fetched or drawn leaves the feed exactly as it was. On, under *Posts > View tweaks*.
+- <a name="more-actions-on-the-floating-button"></a>**More actions on the floating button** — Sync's floating button carries one of three things,
+  and everything else it can do is behind the *More actions* sheet. This puts up to three more of
+  Sync's own actions beside it, chosen from the two dozen that sheet already offers, with the
+  button's own action last — four in all. Each is one of Sync's own, carried out by the call Sync
+  carries it out with; nothing new is added to the app. What is drawn is laid over Sync's button
+  rather than replacing it, so the button goes on deciding what it is for and goes on sliding and
+  fading away with the feed, and where any of it fails the button is given back what it draws
+  with rather than the feed coming down. *Orientation* stands the extras vertically or
+  horizontally and *Separate the extra actions* draws a line between them; all of it sits under
+  *General > Floating Action Button*.
+- <a name="keep-transparency-in-a-picture"></a>**Keep transparency in a picture** — The zooming view Sync opens a picture in decodes in a
+  format with no alpha channel unless something says otherwise, so everything transparent
+  arrived opaque, showing whatever the file was saved over — white, for most. The format to
+  decode in is answered the library's own way, which every one of its decoders reads, and the
+  colour each tile is filled with before the picture is drawn over it is the background behind
+  the viewer rather than opaque white. On, under *Images > Deepzoom*.
+
 #### Gestures
 
-- **Show the feed while a post is swiped away** — Dragging a post aside is meant to carry the
+- <a name="show-the-feed-while-a-post-is-swiped-away"></a>**Show the feed while a post is swiped away** — Dragging a post aside is meant to carry the
   feed in behind it. For the screen underneath to go on being drawn, the post has to tell the
   system it is translucent, and Sync asks for that through `Activity.convertToTranslucent`, which
   has never been part of the SDK. As the platform tightened up on non-SDK interfaces the call
@@ -248,7 +275,7 @@ service being asked.
   ask the same thing now — `Activity.setTranslucent`, public since Android 11 — and that is used
   where it exists. On anything older nothing is claimed and Sync asks the way it always did,
   which is where it still worked.
-- **Gestures for the video player** — In a video or GIF: double tap to play or pause rather
+- <a name="gestures-for-the-video-player"></a>**Gestures for the video player** — In a video or GIF: double tap to play or pause rather
   than zoom, drag sideways to seek, and drag up or down after a double tap to change the
   volume. Each is read as the gesture is made, so anything here can be turned on or off under
   *Gestures* in Sync's settings without repatching, and with all of them off the viewer
@@ -267,7 +294,7 @@ service being asked.
 
 #### Translation
 
-- **Translate posts and comments** — Translates a post or a comment where it stands, in place
+- <a name="translate-posts-and-comments"></a>**Translate posts and comments** — Translates a post or a comment where it stands, in place
   of the text rather than under it. Everything about it is set up under *Translation* in Sync's
   own settings, and nothing is translated until asked for.
   - **Where it is offered.** Sync's own translation is a paid feature that also waits on a flag
@@ -315,7 +342,7 @@ service being asked.
 
 #### Sync Ultra
 
-- **Unlock Sync Ultra** — Turns on the parts of Sync's subscription that need nothing but the
+- <a name="unlock-sync-ultra"></a>**Unlock Sync Ultra** — Turns on the parts of Sync's subscription that need nothing but the
   device they run on, and takes away what can no longer be had.
   - **Website previews** in comments — including the picture beside them. Sync asks its own
     proxy for that picture and the proxy refuses everything now, so every preview but a video's
@@ -338,7 +365,7 @@ service being asked.
 
 #### Locks
 
-- **Lock an account with a PIN** — Sync locks an account with a fingerprint and nothing else,
+- <a name="lock-an-account-with-a-pin"></a>**Lock an account with a PIN** — Sync locks an account with a fingerprint and nothing else,
   which is of no use where someone else's finger opens the same phone. This adds a PIN to the
   Security settings, asked for at the two places Sync asks for a fingerprint: choosing an account
   and acting on one. It is another thing to pass rather than a replacement, so the two settings
@@ -370,7 +397,7 @@ service being asked.
 
 #### Other
 
-- **Enable Android debugging** — Inherited from upstream, off by default, and applies to any
+- <a name="enable-android-debugging"></a>**Enable Android debugging** — Inherited from upstream, off by default, and applies to any
   app rather than to Sync alone. It slows the app down and is only useful when debugging it.
 
 ## 🚀 Getting started
