@@ -403,7 +403,10 @@ device-dependent — the emulator here never dispatches them that deep, on eithe
 and with or without a cutout, so the crash cannot be reproduced locally even though the
 behaviour is demonstrably gone. `toolbarMenuCrashPatch` answers Material's lookup before it is
 made. The sort chip under the subreddit title never enters this mode, which is why only the two
-toolbar buttons were ever affected.
+toolbar buttons were ever affected. The reporter confirmed on v1.10.0-dev.11 that the crash is
+gone on a device that had it, so the mechanism read out of the bytecode was the right one — a
+fix shipped on `build(Needs bump):` precisely because it could not be reproduced here, and
+confirmed by the one person who could.
 
 **Text is built, then handed to a view.** `Loc/c;` is a builder: characters in a `StringBuilder`
 and a list of spans beside them. `Loc/c;->d()` returns a `SpannableString` when that list holds
