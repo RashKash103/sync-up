@@ -1,3 +1,9 @@
+## [1.11.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.1...v1.11.0-dev.2) (2026-11-10)
+
+### ✨ New Features
+
+* Offer a client certificate to a Rimgo instance that asks ([e14c635](https://github.com/RashKash103/sync-up/commit/e14c635acacf2cb73c1300565d71499bf819a4d5)), closes [PKCS#12](https://github.com/RashKash103/PKCS/issues/12)
+
 ## [1.11.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.10.0...v1.11.0-dev.1) (2026-11-10)
 
 ### ✨ New Features
