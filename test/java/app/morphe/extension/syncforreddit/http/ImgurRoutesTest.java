@@ -56,8 +56,11 @@ public final class ImgurRoutesTest {
         check(ImgurRoutes.kindOf("i.imgur.com", "/abc12345.mp4") == Kind.VIDEO, "An mp4");
         check(ImgurRoutes.kindOf("i.imgur.com", "/abc12345.webm") == Kind.VIDEO, "A webm");
 
-        // .gifv is a page: Imgur answers it with markup holding a player, not with a video.
-        check(ImgurRoutes.kindOf("i.imgur.com", "/abc12345.gifv") == Kind.PAGE, "A gifv");
+        // .gifv is Imgur's name for the page wrapping a video, and it is what Sync asks for
+        // when it wants the video. Asked for as it stands, Imgur and every Rimgo instance
+        // answer with markup holding a player — so it counts as a video and is asked for as
+        // one, which is the same id with .mp4 on the end.
+        check(ImgurRoutes.kindOf("i.imgur.com", "/abc12345.gifv") == Kind.VIDEO, "A gifv");
         check(ImgurRoutes.kindOf("imgur.com", "/a/abc12345") == Kind.PAGE, "An album");
         check(ImgurRoutes.kindOf("imgur.com", "/gallery/abc12345") == Kind.PAGE, "A gallery");
         check(ImgurRoutes.kindOf("imgur.com", "/t/cats/abc12345") == Kind.PAGE, "A tag");
@@ -127,6 +130,22 @@ public final class ImgurRoutesTest {
         check("https://rimgo.example.com/abc12345.png".equals(
                 ImgurRoutes.rimgo(where, "i.imgur.com", "/abc12345", Kind.PICTURE)),
                 "Did not give a bare id an ending");
+        // A .gifv asked for as it stands is answered with a page, so the video is asked for.
+        check("https://rimgo.example.com/abc12345.mp4".equals(
+                ImgurRoutes.rimgo(where, "i.imgur.com", "/abc12345.gifv", Kind.VIDEO)),
+                "Asked the instance for the gifv page rather than the video: "
+                        + ImgurRoutes.rimgo(where, "i.imgur.com", "/abc12345.gifv", Kind.VIDEO));
+
+        // An album is at both of Imgur's own two shapes on an instance, and both are worth
+        // asking: which one answers depends on what the id turns out to be, and instances are
+        // not all built from the same commit.
+        java.util.List<String> pages = ImgurRoutes.rimgoAlbumPages(where, "abc12345");
+        check(pages.size() == 2, "Did not offer both album shapes: " + pages);
+        check(pages.get(0).equals("https://rimgo.example.com/a/abc12345"), "Not the album path");
+        check(pages.get(1).equals("https://rimgo.example.com/gallery/abc12345"),
+                "Not the gallery path");
+        check(ImgurRoutes.rimgoAlbumPages(where, "").isEmpty(), "Asked about no album");
+        check(ImgurRoutes.rimgoAlbumPages("", "abc").isEmpty(), "Asked nobody about an album");
 
         // A page keeps Imgur's own shape, which is the shape the instance serves it under.
         check("https://rimgo.example.com/a/abc12345".equals(
@@ -173,6 +192,29 @@ public final class ImgurRoutesTest {
 
         check("https://i.imgur.com/wG1nGfK.mp4".equals(ImgurRoutes.imgurLinkFor("wG1nGfK.mp4")),
                 "Did not name the item on Imgur itself");
+
+        // A page as a working instance actually writes one, taken from one: the instance's own
+        // icons under /static, the album's items, and the thumbnails of other posts in the
+        // sidebar, which carry a query and are not part of this album at all.
+        String real = "<img src=\"/static/img/rimgo.svg\">"
+                + "<img src=\"/static/icons/PhEye.svg\">"
+                + "<img src=\"/eZ9iusF.png\"><video><source src=\"/gEOoGEn.mp4\"></video>"
+                + "<img src=\"/0E5T6m0.jpeg\">"
+                + "<img src=\"/GVSpSgt_d.png?maxwidth=290&amp;fidelity=grand\">";
+        List<String> items = ImgurRoutes.mediaInRimgoAlbum(real);
+        check(items.size() == 3, "Read " + items + " out of the page, not the three items");
+        check(items.get(0).equals("eZ9iusF.png") && items.get(1).equals("gEOoGEn.mp4")
+                        && items.get(2).equals("0E5T6m0.jpeg"),
+                "Not the album in the order the page lists it: " + items);
+
+        // A picture somebody posted in the comments underneath the album is on the page and
+        // is not part of the album. An album of twenty came back as twenty-two without this,
+        // and nothing in the viewer says which two do not belong.
+        String withComments = "<img class=\"my-2 max-h-96 object-contain\" src=\"/aaa111.jpeg\">"
+                + "<img src=\"/bbb222.png\" class=\"comment__media\" loading=\"lazy\"/>";
+        List<String> album = ImgurRoutes.mediaInRimgoAlbum(withComments);
+        check(album.size() == 1 && album.get(0).equals("aaa111.jpeg"),
+                "Took a picture posted in the comments for part of the album: " + album);
     }
 
     private static void check(boolean passed, String failure) {

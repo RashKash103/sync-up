@@ -44,6 +44,14 @@ import okhttp3.Response;
  * @noinspection unused
  */
 public class ImgurUnblock extends PatchedditInterceptor {
+    /**
+     * How many Rimgo instances one request is asked of before the next route is tried.
+     *
+     * <p>Bounded: this runs while the picture is not on the screen, and a long list of instances
+     * that are being rate limited must not turn into a long wait before the proxy is reached.
+     */
+    private static final int MOST_INSTANCES = 2;
+
     /** What answered last, for the settings screen to show. Kept in memory and nowhere else. */
     private static volatile String lastUsed = "";
 
@@ -168,10 +176,27 @@ public class ImgurUnblock extends PatchedditInterceptor {
         if (!RedirectSettings.usingRimgo()) {
             return null;
         }
-        String instance = RimgoInstances.inUse();
-        if (instance == null) {
-            return null;
+        // More than one instance, because what one serves another refuses: of the published
+        // list, instances that serve pictures perfectly answer 403 to an album, and an instance
+        // that has just been rate limited by Imgur answers 429 to everything for a while. A
+        // failure here rests the instance, so the next turn of this picks a different one.
+        for (int attempt = 0; attempt < MOST_INSTANCES; attempt++) {
+            String instance = RimgoInstances.inUse();
+            if (instance == null) {
+                return null;
+            }
+            Response answered = throughThisInstance(chain, request, url, kind, instance);
+            if (answered != null) {
+                return answered;
+            }
         }
+        return null;
+    }
+
+    @Nullable
+    private Response throughThisInstance(Chain chain, Request request, HttpUrl url,
+                                         ImgurRoutes.Kind kind, String instance)
+            throws IOException {
         String instead = ImgurRoutes.rimgo(instance, url.host(), url.encodedPath(), kind);
         if (instead == null) {
             return null;

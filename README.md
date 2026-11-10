@@ -224,9 +224,12 @@ decision rather than a default.
 
   - **The DuckDuckGo proxy** is on by default and needs nothing set up: it fetches one picture
     through the proxy DuckDuckGo already runs for its own image search, so there is no third
-    party to choose and nothing to trust beyond DuckDuckGo. It serves a still picture and
-    nothing else — asked for a video or an album page it answers with a small apology, which is
-    why it is only ever offered a picture.
+    party to choose and nothing to trust beyond DuckDuckGo. Pictures and animated GIFs come
+    back exactly as Imgur serves them. It serves a picture and nothing else, though: asked for
+    a video or for an album page it answers 400 with a small SVG apology, which an image
+    decoder would draw as a broken picture — so it is only ever offered a picture, and
+    **videos and albums need Rimgo or a proxy**. That is a limit of the proxy rather than of
+    this patch, and the *DuckDuckGo proxy* screen says so.
   - **Rimgo** is a front end for Imgur that other people run, and serves pictures, videos and
     albums alike. It is opt-in, and so is each instance: the published list is the one
     LibRedirect's own extension uses, fetched when the screen is first opened, and an instance
@@ -235,19 +238,39 @@ decision rather than a default.
     or red — being on the list says very little about working, and of the twenty-three published
     instances only nine actually served a picture when this was written. The instance that last
     worked is used again without being asked twice; one that fails is rested for five minutes so
-    an outage costs one wait rather than one per picture. With Rimgo on, an **album** opens in a
-    refusing region too, which no other route manages: its contents are read from the instance's
-    own page for it. An instance put behind mTLS is supported as well: long-press one to attach
-    a client certificate, pasted in the same way as the proxy's. **A certificate belongs to the
+    an outage costs one wait rather than one per picture, and a request that one instance
+    refuses is tried against the next. With Rimgo on, **albums, galleries, videos and GIFs**
+    open in a refusing region too, which no other route manages: an album's contents are read
+    from the instance's own page for it, and a video is asked for as the video rather than as
+    the page Imgur wraps it in. Serving pictures and serving albums are two different
+    abilities — some instances answer every album with a 403 while serving every picture
+    perfectly — so an album is asked of each chosen instance in turn, and an instance that
+    cannot do albums is left out of the asking for five minutes rather than being dropped.
+    An instance put behind mTLS is supported as well: long-press one to attach a client
+    certificate, either chosen from a file or pasted in. **A certificate belongs to the
     one instance it is attached to** and is never offered to any other — a server decides when
     to ask for a client certificate and the certificate names whoever holds it, so one kept for
     Rimgo in general would be handed over by whichever instance asked, including one asking in
     order to find out who is reading.
   - **A proxy** of your own carries the request itself, so it can answer anything Imgur serves,
-    its API included. HTTP or SOCKS, with a username and password if it wants them, and a client
-    certificate where it asks for one — pasted in as a PKCS#12 in base64 or as PEM blocks, since
-    Sync asks for no storage permission and so has no file on the device it could read. *Try the
-    proxy* asks Imgur for a picture through it and says what happened.
+    its API included — and with one set, the requests made to find out what an album holds go
+    through it too, not only the pictures themselves. HTTP or SOCKS, with a username and
+    password if it wants them, and a client certificate where it asks for one. *Try the proxy*
+    asks Imgur for a picture through it and says what happened.
+
+  A certificate — for the proxy or for an instance — is either **chosen from a file** or pasted
+  in, as a PKCS#12 in base64 or as PEM blocks. Choosing one uses the system's own document
+  picker, which needs no storage permission: it hands back the one file that was chosen and
+  nothing else, which is as much as Sync can read, since it asks for no storage permission at
+  all.
+
+  **Where an album still cannot be opened.** Imgur's album page, the embed of it and Imgur's
+  own API are refused together in a refused region, and an album's contents cannot be worked
+  out from its id — so with the DuckDuckGo proxy alone there is nothing to read them from, and
+  Sync falls back to opening the link in a browser. In order, this tries Imgur's page, the
+  embed, Imgur's API (which is worth one request, since not every region's block covers it),
+  each chosen Rimgo instance, and finally the Wayback Machine, which only holds the albums
+  somebody happened to capture.
 
   The proxy's address, what it is logged into with and the certificate are kept in a file of
   their own rather than in Sync's settings, so that Sync's Backup cannot write them out — the

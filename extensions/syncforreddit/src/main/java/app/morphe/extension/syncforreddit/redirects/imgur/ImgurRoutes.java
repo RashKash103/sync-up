@@ -67,9 +67,22 @@ public final class ImgurRoutes {
 
     /**
      * Paths that name a page rather than one piece of media, each of which Rimgo serves under
-     * the same shape. {@code .gifv} is a page too: Imgur answers it with HTML holding a player.
+     * the same shape.
      */
     private static final String[] PAGE_FIRST_SEGMENTS = {"a", "gallery", "t", "r", "user"};
+
+    /**
+     * What Imgur calls the page wrapping a video, and what Sync asks for when it wants the
+     * video itself.
+     *
+     * <p>Imgur answers {@code .gifv} with markup holding a player, and so does Rimgo — 1,587
+     * bytes of HTML, measured — so sending one as it stands gets a page where a video was
+     * wanted. The video beside it is the same id as {@code .mp4}, which is what Sync's own
+     * undelete already asks the archive for, so that is what a route is asked for too.
+     */
+    private static final String GIFV = ".gifv";
+
+    private static final String MP4 = ".mp4";
 
     /**
      * What an album page links its media as. Rimgo writes each one as {@code src="/<id>.<ext>"},
@@ -78,8 +91,25 @@ public final class ImgurRoutes {
      * <p>Anchored on the quote and the leading slash so that nothing else on the page is taken
      * for media, and the static files it serves for itself are dropped by name below.
      */
+    /**
+     * Each tag on an album page that names something to draw, read whole so that what the tag
+     * says about itself can be taken into account.
+     */
+    private static final Pattern RIMGO_TAG = Pattern.compile(
+            "<(?:img|source)\\s[^>]*>", Pattern.CASE_INSENSITIVE);
+
     private static final Pattern RIMGO_MEDIA = Pattern.compile(
             "src=\"/([A-Za-z0-9]{3,12}\\.(?:jpg|jpeg|png|gif|webp|mp4|webm))\"");
+
+    /**
+     * What an instance marks a picture posted in the <i>comments</i> with.
+     *
+     * <p>Those are on the page and are not part of the album. An album of twenty came back as
+     * twenty-two before this, and the two extra were pictures two commenters had posted
+     * underneath it — which is not obvious in the viewer, since they look like album items and
+     * simply make the count wrong. Avatars are already left out by the query they carry.
+     */
+    private static final String A_COMMENT = "comment__media";
 
     private ImgurRoutes() {}
 
@@ -109,6 +139,9 @@ public final class ImgurRoutes {
         }
 
         String lower = path == null ? "" : path.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(GIFV)) {
+            return Kind.VIDEO;
+        }
         for (String ending : VIDEO_ENDINGS) {
             if (lower.endsWith(ending)) {
                 return Kind.VIDEO;
@@ -126,10 +159,6 @@ public final class ImgurRoutes {
                 return Kind.PAGE;
             }
         }
-        if (lower.endsWith(".gifv")) {
-            return Kind.PAGE;
-        }
-
         // What is left is a bare id. On the picture host that is a picture whose address simply
         // carries no extension; anywhere else it is the page for a post.
         if (!first.isEmpty()) {
@@ -189,13 +218,37 @@ public final class ImgurRoutes {
             if (name.isEmpty()) {
                 return null;
             }
-            if (!hasAPictureEnding(name) && !hasAVideoEnding(name)) {
+            if (name.toLowerCase(Locale.ROOT).endsWith(GIFV)) {
+                name = name.substring(0, name.length() - GIFV.length()) + MP4;
+            } else if (!hasAPictureEnding(name) && !hasAVideoEnding(name)) {
                 name = name + ".png";
             }
             return base + "/" + name;
         }
 
         return base + onIt;
+    }
+
+    /**
+     * The addresses an album's page is at on an instance, in the order they are worth asking
+     * for.
+     *
+     * <p>Rimgo keeps Imgur's own two shapes, and which of them answers depends on what the id
+     * turns out to be: {@code /a/<id>} serves an album, and an id that is a gallery post is
+     * served at {@code /gallery/<id>}. Measured against a working instance, an album id
+     * answered at both and a gallery id at both as well — but not every instance is built from
+     * the same commit, so both are tried rather than one being assumed.
+     */
+    public static List<String> rimgoAlbumPages(String instance, String albumId) {
+        List<String> pages = new ArrayList<>();
+        if (instance == null || instance.isEmpty() || albumId == null || albumId.isEmpty()) {
+            return pages;
+        }
+        String base = instance.endsWith("/")
+                ? instance.substring(0, instance.length() - 1) : instance;
+        pages.add(base + "/a/" + albumId);
+        pages.add(base + "/gallery/" + albumId);
+        return pages;
     }
 
     /**
@@ -228,11 +281,18 @@ public final class ImgurRoutes {
         if (html == null || html.isEmpty()) {
             return found;
         }
-        Matcher matching = RIMGO_MEDIA.matcher(html);
-        while (matching.find()) {
-            String name = matching.group(1);
-            if (!found.contains(name)) {
-                found.add(name);
+        Matcher tags = RIMGO_TAG.matcher(html);
+        while (tags.find()) {
+            String tag = tags.group();
+            if (tag.contains(A_COMMENT)) {
+                continue;
+            }
+            Matcher matching = RIMGO_MEDIA.matcher(tag);
+            if (matching.find()) {
+                String name = matching.group(1);
+                if (!found.contains(name)) {
+                    found.add(name);
+                }
             }
         }
         return found;

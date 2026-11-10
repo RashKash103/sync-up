@@ -431,6 +431,18 @@ dropped. Do not gate on `Content-Type` being `application/json` — the undelete
 nothing about the kind and works on every listing — and let a regex over a body tolerate `\/`,
 since JSON may escape the slashes in a URL. Writing them back unescaped is valid either way.
 
+**Requests made while answering a request do not pass through the interceptor.** `ImgurAlbum`
+asks Imgur what an album holds from inside the answer to Sync's own album request, over
+`HttpURLConnection` — so none of the routes saw it, and a reader with a proxy configured still
+could not open an album. Anything of ours that reaches the network from outside an okhttp chain
+has to be offered the routes explicitly; `ImgurFetch` is where that is done.
+
+**Sync registers `imgur.com` and `i.imgur.com` as deep links**, on
+`.ui.activities.IntentActivity`. `adb shell am start -a android.intent.action.VIEW -d
+"https://imgur.com/a/<id>" -n com.laurencedawson.reddit_sync/.ui.activities.IntentActivity`
+therefore opens any Imgur address of any kind straight into Sync's own viewer, which beats
+hunting for a post that happens to link one. Without `-n` the default browser takes it.
+
 **Imgur refuses whole regions**, the United Kingdom among them, and what arrives is a notice
 rather than the picture. Three ways round it, and they do not cover the same ground — measured,
 not assumed:
@@ -440,11 +452,24 @@ not assumed:
   answers **400 with a small SVG**, and an SVG apology handed to an image decoder draws as a
   broken picture rather than as nothing — so it is only ever offered a picture. It takes the
   address raw or encoded, and ignores whether the ending matches the real type, which is why
-  the browser extensions append `.png` to a bare id.
+  the browser extensions append `.png` to a bare id. An **animated GIF comes back byte for
+  byte** — measured against a known one, same length, same `image/gif` — so a gif needs no
+  other route. What looks like it mangling one is Imgur: asked for the `.gif` of a video post,
+  Imgur itself answers `image/jpeg`, and Rimgo hands back the same bytes.
+
+  **So videos and albums cannot be served by this route at all**, and no amount of code changes
+  that. `.mp4`, `.gifv`, `/a/<id>` and `api.imgur.com` each answer 400 with the SVG.
 - **Rimgo** serves media at `/<name>.<ext>` and keeps Imgur's own shape for pages, so an album
-  is `/a/<id>` as HTML, each item written as `src="/<id>.<ext>"` — which is how an album is
-  recovered in a refusing region, where the page, the embed and the API are all refused and the
-  archive only holds what someone captured.
+  is `/a/<id>` or `/gallery/<id>` as HTML, each item written as `src="/<id>.<ext>"` — which is
+  how an album is recovered in a refusing region, where the page, the embed and the API are all
+  refused and the archive only holds what someone captured. `.gifv` is **not** media to an
+  instance: it answers with the same page Imgur does, so a route has to ask for the `.mp4`.
+
+  **Serving media and serving albums are two different abilities.** Of the 23 published
+  instances, one served an album page whole, two served media perfectly while answering 403 to
+  every album, and the rest were rate limited, refusing or gone — so an album has to be asked of
+  each chosen instance rather than only of the one that is carrying the pictures, and an instance
+  that cannot do albums must be rested rather than dropped.
 - **A proxy** carries the request itself, so it answers anything including the API. An
   interceptor cannot change the proxy of the client it sits on, so the request is carried out on
   a client of our own and the reply handed back to the chain.
@@ -465,15 +490,37 @@ text instead. It is usable from a screen of ours, though: what it does by defaul
 activity to `PreferencesActivity` and call its screen lookup, and our screens are in that
 activity.
 
+Looking one up by a key of our own does not fail loudly — `y(key)` simply answers nothing, and
+whatever was to be done to the row is quietly not done. That is how the three route rows went on
+answering a tap with the whole thing switched off: `q0(false)` was being called on nothing. It
+also draws its own title, summary and icon, so `fadeDisabledRowsPatch` has to cover it as well
+or a row that refuses to be tapped looks exactly like one that would.
+
 **A fragment is rebuilt from its class name**, so a settings screen has to be its own class.
 One class told which screen it is — through arguments or a field — comes back from a rotation
 not knowing, and loads the wrong screen. That is why the redirect screens are five subclasses of
 one base rather than one class with an id.
 
 **Nothing on the device can read a file you name by path.** Sync asks for no storage permission
-at all and targets Android 13, so there is no path a certificate or a key could be read from;
-pasting the text in is what is actually available, which is what the client certificate and the
-API keys both do.
+at all and targets Android 13, so there is no path a certificate or a key could be read from.
+What needs no permission is the system's document picker, which hands back the one file that was
+chosen — `ACTION_OPEN_DOCUMENT`, then `ContentResolver.openInputStream`. Pasting the text in
+remains the other way, and is the only one for the API keys.
+
+**The one place a picker's answer can be caught is `ComponentActivity.onActivityResult`.** A
+result is delivered to the activity, and the members a fragment is handed one through are
+renamed by the minifier — `androidx.fragment.app.Fragment.onActivityResult` is not in the dex at
+all. `onActivityResult` itself overrides a method of the framework's, so its name is fixed, and
+`androidx/activity/ComponentActivity` carries one that every activity in the app inherits;
+`PickAFile.whatCameBack` is called from there and answers to one request code of its own. Keep
+that code under 65536: `FragmentActivity.onActivityResult` dispatches anything with the top
+sixteen bits set to a fragment and never reaches `super`.
+
+**A multi-line `EditText` with no maximum fills the dialog it is in.** A certificate read out of
+a file is four thousand characters, and a field given only `setMinLines` grows to all of them —
+a swipe over it then scrolls the field rather than the dialog, and the password row underneath
+becomes unreachable, in the one dialog where a password is needed. `setMaxLines` as well as
+`setMinLines`.
 
 **`trimIndent()` is applied after interpolation**, so a template holding `${rows}` is indented
 by however far the rows are. For a written XML file that puts four spaces in front of the

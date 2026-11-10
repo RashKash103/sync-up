@@ -13,8 +13,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import java.util.Collections;
+
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.syncforreddit.api.ClientSettings;
 import app.morphe.extension.syncforreddit.http.ArchiveRequests;
+import app.morphe.extension.syncforreddit.redirects.RedirectSettings;
+import app.morphe.extension.syncforreddit.redirects.imgur.ImgurFetch;
 import app.morphe.extension.syncforreddit.redirects.imgur.ImgurRoutes;
 import app.morphe.extension.syncforreddit.redirects.imgur.RimgoAlbum;
 
@@ -30,6 +35,18 @@ import app.morphe.extension.syncforreddit.redirects.imgur.RimgoAlbum;
  */
 final class ImgurAlbum {
     private static final String ALBUM_URL = "https://imgur.com/a/";
+
+    /**
+     * Imgur's own API, which says what an album holds in one small reply.
+     *
+     * <p>Asked only where the routes are on, and so only where the page has already been
+     * refused. Which of Imgur's hosts a region's block covers is not something this can know
+     * from here — the website plainly is covered, and whether the API is as well differs by
+     * report — so it is asked rather than assumed. It costs one request against a key the
+     * reader can set under Spoof client, and where it answers an album opens with Imgur's own
+     * sizes and its videos, which no other route here gives.
+     */
+    private static final String API_ALBUM_URL = "https://api.imgur.com/3/album/";
 
     /**
      * The page Imgur serves for embedding an album elsewhere. The album page itself is now a
@@ -123,8 +140,29 @@ final class ImgurAlbum {
             Logger.printInfo(() -> "Could not read the embed of album " + albumId + ": " + ex);
         }
 
-        // Where Imgur is refusing this part of the world, the page, the embed of it and Imgur's
-        // own API are all refused together, and the archive holds only the albums somebody
+        // Imgur's own API, which answers the same question in one small reply and gives the
+        // sizes and the videos the pages do not. Only where the routes are on: outside a
+        // refused region the page above has already answered, and asking anyway would put a
+        // request against a shared key behind every album in the app.
+        if (RedirectSettings.redirecting()) {
+            try {
+                List<JSONObject> throughTheApi = api(albumId);
+                if (!throughTheApi.isEmpty()) {
+                    Logger.printInfo(() -> "Read album " + albumId + " from Imgur's API, "
+                            + throughTheApi.size() + " image(s)");
+                    cache.put(albumId, throughTheApi);
+                    return throughTheApi;
+                }
+                Logger.printInfo(() -> "Imgur's API named nothing in album " + albumId);
+            } catch (IOException ex) {
+                failure = ex;
+                Logger.printInfo(() -> "Could not read album " + albumId
+                        + " from Imgur's API: " + ex);
+            }
+        }
+
+        // Where Imgur is refusing this part of the world, the page, the embed of it and quite
+        // possibly the API are refused together, and the archive holds only the albums somebody
         // happened to capture — which leaves anything recent unopenable. A Rimgo instance still
         // serves the album as a page of its own, so it is asked before the archive is. Only
         // where the reader has turned Rimgo on and chosen an instance.
@@ -170,7 +208,7 @@ final class ImgurAlbum {
      * from. Nothing is derived from the id: the page names each image, its kind and its size.
      */
     private static List<JSONObject> live(String albumId) throws IOException, JSONException {
-        String html = ArchiveRequests.get(ALBUM_URL + albumId, "text/html");
+        String html = ImgurFetch.text(ALBUM_URL + albumId, "text/html", null);
 
         Matcher found = EMBEDDED_POST.matcher(html);
         if (!found.find()) {
@@ -210,7 +248,8 @@ final class ImgurAlbum {
      * is the shape {@link #embedded} already reads.
      */
     private static List<JSONObject> embed(String albumId) throws IOException, JSONException {
-        String html = ArchiveRequests.get(ALBUM_URL + albumId + EMBED_URL_SUFFIX, "text/html");
+        String html = ImgurFetch.text(
+                ALBUM_URL + albumId + EMBED_URL_SUFFIX, "text/html", null);
         Logger.printDebug(() -> "The embed of album " + albumId + " is " + html.length()
                 + " characters, names a list: " + html.contains(EMBEDDED_IMAGES));
         return listIn(html, EMBEDDED_IMAGES);
@@ -274,6 +313,42 @@ final class ImgurAlbum {
     }
 
     /**
+     * The album as Imgur's API gives it: the shape Sync's own parser was written for, which is
+     * what everything here is translated into anyway.
+     */
+    private static List<JSONObject> api(String albumId) throws IOException, JSONException {
+        String said = ImgurFetch.text(API_ALBUM_URL + albumId, "application/json",
+                Collections.singletonMap("Authorization", ClientSettings.imgurHeader()));
+
+        List<JSONObject> images = new ArrayList<>();
+        JSONObject data = new JSONObject(said).optJSONObject("data");
+        if (data == null) {
+            return images;
+        }
+        JSONArray entries = data.optJSONArray("images");
+        if (entries == null) {
+            return images;
+        }
+
+        for (int at = 0; at < entries.length(); at++) {
+            JSONObject entry = entries.optJSONObject(at);
+            if (entry == null) {
+                continue;
+            }
+            String link = entry.optString("link", "");
+            if (link.isEmpty()) {
+                continue;
+            }
+            // Sync reads the video beside the link where there is one, which is how a video in
+            // an album plays rather than drawing as a still.
+            images.add(image(link, entry.optString("mp4", ""), entry.optInt("width"),
+                    entry.optInt("height"), entry.optString("title"),
+                    entry.optString("description")));
+        }
+        return images;
+    }
+
+    /**
      * The album as a Rimgo instance gives it. The page names each item by Imgur's own id, which
      * is what the rest of the app wants, and says nothing about how large any of them is — the
      * same as the markup fallback below, and tolerable for the same reason.
@@ -281,7 +356,11 @@ final class ImgurAlbum {
     private static List<JSONObject> fromRimgo(String albumId) throws JSONException {
         List<JSONObject> images = new ArrayList<>();
         for (String name : RimgoAlbum.mediaIn(albumId)) {
-            images.add(image(ImgurRoutes.imgurLinkFor(name), 0, 0, "", ""));
+            String link = ImgurRoutes.imgurLinkFor(name);
+            // An item the page wrote as .mp4 is a video, and is named as one so that Sync
+            // plays it rather than handing it to an image decoder.
+            String video = name.toLowerCase(java.util.Locale.ROOT).endsWith(".mp4") ? link : "";
+            images.add(image(link, video, 0, 0, "", ""));
         }
         return images;
     }
@@ -307,8 +386,17 @@ final class ImgurAlbum {
 
     private static JSONObject image(String link, int width, int height, String title,
                                     String description) throws JSONException {
+        return image(link, "", width, height, title, description);
+    }
+
+    private static JSONObject image(String link, String mp4, int width, int height, String title,
+                                    String description) throws JSONException {
         JSONObject image = new JSONObject();
         image.put("link", link);
+        if (mp4 != null && !mp4.isEmpty()) {
+            // Read with optString by Sync, and preferred over the link where it is there.
+            image.put("mp4", mp4);
+        }
         // Read with getInt rather than optInt by Sync, so they have to be present.
         image.put("width", width);
         image.put("height", height);
