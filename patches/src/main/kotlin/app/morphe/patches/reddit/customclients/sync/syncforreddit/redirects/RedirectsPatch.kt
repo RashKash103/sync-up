@@ -1,6 +1,7 @@
 package app.morphe.patches.reddit.customclients.sync.syncforreddit.redirects
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.returnEarly
@@ -19,6 +20,24 @@ private const val SCREEN_CLASS_DESCRIPTOR = "${REDIRECTS}RedirectsScreen;"
 
 private const val UNBLOCK_CLASS_DESCRIPTOR = "${REDIRECTS}imgur/ImgurUnblock;"
 
+private const val PICK_CLASS_DESCRIPTOR = "${REDIRECTS}PickAFile;"
+
+private const val WHAT_CAME_BACK_METHOD = "whatCameBack(IILandroid/content/Intent;)V"
+
+/**
+ * Where a result from another app arrives.
+ *
+ * <p>Every activity in the app inherits this one, and it is the one place the picker's answer
+ * can be caught: {@code onActivityResult} overrides a method of the framework's, so its name
+ * survives the minifier, while the members a fragment is handed a result through do not.
+ */
+private val activityResultFingerprint = Fingerprint(
+    definingClass = "Landroidx/activity/ComponentActivity;",
+    name = "onActivityResult",
+    parameters = listOf("I", "I", "Landroid/content/Intent;"),
+    returnType = "V",
+)
+
 /**
  * Every class the app itself ends up calling into or building, which therefore has to be public.
  *
@@ -31,6 +50,7 @@ private val reachedFromTheApp = listOf(
     SETTINGS_CLASS_DESCRIPTOR,
     SCREEN_CLASS_DESCRIPTOR,
     UNBLOCK_CLASS_DESCRIPTOR,
+    PICK_CLASS_DESCRIPTOR,
     "${REDIRECTS}RedirectsScreen\$Front;",
     "${REDIRECTS}RedirectsScreen\$Imgur;",
     "${REDIRECTS}RedirectsScreen\$DuckDuckGo;",
@@ -73,5 +93,13 @@ val redirectsPatch = bytecodePatch(
         }
 
         answerTheScreenLookupWith(SCREEN_CLASS_DESCRIPTOR)
+
+        // Told about every result the app is handed, and answers to one request code of its
+        // own; anything else passes through it untouched. This is what lets a certificate be
+        // read out of a file rather than only pasted in.
+        activityResultFingerprint.method.addInstructions(
+            0,
+            "invoke-static { p1, p2, p3 }, $PICK_CLASS_DESCRIPTOR->$WHAT_CAME_BACK_METHOD",
+        )
     }
 }

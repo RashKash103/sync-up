@@ -12,6 +12,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -564,7 +565,7 @@ public abstract class RedirectsScreen extends pa.d {
         EditText pasted = new EditText(context);
         pasted.setHint("A PKCS#12 as base64, or the PEM blocks");
         pasted.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-        pasted.setMinLines(MANY_LINES);
+        heldToAFewLines(pasted);
 
         EditText password = new EditText(context);
         password.setHint("Certificate password, if it has one");
@@ -572,7 +573,14 @@ public abstract class RedirectsScreen extends pa.d {
                 | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         password.setSingleLine(true);
 
+        TextView note = new TextView(context);
+        note.setText("Choose a file, or paste it in.");
+        note.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        note.setTextColor(Color.GRAY);
+
         box.addView(why);
+        box.addView(note);
+        box.addView(chooseAFile(context, pasted, note));
         box.addView(pasted);
         box.addView(password);
 
@@ -721,7 +729,7 @@ public abstract class RedirectsScreen extends pa.d {
 
         if (overLines) {
             typing.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-            typing.setMinLines(MANY_LINES);
+            heldToAFewLines(typing);
         } else if (secret) {
             typing.setInputType(InputType.TYPE_CLASS_TEXT
                     | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -734,7 +742,10 @@ public abstract class RedirectsScreen extends pa.d {
 
         AlertDialog.Builder asking = new AlertDialog.Builder(context)
                 .setTitle(title)
-                .setView(heldOffTheEdges(context, typing))
+                // A certificate is offered a file to read as well, since it is kilobytes of
+                // base64 that nobody is going to type and most keyboards will not paste whole.
+                .setView(overLines ? aFieldAndAFile(context, typing)
+                        : heldOffTheEdges(context, typing))
                 .setPositiveButton("Save", (dialog, which) -> {
                     RedirectSettings.putPrivately(key, typing.getText().toString().trim());
                     sayWhetherItIsSet(row, key, secret);
@@ -766,6 +777,67 @@ public abstract class RedirectsScreen extends pa.d {
     // endregion
 
     // region Small things.
+
+    /**
+     * Keeps a field for something long to a few lines.
+     *
+     * <p>Both a minimum and a maximum, and the maximum is the one that matters: a certificate
+     * read out of a file is four thousand characters, and a field with no maximum grows to all
+     * of them. It then fills the dialog — a swipe over it scrolls the field rather than the
+     * dialog — and the password underneath it cannot be reached at all, which is exactly the
+     * dialog where a password is needed.
+     */
+    private static void heldToAFewLines(EditText field) {
+        field.setMinLines(MANY_LINES);
+        field.setMaxLines(MANY_LINES);
+        field.setVerticalScrollBarEnabled(true);
+    }
+
+    /**
+     * A button that reads a certificate out of a file the reader chooses.
+     *
+     * <p>Nothing on the device can be read by naming a path — Sync asks for no storage
+     * permission and targets Android 13 — but the system's own picker needs none: it hands back
+     * the one file that was chosen and nothing else. What it reads goes into the field rather
+     * than straight into the settings, so that it is still saved by tapping Save and can be
+     * looked at or cleared first.
+     */
+    private Button chooseAFile(Context context, EditText into, TextView note) {
+        Button choosing = new Button(context);
+        choosing.setText("Choose a file…");
+        choosing.setOnClickListener(tapped -> {
+            boolean opened = PickAFile.ask(context, (name, contents) -> {
+                into.setText(contents);
+                into.setSelection(0);
+                note.setText("Read from " + name + ". Save to attach it.");
+            });
+            if (!opened) {
+                note.setText("Nothing on this device could be asked for a file; paste it in.");
+            }
+        });
+        return choosing;
+    }
+
+    /** The same field, with the button and a line of its own above it. */
+    private View aFieldAndAFile(Context context, EditText typing) {
+        int edge = Math.round(AN_EDGE * context.getResources().getDisplayMetrics().density);
+        LinearLayout box = new LinearLayout(context);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(edge, edge / 2, edge, 0);
+
+        TextView note = new TextView(context);
+        note.setText("Choose a file, or paste it in.");
+        note.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        note.setTextColor(Color.GRAY);
+
+        box.addView(note);
+        box.addView(chooseAFile(context, typing, note));
+        box.addView(typing);
+
+        ScrollView scrolling = new ScrollView(context);
+        scrolling.addView(box);
+        return scrolling;
+    }
 
     private View heldOffTheEdges(Context context, View around) {
         FrameLayout holding = new FrameLayout(context);
