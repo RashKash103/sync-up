@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.10.0](https://github.com/RashKash103/sync-up/releases/tag/v1.10.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;34 patches total
+> **[v1.11.0-dev.1](https://github.com/RashKash103/sync-up/releases/tag/v1.11.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;35 patches total
 <details open>
-<summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;33 patches</summary>
+<summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;34 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -78,6 +78,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent<br>• Imgur client ID |
 | [Stop the toolbar menus closing the app](#stop-the-toolbar-menus-closing-the-app) | Keeps Sync open when the sort or overflow button in the toolbar is tapped, which closes it on some devices. |  |
 | [Translate posts and comments](#translate-posts-and-comments) | Translates a post or comment where it sits, on this device or through DeepL or Google Cloud. |  |
+| [Unblock Imgur](#unblock-imgur) | Loads Imgur pictures, videos and albums another way where Imgur refuses the region, through DuckDuckGo's image proxy, a Rimgo instance or a proxy of your own. Off until it is turned on under Settings > Redirects. |  |
 | [Unlock Sync Ultra](#unlock-sync-ultra) | Turns on the Sync Ultra features that work on the device alone, and removes the offers to buy it. |  |
 | [Use /user/ endpoint](#use-user-endpoint) | Replaces the deprecated /u profile endpoint with /user. |  |
 

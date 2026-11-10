@@ -1,3 +1,9 @@
+## [1.11.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.10.0...v1.11.0-dev.1) (2026-11-10)
+
+### ✨ New Features
+
+* Unblock Imgur where it refuses the region ([57b9865](https://github.com/RashKash103/sync-up/commit/57b9865130f1049dc2957fee2cb223fd8972c689))
+
 ## [1.10.0](https://github.com/RashKash103/sync-up/compare/v1.9.4...v1.10.0) (2026-11-09)
 
 ### 🐛 Bug Fixes
