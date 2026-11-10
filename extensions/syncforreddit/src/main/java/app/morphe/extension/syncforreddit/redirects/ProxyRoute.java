@@ -2,29 +2,13 @@ package app.morphe.extension.syncforreddit.redirects;
 
 import androidx.annotation.Nullable;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-
-import android.util.Base64;
 
 import app.morphe.extension.shared.Logger;
 
@@ -145,14 +129,10 @@ public final class ProxyRoute {
             }
 
             if (RedirectSettings.sendingACertificate()) {
-                KeyManager[] mine = clientCertificate();
-                X509TrustManager trusting = platformTrust();
-                if (mine != null && trusting != null) {
-                    SSLContext context = SSLContext.getInstance("TLS");
-                    context.init(mine, new TrustManager[]{trusting}, null);
-                    building.sslSocketFactory(context.getSocketFactory(), trusting);
-                    Logger.printDebug(() -> "proxy: sending a client certificate");
-                }
+                ClientCertificate.offerOn(building,
+                        RedirectSettings.privately(RedirectSettings.PROXY_CERTIFICATE),
+                        RedirectSettings.privately(
+                                RedirectSettings.PROXY_CERTIFICATE_PASSWORD));
             }
 
             client = building.build();
@@ -214,164 +194,25 @@ public final class ProxyRoute {
             return "Reached the proxy, but Imgur answered " + answered.code()
                     + " " + kind + (length > 0 ? " (" + length + " bytes)" : "");
         } catch (Exception ex) {
-            return "Could not be reached: " + ex.getMessage();
+            // What went wrong is almost always in the cause rather than in the message —
+            // "Failed to connect to /10.0.0.1:8080" says nothing about whether it was refused,
+            // timed out or could not be resolved, and that is the whole question when a proxy
+            // will not answer.
+            Throwable why = ex;
+            while (why.getCause() != null && why.getCause() != why) {
+                why = why.getCause();
+            }
+            Logger.printInfo(() -> "proxy: trying it failed", ex);
+            String said = why.getMessage() == null ? why.getClass().getSimpleName()
+                    : why.getMessage();
+            return why == ex ? "Could not be reached: " + said
+                    : "Could not be reached: " + ex.getMessage() + " (" + said + ")";
         } finally {
             if (answered != null) {
                 answered.close();
             }
         }
     }
-
-    // region The client certificate.
-
-    /**
-     * @return What to offer as our side of the handshake, or null where what was pasted in
-     *         cannot be read as a certificate and a key.
-     */
-    @Nullable
-    private static KeyManager[] clientCertificate() {
-        String pasted = RedirectSettings.privately(RedirectSettings.PROXY_CERTIFICATE).trim();
-        if (pasted.isEmpty()) {
-            Logger.printInfo(() -> "proxy: a client certificate was asked for but none is set");
-            return null;
-        }
-        char[] password = RedirectSettings
-                .privately(RedirectSettings.PROXY_CERTIFICATE_PASSWORD).toCharArray();
-
-        try {
-            KeyStore holding = pasted.contains("-----BEGIN")
-                    ? fromPem(pasted, password) : fromPkcs12(pasted, password);
-            if (holding == null) {
-                return null;
-            }
-            KeyManagerFactory factory =
-                    KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            factory.init(holding, password);
-            return factory.getKeyManagers();
-        } catch (Throwable ex) {
-            Logger.printInfo(() -> "proxy: the client certificate could not be read: " + ex);
-            return null;
-        }
-    }
-
-    /** @return A keystore read from base64, which is how a .p12 is pasted in. */
-    @Nullable
-    private static KeyStore fromPkcs12(String pasted, char[] password) throws Exception {
-        byte[] bytes;
-        try {
-            bytes = Base64.decode(withoutWhitespace(pasted), Base64.DEFAULT);
-        } catch (IllegalArgumentException ex) {
-            Logger.printInfo(() -> "proxy: the certificate is neither PEM nor base64");
-            return null;
-        }
-        KeyStore holding = KeyStore.getInstance("PKCS12");
-        holding.load(new ByteArrayInputStream(bytes), password);
-        return holding;
-    }
-
-    /**
-     * @return A keystore built from the PEM blocks that were pasted in: the certificate, any
-     *         that signed it, and the key. The key has to be an unencrypted PKCS#8 one — the
-     *         {@code BEGIN PRIVATE KEY} kind — since an encrypted or an old PKCS#1 key would
-     *         need an ASN.1 parser this has no business carrying.
-     */
-    @Nullable
-    private static KeyStore fromPem(String pasted, char[] password) throws Exception {
-        List<Certificate> chain = new ArrayList<>();
-        CertificateFactory certificates = CertificateFactory.getInstance("X.509");
-        for (String block : blocksOf(pasted, "CERTIFICATE")) {
-            byte[] bytes = Base64.decode(block, Base64.DEFAULT);
-            chain.add(certificates.generateCertificate(new ByteArrayInputStream(bytes)));
-        }
-        if (chain.isEmpty()) {
-            Logger.printInfo(() -> "proxy: no certificate in what was pasted in");
-            return null;
-        }
-
-        List<String> keys = blocksOf(pasted, "PRIVATE KEY");
-        if (keys.isEmpty()) {
-            Logger.printInfo(() -> "proxy: no private key in what was pasted in; it needs the "
-                    + "BEGIN PRIVATE KEY block as well as the certificate");
-            return null;
-        }
-        PrivateKey key = keyFrom(Base64.decode(keys.get(0), Base64.DEFAULT));
-        if (key == null) {
-            return null;
-        }
-
-        KeyStore holding = KeyStore.getInstance("PKCS12");
-        holding.load(null, password);
-        holding.setKeyEntry("sync-up", key, password,
-                chain.toArray(new Certificate[0]));
-        return holding;
-    }
-
-    /**
-     * @return The key, read as whichever kind of key it turns out to be. What the bytes hold is
-     *         not said anywhere in them that is worth parsing, so each kind is tried in turn.
-     */
-    @Nullable
-    private static PrivateKey keyFrom(byte[] bytes) {
-        java.security.spec.PKCS8EncodedKeySpec spec =
-                new java.security.spec.PKCS8EncodedKeySpec(bytes);
-        for (String algorithm : new String[]{"RSA", "EC", "DSA"}) {
-            try {
-                return java.security.KeyFactory.getInstance(algorithm).generatePrivate(spec);
-            } catch (Exception ex) {
-                // Tried the next kind.
-            }
-        }
-        Logger.printInfo(() -> "proxy: the private key is not an unencrypted PKCS#8 RSA, EC or "
-                + "DSA key");
-        return null;
-    }
-
-    /** @return The base64 inside each PEM block of this kind, in the order they appear. */
-    private static List<String> blocksOf(String pasted, String kind) {
-        List<String> found = new ArrayList<>();
-        String begin = "-----BEGIN " + kind + "-----";
-        String end = "-----END " + kind + "-----";
-        int at = 0;
-        while (true) {
-            int from = pasted.indexOf(begin, at);
-            if (from < 0) {
-                return found;
-            }
-            int to = pasted.indexOf(end, from);
-            if (to < 0) {
-                return found;
-            }
-            found.add(withoutWhitespace(pasted.substring(from + begin.length(), to)));
-            at = to + end.length();
-        }
-    }
-
-    private static String withoutWhitespace(String what) {
-        StringBuilder kept = new StringBuilder(what.length());
-        for (int at = 0; at < what.length(); at++) {
-            char each = what.charAt(at);
-            if (!Character.isWhitespace(each)) {
-                kept.append(each);
-            }
-        }
-        return kept.toString();
-    }
-
-    /** @return What the device itself trusts, which is what we go on trusting. */
-    @Nullable
-    private static X509TrustManager platformTrust() throws Exception {
-        TrustManagerFactory factory =
-                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        factory.init((KeyStore) null);
-        for (TrustManager each : factory.getTrustManagers()) {
-            if (each instanceof X509TrustManager) {
-                return (X509TrustManager) each;
-            }
-        }
-        return null;
-    }
-
-    // endregion
 
     /**
      * A name and password for a SOCKS proxy, which the platform asks for rather than okhttp.

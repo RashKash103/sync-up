@@ -101,6 +101,19 @@ public final class RedirectSettings {
     public static final String PROXY_CERTIFICATE_PASSWORD =
             "sync_up_redirect_imgur_proxy_certificate_password";
 
+    /**
+     * A Rimgo instance's own certificate, under this and the instance's address.
+     *
+     * <p><b>One per instance, never one for Rimgo.</b> A client certificate names whoever holds
+     * it, and a server decides when to ask for one — so a single certificate kept for "Rimgo"
+     * would be handed to whichever instance asked, including one asking precisely in order to
+     * find out who is reading. An instance is only ever offered the certificate attached to it.
+     */
+    private static final String RIMGO_CERTIFICATE = "sync_up_redirect_imgur_rimgo_cert|";
+
+    private static final String RIMGO_CERTIFICATE_PASSWORD =
+            "sync_up_redirect_imgur_rimgo_cert_pw|";
+
     /** Every one of them, for saying what is set without naming any of it. */
     public static final String[] PRIVATE_KEYS = {
             PROXY_ADDRESS, PROXY_USER, PROXY_PASSWORD,
@@ -144,6 +157,33 @@ public final class RedirectSettings {
     public static boolean sendingACertificate() {
         return SyncUpSettings.flag(PROXY_MTLS, false);
     }
+
+    // region A Rimgo instance's certificate, which belongs to that instance alone.
+
+    /** @return The certificate attached to this instance, or an empty string where none is. */
+    public static String certificateFor(String instance) {
+        return privately(RIMGO_CERTIFICATE + instance);
+    }
+
+    public static String certificatePasswordFor(String instance) {
+        return privately(RIMGO_CERTIFICATE_PASSWORD + instance);
+    }
+
+    public static boolean hasCertificate(String instance) {
+        return !certificateFor(instance).trim().isEmpty();
+    }
+
+    public static void setCertificateFor(String instance, String pasted, String password) {
+        putPrivately(RIMGO_CERTIFICATE + instance, pasted);
+        putPrivately(RIMGO_CERTIFICATE_PASSWORD + instance, password);
+    }
+
+    public static void clearCertificateFor(String instance) {
+        putPrivately(RIMGO_CERTIFICATE + instance, "");
+        putPrivately(RIMGO_CERTIFICATE_PASSWORD + instance, "");
+    }
+
+    // endregion
 
     /** @return A setting Sync keeps as text, which is how its own list rows are written. */
     public static String text(String key, String fallback) {

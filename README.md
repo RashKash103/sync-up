@@ -237,7 +237,12 @@ decision rather than a default.
     worked is used again without being asked twice; one that fails is rested for five minutes so
     an outage costs one wait rather than one per picture. With Rimgo on, an **album** opens in a
     refusing region too, which no other route manages: its contents are read from the instance's
-    own page for it.
+    own page for it. An instance put behind mTLS is supported as well: long-press one to attach
+    a client certificate, pasted in the same way as the proxy's. **A certificate belongs to the
+    one instance it is attached to** and is never offered to any other — a server decides when
+    to ask for a client certificate and the certificate names whoever holds it, so one kept for
+    Rimgo in general would be handed over by whichever instance asked, including one asking in
+    order to find out who is reading.
   - **A proxy** of your own carries the request itself, so it can answer anything Imgur serves,
     its API included. HTTP or SOCKS, with a username and password if it wants them, and a client
     certificate where it asks for one — pasted in as a PKCS#12 in base64 or as PEM blocks, since

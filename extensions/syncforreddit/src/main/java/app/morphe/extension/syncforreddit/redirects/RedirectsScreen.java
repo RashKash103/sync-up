@@ -385,6 +385,12 @@ public abstract class RedirectsScreen extends pa.d {
         int edge = Math.round(AN_EDGE * context.getResources().getDisplayMetrics().density);
         listed.setPadding(edge, edge / 2, edge, 0);
 
+        TextView how = new TextView(context);
+        how.setText("Tap to choose. Long-press one for a client certificate.");
+        how.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        how.setTextColor(Color.GRAY);
+        listed.addView(how);
+
         List<Runnable> redraw = new ArrayList<>();
         if (known.isEmpty()) {
             TextView nothing = new TextView(context);
@@ -445,7 +451,6 @@ public abstract class RedirectsScreen extends pa.d {
         ticked.setChecked(RimgoInstances.isChosen(instance));
 
         TextView named = new TextView(context);
-        named.setText(hostOf(instance));
         named.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         named.setLayoutParams(new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
@@ -459,6 +464,8 @@ public abstract class RedirectsScreen extends pa.d {
         into.addView(line);
 
         Runnable draw = () -> {
+            named.setText(RedirectSettings.hasCertificate(instance)
+                    ? hostOf(instance) + "  (certificate)" : hostOf(instance));
             switch (RimgoInstances.healthOf(instance)) {
                 case WORKING:
                     state.setText("● working");
@@ -483,22 +490,106 @@ public abstract class RedirectsScreen extends pa.d {
                 RimgoInstances.choose(instance, checked));
         // Tapping the line is easier than finding the box.
         named.setOnClickListener(tapped -> ticked.setChecked(!ticked.isChecked()));
-        // One typed in here can be taken out again. A published one cannot: it would only come
-        // back the next time the list is fetched, so it is left to be unticked instead.
-        if (RimgoInstances.own().contains(instance)) {
-            named.setOnLongClickListener(tapped -> {
-                new AlertDialog.Builder(context)
-                        .setTitle("Remove " + hostOf(instance) + "?")
-                        .setPositiveButton("Remove", (dialog, which) -> {
-                            RimgoInstances.remove(instance);
-                            line.setVisibility(View.GONE);
-                        })
-                        .setNegativeButton("Keep", null)
-                        .show();
-                return true;
+        named.setOnLongClickListener(tapped -> {
+            whatCanBeDoneTo(context, instance, line, draw);
+            return true;
+        });
+        return draw;
+    }
+
+    /**
+     * What can be done to one instance. A certificate can be attached to any of them; only one
+     * typed in here can be taken out again, since a published one would come back the next time
+     * the list is fetched and is left to be unticked instead.
+     */
+    private void whatCanBeDoneTo(Context context, String instance, View line, Runnable draw) {
+        boolean has = RedirectSettings.hasCertificate(instance);
+        boolean own = RimgoInstances.own().contains(instance);
+
+        List<String> choices = new ArrayList<>();
+        choices.add(has ? "Replace the client certificate" : "Attach a client certificate");
+        if (has) {
+            choices.add("Clear the client certificate");
+        }
+        if (own) {
+            choices.add("Remove this instance");
+        }
+
+        new AlertDialog.Builder(context)
+                .setTitle(hostOf(instance))
+                .setItems(choices.toArray(new String[0]), (dialog, which) -> {
+                    String chosen = choices.get(which);
+                    if (chosen.startsWith("Remove")) {
+                        RimgoInstances.remove(instance);
+                        RedirectSettings.clearCertificateFor(instance);
+                        line.setVisibility(View.GONE);
+                        return;
+                    }
+                    if (chosen.startsWith("Clear")) {
+                        RedirectSettings.clearCertificateFor(instance);
+                        draw.run();
+                        return;
+                    }
+                    askForACertificate(context, instance, draw);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /**
+     * The certificate for one instance, pasted in.
+     *
+     * <p>Said plainly on the dialog, because it is the whole reason this is per instance: a
+     * server decides when to ask for a client certificate, and the certificate names whoever
+     * holds it. One kept for Rimgo in general would be handed to whichever instance asked.
+     */
+    private void askForACertificate(Context context, String instance, Runnable draw) {
+        int edge = Math.round(AN_EDGE * context.getResources().getDisplayMetrics().density);
+
+        LinearLayout box = new LinearLayout(context);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(edge, edge / 2, edge, 0);
+
+        TextView why = new TextView(context);
+        why.setText("Offered to " + hostOf(instance) + " and to no other instance.");
+        why.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        why.setTextColor(Color.GRAY);
+
+        EditText pasted = new EditText(context);
+        pasted.setHint("A PKCS#12 as base64, or the PEM blocks");
+        pasted.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        pasted.setMinLines(MANY_LINES);
+
+        EditText password = new EditText(context);
+        password.setHint("Certificate password, if it has one");
+        password.setInputType(InputType.TYPE_CLASS_TEXT
+                | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        password.setSingleLine(true);
+
+        box.addView(why);
+        box.addView(pasted);
+        box.addView(password);
+
+        ScrollView scrolling = new ScrollView(context);
+        scrolling.addView(box);
+
+        AlertDialog.Builder asking = new AlertDialog.Builder(context)
+                .setTitle("Client certificate")
+                .setView(scrolling)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    RedirectSettings.setCertificateFor(instance,
+                            pasted.getText().toString().trim(),
+                            password.getText().toString());
+                    draw.run();
+                })
+                .setNegativeButton("Cancel", null);
+        if (RedirectSettings.hasCertificate(instance)) {
+            asking.setNeutralButton("Clear", (dialog, which) -> {
+                RedirectSettings.clearCertificateFor(instance);
+                draw.run();
             });
         }
-        return draw;
+        asking.show();
     }
 
     private void addAnInstance(Preference row) {

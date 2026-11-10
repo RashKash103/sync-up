@@ -181,13 +181,25 @@ public class ImgurUnblock extends PatchedditInterceptor {
             return null;
         }
 
+        Request asking = leavingUs(request).url(parsed).build();
         Response answered;
-        try {
-            answered = chain.proceed(leavingUs(request).url(parsed).build());
-        } catch (IOException ex) {
-            Logger.printDebug(() -> "imgur: " + instance + " could not be reached: " + ex);
-            RimgoInstances.failed(instance);
-            return null;
+        if (RimgoRoute.carrying(instance)) {
+            // This instance has a certificate attached, which Sync's own client knows nothing
+            // about, so the request is carried on a client that can offer it.
+            answered = RimgoRoute.carry(instance, asking);
+            if (answered == null) {
+                RimgoInstances.failed(instance);
+                return null;
+            }
+            answered = answered.newBuilder().request(request).build();
+        } else {
+            try {
+                answered = chain.proceed(asking);
+            } catch (IOException ex) {
+                Logger.printDebug(() -> "imgur: " + instance + " could not be reached: " + ex);
+                RimgoInstances.failed(instance);
+                return null;
+            }
         }
         if (isWhatWasAskedFor(answered, kind)) {
             Logger.printDebug(() -> "imgur: " + instance + " served " + url.encodedPath());
@@ -195,8 +207,11 @@ public class ImgurUnblock extends PatchedditInterceptor {
             said("Rimgo (" + hostOf(instance) + ")");
             return answered;
         }
-        Logger.printDebug(() -> "imgur: " + instance + " answered " + answered.code()
-                + " " + answered.header("Content-Type", "") + " for " + url.encodedPath());
+        // Held apart from the variable above, which is reassigned where the certificate
+        // client carried the request and so cannot be spoken about from inside a log message.
+        final Response said = answered;
+        Logger.printDebug(() -> "imgur: " + instance + " answered " + said.code()
+                + " " + said.header("Content-Type", "") + " for " + url.encodedPath());
         answered.close();
         RimgoInstances.failed(instance);
         return null;

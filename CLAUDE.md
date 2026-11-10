@@ -485,6 +485,33 @@ line by line instead.
 reply to inspect. A route that reads the reply to decide whether to step in therefore has to
 catch `IOException` as well, or it will fail to do anything in exactly the case it exists for.
 
+**A client certificate is per host, never per service.** The server decides when to ask for
+one, and the certificate names whoever holds it, so a certificate kept for "Rimgo" would be
+handed over by whichever instance asked for one — including an instance asking precisely in
+order to find out who is reading. Each instance is offered the certificate attached to it and
+nothing else.
+
+**Testing the emulator's networking against the host is a trap.** `10.0.2.2` is slirp's alias
+for the host's loopback and is unreliable under load: the proxy accepts the connection, the
+guest never completes it, and the app eventually fails with `ECONNABORTED (Software caused
+connection abort)` while the proxy logs a read timeout — from the same device where
+`toybox nc 10.0.2.2 <port>` answers fine. `adb reverse` did not forward either. What works is a
+container with **no published ports**: the emulator reaches it on the docker bridge
+(`172.17.0.2`) and nothing is bound on a host interface. The same run then worked first time.
+
+**`adb shell input text` truncates at about 100 characters**, and a second call does not append
+— it inserts wherever the cursor is, so chunking interleaves the text. Anything longer than a
+password cannot be typed into the app from a script, which means a pasted certificate cannot be
+got onto the device through the test harness at all. The certificate reading is covered by
+`test/test_request_parsing.py` instead, where it is deterministic.
+
+**An ANR on this emulator is usually the host.** Every one seen here read
+`Waited 5000ms for FocusEvent`, with the skipped frames and the `Davey!` lines belonging to
+`system_server` rather than to the app, and one of them landed on Sync's own Backup screen
+before any patched screen had been opened. Check `/proc/loadavg` before believing a patch
+caused it; software rendering plus a loaded host is enough on its own, and `uiautomator dump`
+forces a main-thread traversal every time it is called.
+
 **Dead endpoints Sync still calls.** Worth knowing before diagnosing a media bug:
 
 - `api.gfycat.com` and `gfycat.com` — DNS no longer resolves at all.

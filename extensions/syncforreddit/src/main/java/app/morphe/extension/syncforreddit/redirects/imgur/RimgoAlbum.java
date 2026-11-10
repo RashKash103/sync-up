@@ -43,7 +43,7 @@ public final class RimgoAlbum {
 
         String page = instance + "/a/" + albumId;
         try {
-            String html = RimgoInstances.fetch(page, "text/html");
+            String html = RimgoInstances.fetch(page, "text/html", instance);
             List<String> media = ImgurRoutes.mediaInRimgoAlbum(html);
             if (media.isEmpty()) {
                 Logger.printInfo(() -> "rimgo: " + page + " named no media; it is "

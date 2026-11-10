@@ -333,6 +333,9 @@ public final class RimgoInstances {
             asking.setReadTimeout(READ_MS);
             asking.setInstanceFollowRedirects(true);
             asking.setRequestProperty("Accept", "image/*");
+            // Asked with whatever this instance is spoken to with, so that one behind mTLS
+            // reports what it really is rather than always failing the check.
+            RimgoRoute.offerOn(asking, instance);
 
             int said = asking.getResponseCode();
             String kind = asking.getContentType();
@@ -447,11 +450,24 @@ public final class RimgoInstances {
 
     /** @return The body of a request, read as text. Used for the list and for an album page. */
     static String fetch(String url, @Nullable String accept) throws IOException {
+        return fetch(url, accept, null);
+    }
+
+    /**
+     * @param instance Whose certificate to offer, where the thing being fetched belongs to an
+     *                 instance. Null for the published list, which is nobody's and is fetched
+     *                 with no certificate at all.
+     */
+    static String fetch(String url, @Nullable String accept, @Nullable String instance)
+            throws IOException {
         HttpURLConnection asking = (HttpURLConnection) new URL(url).openConnection();
         try {
             asking.setConnectTimeout(CONNECT_MS);
             asking.setReadTimeout(READ_MS);
             asking.setInstanceFollowRedirects(true);
+            if (instance != null) {
+                RimgoRoute.offerOn(asking, instance);
+            }
             if (accept != null) {
                 asking.setRequestProperty("Accept", accept);
             }

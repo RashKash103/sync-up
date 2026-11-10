@@ -178,8 +178,13 @@ internal val redirectsSettingsPatch = resourcePatch(
                 <$CHECK_BOX
                     android:key="sync_up_redirect_imgur_rimgo_check"
                     android:title="Check them as the list opens"
-                    android:summary="Asks each chosen instance for a picture, so that what is working is known before one is needed"
+                    android:summary="Asks each instance for a picture, so that what is working is known before one is needed"
                     android:defaultValue="true" />
+                <$ROW
+                    android:key="sync_up_redirect_imgur_rimgo_mtls_note"
+                    android:title="Instances behind mTLS"
+                    android:summary="Long-press an instance to attach a client certificate. It is offered to that instance alone: a certificate names whoever holds it, and the server decides when to ask for one."
+                    android:selectable="false" />
             </PreferenceCategory>
             """,
         )
