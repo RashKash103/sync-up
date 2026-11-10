@@ -78,6 +78,25 @@ public final class RedirectSettings {
     /** Whether a client certificate is sent to the proxy. */
     public static final String PROXY_MTLS = "sync_up_redirect_imgur_proxy_mtls";
 
+    /**
+     * Which Rimgo instances had a certificate attached, one to a line, and whether the proxy
+     * did.
+     *
+     * <p><b>A mark, never the thing itself.</b> The certificates are kept in a file of our own
+     * precisely so that Sync's Backup cannot write them out, and that is what makes a restored
+     * copy silently different from the one it came from: the instance list comes back, the
+     * switches come back, and the certificate that made any of it work does not. These two say
+     * no more than that there was one, which is what lets the front page of the settings say so
+     * rather than leaving the reader to work out why an instance stopped answering. They are
+     * ordinary settings and travel in a backup as everything else does.
+     */
+    public static final String RIMGO_CERTIFIED = "sync_up_redirect_imgur_rimgo_certified";
+
+    public static final String PROXY_CERTIFIED = "sync_up_redirect_imgur_proxy_certified";
+
+    /** What a mark says. Anything else, including nothing, means there was no certificate. */
+    private static final String MARKED = "1";
+
     /** What the last request was answered by, shown on the screen and kept nowhere. */
     public static final String LAST_USED = "sync_up_redirect_imgur_last";
 
@@ -176,11 +195,70 @@ public final class RedirectSettings {
     public static void setCertificateFor(String instance, String pasted, String password) {
         putPrivately(RIMGO_CERTIFICATE + instance, pasted);
         putPrivately(RIMGO_CERTIFICATE_PASSWORD + instance, password);
+        mark(instance, true);
     }
 
     public static void clearCertificateFor(String instance) {
         putPrivately(RIMGO_CERTIFICATE + instance, "");
         putPrivately(RIMGO_CERTIFICATE_PASSWORD + instance, "");
+        mark(instance, false);
+    }
+
+    /** @return Whether a certificate was attached to this instance at some point. */
+    public static boolean wasCertified(String instance) {
+        return lines(RIMGO_CERTIFIED).contains(instance);
+    }
+
+    /**
+     * @return The instances that had a certificate and no longer have one, which is what a copy
+     *         restored from a backup looks like.
+     */
+    public static java.util.List<String> instancesMissingACertificate() {
+        java.util.List<String> missing = new java.util.ArrayList<>();
+        for (String instance : lines(RIMGO_CERTIFIED)) {
+            if (!hasCertificate(instance)) {
+                missing.add(instance);
+            }
+        }
+        return missing;
+    }
+
+    private static void mark(String instance, boolean had) {
+        java.util.LinkedHashSet<String> marked =
+                new java.util.LinkedHashSet<>(lines(RIMGO_CERTIFIED));
+        if (had ? marked.add(instance) : marked.remove(instance)) {
+            putLines(RIMGO_CERTIFIED, marked);
+        }
+    }
+
+    // endregion
+
+    // region The proxy's certificate, which is kept the same way.
+
+    public static void setTheProxyCertificate(String pasted, String password) {
+        putPrivately(PROXY_CERTIFICATE, pasted);
+        putPrivately(PROXY_CERTIFICATE_PASSWORD, password);
+        put(PROXY_CERTIFIED, MARKED);
+    }
+
+    public static void clearTheProxyCertificate() {
+        putPrivately(PROXY_CERTIFICATE, "");
+        putPrivately(PROXY_CERTIFICATE_PASSWORD, "");
+        put(PROXY_CERTIFIED, "");
+    }
+
+    public static boolean proxyWasCertified() {
+        return MARKED.equals(text(PROXY_CERTIFIED, ""));
+    }
+
+    /** @return Whether the proxy is to send a certificate and has none to send. */
+    public static boolean proxyIsMissingItsCertificate() {
+        return sendingACertificate() && !isSet(PROXY_CERTIFICATE);
+    }
+
+    /** @return Whether a proxy is turned on with no address for it to be at. */
+    public static boolean proxyIsMissingItsAddress() {
+        return usingProxy() && !isSet(PROXY_ADDRESS);
     }
 
     // endregion

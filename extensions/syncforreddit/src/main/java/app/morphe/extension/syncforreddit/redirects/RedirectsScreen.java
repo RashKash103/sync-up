@@ -537,73 +537,11 @@ public abstract class RedirectsScreen extends pa.d {
                         draw.run();
                         return;
                     }
-                    askForACertificate(context, instance, draw);
+                    CertificateDialog.ask(
+                            context, CertificateDialog.forInstance(instance), draw);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
-    }
-
-    /**
-     * The certificate for one instance, pasted in.
-     *
-     * <p>Said plainly on the dialog, because it is the whole reason this is per instance: a
-     * server decides when to ask for a client certificate, and the certificate names whoever
-     * holds it. One kept for Rimgo in general would be handed to whichever instance asked.
-     */
-    private void askForACertificate(Context context, String instance, Runnable draw) {
-        int edge = Math.round(AN_EDGE * context.getResources().getDisplayMetrics().density);
-
-        LinearLayout box = new LinearLayout(context);
-        box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(edge, edge / 2, edge, 0);
-
-        TextView why = new TextView(context);
-        why.setText("Offered to " + hostOf(instance) + " and to no other instance.");
-        why.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-        why.setTextColor(Color.GRAY);
-
-        EditText pasted = new EditText(context);
-        pasted.setHint("A PKCS#12 as base64, or the PEM blocks");
-        pasted.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-        heldToAFewLines(pasted);
-
-        EditText password = new EditText(context);
-        password.setHint("Certificate password, if it has one");
-        password.setInputType(InputType.TYPE_CLASS_TEXT
-                | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        password.setSingleLine(true);
-
-        TextView note = new TextView(context);
-        note.setText("Choose a file, or paste it in.");
-        note.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-        note.setTextColor(Color.GRAY);
-
-        box.addView(why);
-        box.addView(note);
-        box.addView(chooseAFile(context, pasted, note));
-        box.addView(pasted);
-        box.addView(password);
-
-        ScrollView scrolling = new ScrollView(context);
-        scrolling.addView(box);
-
-        AlertDialog.Builder asking = new AlertDialog.Builder(context)
-                .setTitle("Client certificate")
-                .setView(scrolling)
-                .setPositiveButton("Save", (dialog, which) -> {
-                    RedirectSettings.setCertificateFor(instance,
-                            pasted.getText().toString().trim(),
-                            password.getText().toString());
-                    draw.run();
-                })
-                .setNegativeButton("Cancel", null);
-        if (RedirectSettings.hasCertificate(instance)) {
-            asking.setNeutralButton("Clear", (dialog, which) -> {
-                RedirectSettings.clearCertificateFor(instance);
-                draw.run();
-            });
-        }
-        asking.show();
     }
 
     private void addAnInstance(Preference row) {
@@ -648,10 +586,7 @@ public abstract class RedirectsScreen extends pa.d {
                 false, false);
         typedInto(RedirectSettings.PROXY_PASSWORD, "Password", "Leave empty if there is none",
                 false, true);
-        typedInto(RedirectSettings.PROXY_CERTIFICATE, "Client certificate",
-                "A PKCS#12 as base64, or the PEM blocks", true, false);
-        typedInto(RedirectSettings.PROXY_CERTIFICATE_PASSWORD, "Certificate password",
-                "What the certificate was written with", false, true);
+        theProxyCertificate();
 
         Preference tryIt = y(TRY_THE_PROXY);
         if (tryIt != null) {
@@ -668,6 +603,34 @@ public abstract class RedirectsScreen extends pa.d {
         }
     }
 
+    /**
+     * The proxy's certificate, asked for by the same dialog as an instance's: one row rather
+     * than a row for the certificate and another for its password, because the two are of no
+     * use apart and a dialog that asks for both is one thing to get right.
+     */
+    private void theProxyCertificate() {
+        Preference row = y(RedirectSettings.PROXY_CERTIFICATE);
+        if (row == null) {
+            return;
+        }
+        sayAboutTheProxyCertificate(row);
+        row.A0(tapped -> {
+            CertificateDialog.ask(tapped.k(), CertificateDialog.forTheProxy(),
+                    () -> sayAboutTheProxyCertificate(tapped));
+            return true;
+        });
+    }
+
+    private static void sayAboutTheProxyCertificate(Preference row) {
+        if (RedirectSettings.isSet(RedirectSettings.PROXY_CERTIFICATE)) {
+            row.D0("Set");
+        } else if (RedirectSettings.proxyWasCertified()) {
+            row.D0("Set up, but not here: a backup does not carry it");
+        } else {
+            row.D0("Not set");
+        }
+    }
+
     private void showProxyRows() {
         boolean on = SyncUpSettings.flag(RedirectSettings.PROXY, false);
         enable(new String[]{
@@ -678,10 +641,8 @@ public abstract class RedirectsScreen extends pa.d {
                 RedirectSettings.PROXY_MTLS,
                 TRY_THE_PROXY,
         }, on);
-        enable(new String[]{
-                RedirectSettings.PROXY_CERTIFICATE,
-                RedirectSettings.PROXY_CERTIFICATE_PASSWORD,
-        }, on && RedirectSettings.sendingACertificate());
+        enable(new String[]{RedirectSettings.PROXY_CERTIFICATE},
+                on && RedirectSettings.sendingACertificate());
     }
 
     // endregion

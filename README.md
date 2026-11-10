@@ -264,6 +264,16 @@ decision rather than a default.
   nothing else, which is as much as Sync can read, since it asks for no storage permission at
   all.
 
+  **Nothing that identifies you is written into a backup.** The certificates, the proxy's
+  address and what it is logged into with live in a file of their own that Sync's Backup has
+  never heard of. That is deliberate — a backup is handed to whoever is helping and copied
+  between devices — and it means a restored copy comes back set up to use a certificate it does
+  not have. So a mark that there *was* one travels, and nothing else: the front page of the
+  settings then says which instance is missing its certificate, and tapping that takes you
+  straight to the dialog that attaches it. An alert can be dismissed just once or for good, and
+  anything dismissed for good is listed under *Dismissed alerts* on the same screen and can be
+  brought back.
+
   **Where an album still cannot be opened.** Imgur's album page, the embed of it and Imgur's
   own API are refused together in a refused region, and an album's contents cannot be worked
   out from its id — so with the DuckDuckGo proxy alone there is nothing to read them from, and

@@ -10,6 +10,7 @@ import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.shar
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.http.interceptHttpRequests
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.settings.answerTheScreenLookupWith
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.settings.fadeDisabledRowsPatch
+import app.morphe.patches.reddit.customclients.sync.syncforreddit.settings.settingsAlertsPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 
 private const val REDIRECTS = "Lapp/morphe/extension/syncforreddit/redirects/"
@@ -51,6 +52,8 @@ private val reachedFromTheApp = listOf(
     SCREEN_CLASS_DESCRIPTOR,
     UNBLOCK_CLASS_DESCRIPTOR,
     PICK_CLASS_DESCRIPTOR,
+    "${REDIRECTS}CertificateDialog;",
+    "${REDIRECTS}RedirectAlerts;",
     "${REDIRECTS}RedirectsScreen\$Front;",
     "${REDIRECTS}RedirectsScreen\$Imgur;",
     "${REDIRECTS}RedirectsScreen\$DuckDuckGo;",
@@ -71,6 +74,11 @@ val redirectsPatch = bytecodePatch(
         interceptHttpRequests,
         redirectsSettingsPatch,
         fadeDisabledRowsPatch,
+        // A certificate is deliberately kept out of Sync's Backup, so a restored copy comes
+        // back set up to use one and without it. That is only sayable where there is somewhere
+        // to say it; the alerts patch has no name of its own and is applied once, however many
+        // patches ask for it.
+        settingsAlertsPatch,
     )
 
     compatibleWith(*SyncForRedditCompatible)

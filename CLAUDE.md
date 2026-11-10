@@ -231,6 +231,14 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   reading `p1` silently handed the extension the wrong object, and because it was still a
   `View` subclass nothing complained. Disassemble the *patched* APK and read the registers at
   the injection site rather than trusting `p1` to mean what it says.
+- **`SyncPreference.S` reuses the holder's register for its own view two instructions from the
+  end.** Injecting before the final return and passing `p1` therefore hands a `View` where an
+  `androidx.preference.h` is declared, and the class fails to verify the moment the settings
+  open — `VerifyError: register v5 has type Reference: android.view.View but expected
+  Reference: androidx.preference.h`, which takes the app down rather than the screen. Reading
+  the disassembly is not enough here: the last few instructions *do* use that register as the
+  holder, through an `iget-object v5, v5, ...itemView` that quietly redefines it. Inject at the
+  start, and `post()` anything that has to happen after the row has drawn.
 - **Do not add a `new-instance`** to a method another patch fingerprints by counting them. The
   Redgifs fingerprint counts `NEW_INSTANCE == 1` in the method it hooks.
 - **Injecting before the final `return` does not cover every path.** `Loc/b;->F` jumps from the
@@ -259,7 +267,12 @@ Errors found the hard way, all of which compiled cleanly and failed at patch or 
   body is where this comes up, since writing one to a sink is the documented way. Read the bytes
   off the body object instead: what `RequestBody.create(MediaType, byte[])` returns holds them
   in a field, found by its type rather than its name, since the names do not survive R8.
-- **Most of the app's drawables are not there any more.** R8's resource shrinker left every
+- **A values file holding nothing but `<item type="id">` is refused when the resource table is
+written back**, as `XmlEncodeException` naming the file and the line, and the patcher then
+rebuilds the whole table as a fallback. Declare an id where it is used — `@+id/name` in the
+layout — which costs no file at all and is what the id is for.
+
+**Most of the app's drawables are not there any more.** R8's resource shrinker left every
   unused one's name and id in place and replaced the drawing with `<x/>`, a stub whose element
   names a class that was shrunk away too. A row given one patches perfectly and takes its whole
   settings screen down the moment it is opened, with
@@ -474,6 +487,19 @@ not assumed:
   interceptor cannot change the proxy of the client it sits on, so the request is carried out on
   a client of our own and the reply handed back to the chain.
 
+**Of the icons an alert would want, only some survived.** `outline_report_24`,
+`outline_info_24` and `outline_close_24` are real vectors carrying `android:tint="?attr/..."`;
+`outline_warning_24`, `outline_error_24` and every `chevron`/`arrow_forward`/`navigate_next` of
+that family are stubs. The one real chevron, `material_ic_keyboard_arrow_right_black_24dp`,
+has a literal black fill and so disappears in the dark theme — tint it at runtime with the
+colour the row's own title has just been given, which is what the app sets from the theme.
+
+**An instance answers differently depending on who is asking.** Several Rimgo instances hand a
+browser-like `User-Agent` a 7 KB error page and hand `Dalvik/2.1.0` the real one — measured on
+the same address a second apart. A survey run from a desktop with curl therefore reports
+instances as broken that work perfectly in the app, which is how the first count of them came
+out far too low.
+
 **Being on the published instance list says almost nothing about working.** Asked for the same
 picture, the 23 instances LibRedirect publishes answered nine different ways: nine served it,
 several answered 429 because Imgur rate limits them, some 403, 404 or 500, four did not resolve
@@ -489,6 +515,11 @@ in the XML is replaced and `findPreference("my_key")` finds nothing. Look one up
 text instead. It is usable from a screen of ours, though: what it does by default is cast the
 activity to `PreferencesActivity` and call its screen lookup, and our screens are in that
 activity.
+
+The library's own members, established the same way and used by the alerts: `G0` is setTitle,
+`E` getTitle, `H0` setVisible (final) and `L` isVisible, `s0` setIcon by id, `t0` by drawable,
+`C0` setSelectable, `B0` setOrder, `u` getParent; on `PreferenceGroup`, `P0` is addPreference,
+`X0` removePreference, `Q0` findPreference, `T0` getPreference and `U0` getPreferenceCount.
 
 Looking one up by a key of our own does not fail loudly — `y(key)` simply answers nothing, and
 whatever was to be done to the row is quietly not done. That is how the three route rows went on
