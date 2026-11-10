@@ -170,13 +170,19 @@ public abstract class RedirectsScreen extends pa.d {
 
     // region The rows that are not settings of their own, named here and in the patch.
 
-    static final String TO_IMGUR = "sync_up_redirect_imgur_screen";
-
-    static final String TO_DUCKDUCKGO = "sync_up_redirect_imgur_ddg_screen";
-
-    static final String TO_RIMGO = "sync_up_redirect_imgur_rimgo_screen";
-
-    static final String TO_PROXY = "sync_up_redirect_imgur_proxy_screen";
+    /**
+     * A row that leads to a screen is keyed by that screen's id, as text.
+     *
+     * <p>Not by anything we could choose: Sync's own row for a screen reads the id out of the
+     * XML and calls {@code setKey(Integer.toString(it))} in its constructor, so whatever
+     * {@code android:key} the file gives it is thrown away before anything can look it up. A
+     * row asked for by a name of ours is simply not found, and turning off a row that was never
+     * found turns nothing off — which is why these three went on answering a tap with the whole
+     * thing switched off.
+     */
+    private static String rowFor(int screen) {
+        return Integer.toString(screen);
+    }
 
     static final String INSTANCES = "sync_up_redirect_imgur_rimgo_instances";
 
@@ -240,7 +246,7 @@ public abstract class RedirectsScreen extends pa.d {
     }
 
     private void fadeWhatIsOff() {
-        enable(new String[]{TO_IMGUR}, SyncUpSettings.flag(RedirectSettings.ON, true));
+        enable(new String[]{rowFor(IMGUR)}, SyncUpSettings.flag(RedirectSettings.ON, true));
     }
 
     // endregion
@@ -258,9 +264,9 @@ public abstract class RedirectsScreen extends pa.d {
         boolean on = SyncUpSettings.flag(RedirectSettings.IMGUR, false);
         enable(new String[]{
                 RedirectSettings.IMGUR_WHEN,
-                TO_DUCKDUCKGO,
-                TO_RIMGO,
-                TO_PROXY,
+                rowFor(DUCKDUCKGO),
+                rowFor(RIMGO),
+                rowFor(PROXY),
                 RedirectSettings.LAST_USED,
         }, on);
     }
