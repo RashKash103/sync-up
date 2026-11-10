@@ -229,9 +229,10 @@ public abstract class RedirectsScreen extends pa.d {
                 case PROXY:
                     proxy();
                     break;
+                case DUCKDUCKGO:
+                    duckDuckGo();
+                    break;
                 default:
-                    // The DuckDuckGo screen is a switch and a word of explanation, both of
-                    // which the app draws on its own.
                     break;
             }
         } catch (Exception ex) {
@@ -296,6 +297,20 @@ public abstract class RedirectsScreen extends pa.d {
 
     // endregion
 
+    // region The DuckDuckGo proxy.
+
+    private void duckDuckGo() {
+        follow(RedirectSettings.DDG, this::showDuckDuckGoRows);
+        showDuckDuckGoRows();
+    }
+
+    private void showDuckDuckGoRows() {
+        enable(new String[]{RedirectSettings.DDG_SHARE},
+                SyncUpSettings.flag(RedirectSettings.DDG, true));
+    }
+
+    // endregion
+
     // region Rimgo.
 
     private void rimgo() {
@@ -347,6 +362,7 @@ public abstract class RedirectsScreen extends pa.d {
     private void showRimgoRows() {
         boolean on = SyncUpSettings.flag(RedirectSettings.RIMGO, false);
         enable(new String[]{
+                RedirectSettings.RIMGO_SHARE,
                 INSTANCES,
                 RedirectSettings.RIMGO_PUBLISHED,
                 RedirectSettings.RIMGO_CHECK,

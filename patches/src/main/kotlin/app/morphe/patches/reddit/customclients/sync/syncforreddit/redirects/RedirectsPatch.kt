@@ -21,6 +21,60 @@ private const val SCREEN_CLASS_DESCRIPTOR = "${REDIRECTS}RedirectsScreen;"
 
 private const val UNBLOCK_CLASS_DESCRIPTOR = "${REDIRECTS}imgur/ImgurUnblock;"
 
+private const val SHARE_CLASS_DESCRIPTOR = "${REDIRECTS}imgur/ImgurShare;"
+
+private const val INSTEAD_OF_STRING =
+    "insteadOf(Ljava/lang/String;)Ljava/lang/String;"
+
+private const val INSTEAD_OF_TEXT =
+    "insteadOf(Ljava/lang/CharSequence;)Ljava/lang/CharSequence;"
+
+/**
+ * Where the app hands a piece of text out — to another app, or to the clipboard.
+ *
+ * <p>Found by what each one says rather than by its name, which the minifier has taken: the
+ * share helper is the one that builds a SEND intent and rebuilds a v.redd.it address, and the
+ * three clipboard helpers are told apart by whether they announce a URL or text. Each string
+ * named here is the whole of a string in the method it belongs to.
+ */
+private val handsOutAnAddress = listOf(
+    // share(Context, subject, url) — the link, with the url last.
+    HandsOut(
+        listOf("android.intent.action.SEND", "v.redd.it"),
+        listOf("Landroid/content/Context;", "Ljava/lang/String;", "Ljava/lang/String;"),
+        parameter = 2,
+        text = false,
+    ),
+    // copyUrl(Context, url).
+    HandsOut(
+        listOf("reddit sync link", "URL copied to clipboard"),
+        listOf("Landroid/content/Context;", "Ljava/lang/String;"),
+        parameter = 1,
+        text = false,
+    ),
+    // copyText(Context, text, saySo).
+    HandsOut(
+        listOf("reddit sync link", "Text copied to clipboard"),
+        listOf("Landroid/content/Context;", "Ljava/lang/CharSequence;", "Z"),
+        parameter = 1,
+        text = true,
+    ),
+    // copyText(text, Context).
+    HandsOut(
+        listOf("reddit sync link", "Text copied to clipboard"),
+        listOf("Ljava/lang/CharSequence;", "Landroid/content/Context;"),
+        parameter = 0,
+        text = true,
+    ),
+)
+
+private class HandsOut(
+    val says: List<String>,
+    val parameters: List<String>,
+    val parameter: Int,
+    val text: Boolean,
+)
+
 private const val PICK_CLASS_DESCRIPTOR = "${REDIRECTS}PickAFile;"
 
 private const val WHAT_CAME_BACK_METHOD = "whatCameBack(IILandroid/content/Intent;)V"
@@ -52,6 +106,7 @@ private val reachedFromTheApp = listOf(
     SCREEN_CLASS_DESCRIPTOR,
     UNBLOCK_CLASS_DESCRIPTOR,
     PICK_CLASS_DESCRIPTOR,
+    SHARE_CLASS_DESCRIPTOR,
     "${REDIRECTS}CertificateDialog;",
     "${REDIRECTS}RedirectAlerts;",
     "${REDIRECTS}RedirectsScreen\$Front;",
@@ -95,9 +150,31 @@ val redirectsPatch = bytecodePatch(
         // Nothing here does anything until it is turned on in the settings; this only says the
         // patch was applied, which is what keeps every route passing requests straight through
         // in a copy that was patched without it.
-        listOf(SETTINGS_CLASS_DESCRIPTOR, UNBLOCK_CLASS_DESCRIPTOR).forEach { descriptor ->
+        listOf(
+            SETTINGS_CLASS_DESCRIPTOR,
+            UNBLOCK_CLASS_DESCRIPTOR,
+            SHARE_CLASS_DESCRIPTOR,
+        ).forEach { descriptor ->
             Fingerprint(definingClass = descriptor, name = "isPatchIncluded")
                 .method.returnEarly(true)
+        }
+
+        // What is handed out when something is shared or copied. The address itself is read
+        // and put back, so a string that is not wholly an Imgur address — a comment, a title,
+        // a post's text — comes back exactly as it went in.
+        handsOutAnAddress.forEach { handing ->
+            val descriptor = if (handing.text) INSTEAD_OF_TEXT else INSTEAD_OF_STRING
+            Fingerprint(
+                parameters = handing.parameters,
+                returnType = "V",
+                strings = handing.says,
+            ).method.addInstructions(
+                0,
+                """
+                invoke-static       { p${handing.parameter} }, $SHARE_CLASS_DESCRIPTOR->$descriptor
+                move-result-object  p${handing.parameter}
+                """,
+            )
         }
 
         answerTheScreenLookupWith(SCREEN_CLASS_DESCRIPTOR)

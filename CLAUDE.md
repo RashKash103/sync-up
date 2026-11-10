@@ -397,6 +397,18 @@ a dialog posted from there is gone before it can be read, while having already c
 **Note that `android:dependency` is not an answer here.** It only keys off a checkbox, so a row
 that should follow a list preference's value has to be turned on and off in code.
 
+**Sharing and copying both go through `RedditHelper` (`Ld7/f;`)**, which is where an address
+handed out can be changed. `u(Context, subject, url)` builds the SEND intent for a link — it is
+the one that rebuilds a `v.redd.it` address, which is how to tell it from `t`, the one that
+shares arbitrary text — and `a`, `b` and `c` put something on the clipboard, told apart by
+whether they announce *URL copied to clipboard* or *Text copied to clipboard*. All five names
+are the minifier's, so fingerprint them on those strings rather than on the names.
+
+Anything hooked there runs on the thread that drew the menu, so it must not touch the network:
+asking a Rimgo instance whether it is answering from one of these is a `NetworkOnMainThread`
+away from taking the app down. Say what is already known instead. And change only a string that
+is *wholly* an address — `a` and `b` carry comment text as readily as links.
+
 **Menus are layouts, not lists.** The post overflow sheet is
 `res/layout/dialog_bottom_post_more.xml`, a `LinearLayout` of `MaterialRow` views dispatched by
 `view.getId()` in `onItemClicked`. Adding an entry the way Boost does is not possible; rows are

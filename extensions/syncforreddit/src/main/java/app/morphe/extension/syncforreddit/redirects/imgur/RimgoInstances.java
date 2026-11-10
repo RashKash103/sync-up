@@ -417,6 +417,26 @@ public final class RimgoInstances {
         return null;
     }
 
+    /**
+     * @return The instance to name without asking anything, or null where none is chosen.
+     *
+     * <p>{@link #inUse} checks whether an instance is answering, which is a network call, and
+     * there are places this is wanted from that are the thread that draws — sharing an address
+     * is one. Android answers a network call on that thread by taking the app down, so this
+     * says what is already known and nothing more: the one that last worked, where it is still
+     * chosen, and otherwise the first of the chosen ones.
+     */
+    @Nullable
+    public static String inUseWithoutAsking() {
+        List<String> picked = chosen();
+        if (picked.isEmpty()) {
+            return null;
+        }
+        String remembered = trusted == null
+                ? RedirectSettings.text(LAST_GOOD, "") : trusted;
+        return picked.contains(remembered) ? remembered : picked.get(0);
+    }
+
     /** Called where an instance has just served something, which is the best news there is. */
     public static void worked(String instance) {
         health.put(instance, Health.WORKING);

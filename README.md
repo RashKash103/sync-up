@@ -264,6 +264,16 @@ decision rather than a default.
   nothing else, which is as much as Sync can read, since it asks for no storage permission at
   all.
 
+  **Sharing and copying can hand out the route's address instead of Imgur's**, so that what
+  you send works for whoever you send it to. Each route that has an address of its own has a
+  switch for it, both off until asked for, and each only speaks for what it can really serve:
+  with the DuckDuckGo proxy alone a picture goes out as the proxy's address while an album
+  goes out as Imgur's, since handing somebody a proxy address for an album would hand them a
+  broken picture. The proxy route has no switch here and cannot have one — it carries the
+  request rather than changing the address. Only a piece of text that is *nothing but* an
+  Imgur address is ever changed: a comment, a title or a sentence that mentions a link is
+  passed on exactly as it was.
+
   **Nothing that identifies you is written into a backup.** The certificates, the proxy's
   address and what it is logged into with live in a file of their own that Sync's Backup has
   never heard of. That is deliberate — a backup is handed to whoever is helping and copied

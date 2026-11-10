@@ -22,6 +22,7 @@ public final class ImgurRoutesTest {
         whatEachAddressIs();
         whatDuckDuckGoIsOffered();
         whatRimgoIsAsked();
+        whatIsHandedOut();
         readingAnAlbum();
 
         System.out.println("Passed " + checks + " Imgur route checks.");
@@ -215,6 +216,73 @@ public final class ImgurRoutesTest {
         List<String> album = ImgurRoutes.mediaInRimgoAlbum(withComments);
         check(album.size() == 1 && album.get(0).equals("aaa111.jpeg"),
                 "Took a picture posted in the comments for part of the album: " + album);
+    }
+
+    private static void whatIsHandedOut() {
+        String instance = "https://rimgo.example.com";
+        String picture = "https://i.imgur.com/abc12345.png";
+        String album = "https://imgur.com/a/abc12345";
+        String video = "https://i.imgur.com/abc12345.mp4";
+
+        // Nothing is on: what was there is what is handed out.
+        check(ImgurRoutes.handedOut(picture, false, false, instance) == null,
+                "Changed an address with no route asked to");
+
+        // DuckDuckGo serves a picture and nothing else, so with it alone an album and a video
+        // are handed out as Imgur's own addresses. This is the whole of the rule.
+        String byProxy = ImgurRoutes.handedOut(picture, true, false, instance);
+        check(byProxy != null && byProxy.startsWith("https://external-content.duckduckgo.com/"),
+                "Did not hand out the proxy's address for a picture: " + byProxy);
+        check(ImgurRoutes.handedOut(album, true, false, instance) == null,
+                "Handed out a DuckDuckGo address for an album, which it cannot serve");
+        check(ImgurRoutes.handedOut(video, true, false, instance) == null,
+                "Handed out a DuckDuckGo address for a video, which it cannot serve");
+
+        // An instance serves all three.
+        check("https://rimgo.example.com/abc12345.png".equals(
+                ImgurRoutes.handedOut(picture, false, true, instance)), "Not the instance");
+        check("https://rimgo.example.com/a/abc12345".equals(
+                ImgurRoutes.handedOut(album, false, true, instance)), "Not the album");
+        check("https://rimgo.example.com/abc12345.mp4".equals(
+                ImgurRoutes.handedOut(video, false, true, instance)), "Not the video");
+
+        // With both on, a picture goes out as the proxy's, which is where it came from, and
+        // an album falls through to the instance.
+        check(ImgurRoutes.handedOut(picture, true, true, instance)
+                .startsWith("https://external-content.duckduckgo.com/"), "Not the proxy's");
+        check("https://rimgo.example.com/a/abc12345".equals(
+                ImgurRoutes.handedOut(album, true, true, instance)), "Not the instance's album");
+
+        // An instance that is asked for and not there leaves the address alone.
+        check(ImgurRoutes.handedOut(album, false, true, null) == null, "Invented an instance");
+        check(ImgurRoutes.handedOut(album, false, true, "") == null, "Invented an instance");
+
+        // Anything that is not exactly one Imgur address is left exactly as it is.
+        check(ImgurRoutes.handedOut("Look at " + picture, true, true, instance) == null,
+                "Rewrote a sentence that mentions an address");
+        check(ImgurRoutes.handedOut(picture + " is good", true, true, instance) == null,
+                "Rewrote a sentence that starts with an address");
+        check(ImgurRoutes.handedOut("https://example.com/a.png", true, true, instance) == null,
+                "Rewrote somebody else's address");
+        check(ImgurRoutes.handedOut("https://i.stack.imgur.com/a.png", true, true, instance)
+                        == null,
+                "Rewrote Stack Overflow's picture");
+        check(ImgurRoutes.handedOut("https://api.imgur.com/3/image", true, true, instance)
+                        == null,
+                "Rewrote the API, which no address can stand in for");
+        check(ImgurRoutes.handedOut("imgur.com/a/abc", true, true, instance) == null,
+                "Rewrote something with no scheme");
+        check(ImgurRoutes.handedOut(null, true, true, instance) == null, "Invented an address");
+        // A name in front of the host is how a link is disguised, and is not one of these.
+        check(ImgurRoutes.handedOut("https://imgur.com@evil.example/a/abc", true, true, instance)
+                        == null,
+                "Took an address that only looks like Imgur's for Imgur's");
+
+        check("i.imgur.com".equals(ImgurRoutes.hostIn(picture)), "Did not read the host");
+        check("/a/abc12345".equals(ImgurRoutes.pathIn(album)), "Did not read the path");
+        check("".equals(ImgurRoutes.pathIn("https://imgur.com")), "Invented a path");
+        check("/abc.png".equals(ImgurRoutes.pathIn("https://i.imgur.com/abc.png?w=1")),
+                "Took the query for part of the path");
     }
 
     private static void check(boolean passed, String failure) {

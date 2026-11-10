@@ -50,7 +50,19 @@ public final class RedirectSettings {
 
     public static final String DDG = "sync_up_redirect_imgur_ddg";
 
+    /**
+     * Whether an address handed out — shared or copied — is the route's rather than Imgur's.
+     *
+     * <p>One for each route that has an address of its own to give. Off until it is asked for:
+     * what the app fetches is its own business, and what is sent to somebody else is theirs.
+     * There is none for the proxy, which carries the request rather than changing the address
+     * and so has nothing else to hand out.
+     */
+    public static final String DDG_SHARE = "sync_up_redirect_imgur_ddg_share";
+
     public static final String RIMGO = "sync_up_redirect_imgur_rimgo";
+
+    public static final String RIMGO_SHARE = "sync_up_redirect_imgur_rimgo_share";
 
     /** The instances asked, one to a line. Public addresses; nothing to keep back. */
     public static final String RIMGO_CHOSEN = "sync_up_redirect_imgur_rimgo_chosen";
@@ -162,6 +174,14 @@ public final class RedirectSettings {
 
     public static boolean usingRimgo() {
         return SyncUpSettings.flag(RIMGO, false);
+    }
+
+    public static boolean sharingThroughDuckDuckGo() {
+        return SyncUpSettings.flag(DDG_SHARE, false);
+    }
+
+    public static boolean sharingThroughRimgo() {
+        return SyncUpSettings.flag(RIMGO_SHARE, false);
     }
 
     public static boolean usingProxy() {

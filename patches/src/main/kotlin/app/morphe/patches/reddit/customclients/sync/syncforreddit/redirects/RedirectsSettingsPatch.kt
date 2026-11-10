@@ -144,6 +144,11 @@ internal val redirectsSettingsPatch = resourcePatch(
                     android:title="Use the DuckDuckGo proxy"
                     android:summary="Fetches a picture through DuckDuckGo, which is already fetching pictures for its own image search. Nothing to set up and no third party to choose, so it is tried first."
                     android:defaultValue="true" />
+                <$CHECK_BOX
+                    android:key="sync_up_redirect_imgur_ddg_share"
+                    android:title="Share and copy through the proxy"
+                    android:summary="Hands out the proxy's address for a picture instead of Imgur's, so that what you send works where Imgur is refused. Only for a picture — an album or a video is shared as the Imgur address, since the proxy cannot serve one."
+                    android:defaultValue="false" />
                 <$ROW
                     android:key="sync_up_redirect_imgur_ddg_note"
                     android:title="What it cannot do"
@@ -163,6 +168,11 @@ internal val redirectsSettingsPatch = resourcePatch(
                     android:key="sync_up_redirect_imgur_rimgo"
                     android:title="Use Rimgo"
                     android:summary="A front end for Imgur that others run. It serves pictures, videos and albums alike. Off until an instance has been chosen, since this means asking someone else's server for your pictures."
+                    android:defaultValue="false" />
+                <$CHECK_BOX
+                    android:key="sync_up_redirect_imgur_rimgo_share"
+                    android:title="Share and copy through an instance"
+                    android:summary="Hands out the instance's address instead of Imgur's, for pictures, videos and albums alike, so that what you send works where Imgur is refused."
                     android:defaultValue="false" />
             </PreferenceCategory>
             <PreferenceCategory>

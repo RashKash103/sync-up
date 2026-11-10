@@ -298,6 +298,108 @@ public final class ImgurRoutes {
         return found;
     }
 
+    /**
+     * What to hand out in place of an address when something is shared or copied.
+     *
+     * <p>Kept here with the rest of the rules, and taking what the settings say rather than
+     * reading them, so that it can be read and tested on its own.
+     *
+     * <p><b>Only what the route asked for can really answer.</b> DuckDuckGo's proxy serves one
+     * picture, so with it alone an album is handed out as the Imgur address it has always
+     * been: giving somebody a proxy address for an album would be giving them a broken
+     * picture. The proxy route has no say here at all — it carries the request rather than
+     * changing the address, so there is no other address it could offer.
+     *
+     * @param said      The whole of what is being handed out. Anything that is not exactly one
+     *                  address — a comment, a title, a sentence mentioning a link — is left
+     *                  alone, which is what the strictness of the parsing below is for.
+     * @param instance  The Rimgo instance to name, or null where none is to be.
+     * @return What to hand out instead, or null to hand out what was there.
+     */
+    public static String handedOut(String said, boolean throughDuckDuckGo, boolean throughRimgo,
+                                   String instance) {
+        if (said == null) {
+            return null;
+        }
+        String address = said.trim();
+        String host = hostIn(address);
+        if (host == null || !isImgur(host)) {
+            return null;
+        }
+
+        Kind kind = kindOf(host, pathIn(address));
+        if (kind == Kind.NONE || kind == Kind.API) {
+            return null;
+        }
+
+        // DuckDuckGo first, which is the order the app itself fetches in, so that what is
+        // handed out is where the picture actually came from. It answers null for everything
+        // it could not serve, which is how an album falls through to Rimgo or to nothing.
+        if (throughDuckDuckGo) {
+            String instead = duckDuckGo(address, kind);
+            if (instead != null) {
+                return instead;
+            }
+        }
+        if (throughRimgo && instance != null && !instance.isEmpty()) {
+            return rimgo(instance, host, pathIn(address), kind);
+        }
+        return null;
+    }
+
+    /**
+     * @return The host of an address that is nothing but an address, or null for anything
+     *         else. Strict on purpose: this decides whether a piece of text is handled at all,
+     *         and a comment that happens to open with a link is text rather than a link.
+     */
+    public static String hostIn(String address) {
+        if (address == null) {
+            return null;
+        }
+        String after;
+        if (address.startsWith("https://")) {
+            after = address.substring(8);
+        } else if (address.startsWith("http://")) {
+            after = address.substring(7);
+        } else {
+            return null;
+        }
+        for (int at = 0; at < address.length(); at++) {
+            if (Character.isWhitespace(address.charAt(at))) {
+                return null;
+            }
+        }
+        int ends = after.length();
+        for (int at = 0; at < after.length(); at++) {
+            char each = after.charAt(at);
+            if (each == '/' || each == '?' || each == '#') {
+                ends = at;
+                break;
+            }
+        }
+        String host = after.substring(0, ends);
+        // A name and password in front of the host is not something Imgur uses and is the
+        // shape a link is disguised with, so it is not taken for one of these at all.
+        if (host.isEmpty() || host.indexOf('@') >= 0) {
+            return null;
+        }
+        int colon = host.indexOf(':');
+        return colon < 0 ? host : host.substring(0, colon);
+    }
+
+    /** @return The path of such an address, or an empty string where it carries none. */
+    public static String pathIn(String address) {
+        String after = address.startsWith("https://") ? address.substring(8)
+                : address.startsWith("http://") ? address.substring(7) : address;
+        int slash = after.indexOf('/');
+        if (slash < 0) {
+            return "";
+        }
+        String rest = after.substring(slash);
+        int query = indexOfTheQuery(rest);
+        return query < 0 ? rest : rest.substring(0, query);
+    }
+
     /** @return The ordinary Imgur address for a piece of media named in an album. */
     public static String imgurLinkFor(String name) {
         return "https://i.imgur.com/" + name;
