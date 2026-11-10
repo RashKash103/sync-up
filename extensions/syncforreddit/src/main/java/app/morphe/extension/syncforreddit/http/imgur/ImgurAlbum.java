@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.syncforreddit.http.ArchiveRequests;
+import app.morphe.extension.syncforreddit.redirects.imgur.ImgurRoutes;
+import app.morphe.extension.syncforreddit.redirects.imgur.RimgoAlbum;
 
 /**
  * Recovers the contents of an Imgur album from an archived copy of its page.
@@ -119,6 +121,21 @@ final class ImgurAlbum {
         } catch (IOException ex) {
             failure = ex;
             Logger.printInfo(() -> "Could not read the embed of album " + albumId + ": " + ex);
+        }
+
+        // Where Imgur is refusing this part of the world, the page, the embed of it and Imgur's
+        // own API are all refused together, and the archive holds only the albums somebody
+        // happened to capture — which leaves anything recent unopenable. A Rimgo instance still
+        // serves the album as a page of its own, so it is asked before the archive is. Only
+        // where the reader has turned Rimgo on and chosen an instance.
+        if (RimgoAlbum.available()) {
+            List<JSONObject> throughRimgo = fromRimgo(albumId);
+            if (!throughRimgo.isEmpty()) {
+                Logger.printInfo(() -> "Read album " + albumId + " through Rimgo, "
+                        + throughRimgo.size() + " image(s)");
+                cache.put(albumId, throughRimgo);
+                return throughRimgo;
+            }
         }
 
         for (String snapshot : WaybackMachine.findSnapshots(ALBUM_URL + albumId, SNAPSHOTS_TO_TRY)) {
@@ -252,6 +269,19 @@ final class ImgurAlbum {
                     entry.optInt("height"),
                     entry.optString("title"),
                     entry.optString("description")));
+        }
+        return images;
+    }
+
+    /**
+     * The album as a Rimgo instance gives it. The page names each item by Imgur's own id, which
+     * is what the rest of the app wants, and says nothing about how large any of them is — the
+     * same as the markup fallback below, and tolerable for the same reason.
+     */
+    private static List<JSONObject> fromRimgo(String albumId) throws JSONException {
+        List<JSONObject> images = new ArrayList<>();
+        for (String name : RimgoAlbum.mediaIn(albumId)) {
+            images.add(image(ImgurRoutes.imgurLinkFor(name), 0, 0, "", ""));
         }
         return images;
     }

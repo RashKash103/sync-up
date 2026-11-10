@@ -202,6 +202,55 @@ service being asked.
   any other media and plays in Sync's own player. Whether it is drawn is governed by Sync's
   own *Inline image previews* setting.
 
+#### Redirects
+
+Imgur refuses whole regions — the United Kingdom among them — and answers a picture with a
+notice saying so. Nothing in Sync can be told to do anything about it, and it affects every
+picture in every feed, so there is nothing to work around by hand either. This reaches the same
+content another way, for Imgur only. Everything else in the app goes out exactly as it did.
+
+It is all under *Settings > Redirects*, and the switch for Imgur is **off** until it is asked
+for: this is of no use where Imgur is answering, and sending pictures through a third party is a
+decision rather than a default.
+
+- <a name="unblock-imgur"></a>**Unblock Imgur** — Three routes, tried in order, each able to
+  answer a different amount. Whichever answers first is used, and where none of them does the
+  request is made to Imgur anyway, so a failure here leaves the app no worse off than without
+  it — and leaves *Automatically undelete Imgur media* still able to find a picture that is
+  genuinely gone rather than merely refused. *What answered last* on the Imgur screen says which
+  route is actually carrying the pictures, which three routes and a fallback otherwise make
+  unknowable.
+
+  - **The DuckDuckGo proxy** is on by default and needs nothing set up: it fetches one picture
+    through the proxy DuckDuckGo already runs for its own image search, so there is no third
+    party to choose and nothing to trust beyond DuckDuckGo. It serves a still picture and
+    nothing else — asked for a video or an album page it answers with a small apology, which is
+    why it is only ever offered a picture.
+  - **Rimgo** is a front end for Imgur that other people run, and serves pictures, videos and
+    albums alike. It is opt-in, and so is each instance: the published list is the one
+    LibRedirect's own extension uses, fetched when the screen is first opened, and an instance
+    is asked nothing until it has been ticked. One of your own can be typed in and sits
+    alongside them. *Instances* ticks them and shows what each was last found to be, in green
+    or red — being on the list says very little about working, and of the twenty-three published
+    instances only nine actually served a picture when this was written. The instance that last
+    worked is used again without being asked twice; one that fails is rested for five minutes so
+    an outage costs one wait rather than one per picture. With Rimgo on, an **album** opens in a
+    refusing region too, which no other route manages: its contents are read from the instance's
+    own page for it.
+  - **A proxy** of your own carries the request itself, so it can answer anything Imgur serves,
+    its API included. HTTP or SOCKS, with a username and password if it wants them, and a client
+    certificate where it asks for one — pasted in as a PKCS#12 in base64 or as PEM blocks, since
+    Sync asks for no storage permission and so has no file on the device it could read. *Try the
+    proxy* asks Imgur for a picture through it and says what happened.
+
+  The proxy's address, what it is logged into with and the certificate are kept in a file of
+  their own rather than in Sync's settings, so that Sync's Backup cannot write them out — the
+  same as the client credentials and the account PIN. The instance list and the switches are
+  ordinary settings and travel in a backup as everything else does.
+
+  Only Imgur is affected, and only the hosts that are actually refused: Stack Overflow's images
+  live on a name ending in Imgur's and are left alone.
+
 #### Text that is missing or inert
 
 - <a name="automatically-undelete-reddit-content"></a>**Automatically undelete Reddit content** — Restores the text of removed posts and

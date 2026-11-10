@@ -431,6 +431,60 @@ dropped. Do not gate on `Content-Type` being `application/json` — the undelete
 nothing about the kind and works on every listing — and let a regex over a body tolerate `\/`,
 since JSON may escape the slashes in a URL. Writing them back unescaped is valid either way.
 
+**Imgur refuses whole regions**, the United Kingdom among them, and what arrives is a notice
+rather than the picture. Three ways round it, and they do not cover the same ground — measured,
+not assumed:
+
+- **DuckDuckGo's image proxy**, `external-content.duckduckgo.com/iu/?u=<address>`, serves one
+  still picture. Asked for an album page, a video, a dead id or an address with no scheme it
+  answers **400 with a small SVG**, and an SVG apology handed to an image decoder draws as a
+  broken picture rather than as nothing — so it is only ever offered a picture. It takes the
+  address raw or encoded, and ignores whether the ending matches the real type, which is why
+  the browser extensions append `.png` to a bare id.
+- **Rimgo** serves media at `/<name>.<ext>` and keeps Imgur's own shape for pages, so an album
+  is `/a/<id>` as HTML, each item written as `src="/<id>.<ext>"` — which is how an album is
+  recovered in a refusing region, where the page, the embed and the API are all refused and the
+  archive only holds what someone captured.
+- **A proxy** carries the request itself, so it answers anything including the API. An
+  interceptor cannot change the proxy of the client it sits on, so the request is carried out on
+  a client of our own and the reply handed back to the chain.
+
+**Being on the published instance list says almost nothing about working.** Asked for the same
+picture, the 23 instances LibRedirect publishes answered nine different ways: nine served it,
+several answered 429 because Imgur rate limits them, some 403, 404 or 500, four did not resolve
+at all — and **two answered 200 with a page of HTML**, because they route a media address to
+their post handler. So a health check must ask what the reply *is*, not merely whether it
+arrived: status 200 **and** `Content-Type: image/*`. `/removed.png` is the thing to ask for —
+Imgur's own placeholder for something taken down, tiny, permanent, and it exercises the whole
+path including whether Imgur is answering that instance at all.
+
+**`RootPreference` takes the screen's id for its own key.** It reads `preference_ref` as an
+integer and calls `setKey(Integer.toString(it))` in its constructor, so an `android:key` written
+in the XML is replaced and `findPreference("my_key")` finds nothing. Look one up by the id as
+text instead. It is usable from a screen of ours, though: what it does by default is cast the
+activity to `PreferencesActivity` and call its screen lookup, and our screens are in that
+activity.
+
+**A fragment is rebuilt from its class name**, so a settings screen has to be its own class.
+One class told which screen it is — through arguments or a field — comes back from a rotation
+not knowing, and loads the wrong screen. That is why the redirect screens are five subclasses of
+one base rather than one class with an id.
+
+**Nothing on the device can read a file you name by path.** Sync asks for no storage permission
+at all and targets Android 13, so there is no path a certificate or a key could be read from;
+pasting the text in is what is actually available, which is what the client certificate and the
+API keys both do.
+
+**`trimIndent()` is applied after interpolation**, so a template holding `${rows}` is indented
+by however far the rows are. For a written XML file that puts four spaces in front of the
+declaration, and the patch then fails while the APK is rebuilt with
+`Unexpected token (position:[1:5])` — naming neither the file nor the line. Build such a file
+line by line instead.
+
+**`chain.proceed` throws where a region is blocked at the connection**, rather than returning a
+reply to inspect. A route that reads the reply to decide whether to step in therefore has to
+catch `IOException` as well, or it will fail to do anything in exactly the case it exists for.
+
 **Dead endpoints Sync still calls.** Worth knowing before diagnosing a media bug:
 
 - `api.gfycat.com` and `gfycat.com` — DNS no longer resolves at all.

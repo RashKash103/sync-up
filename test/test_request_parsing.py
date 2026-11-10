@@ -175,8 +175,10 @@ def main():
         sync / "app/morphe/extension/syncforreddit/http/posts/FixPostLookupPatch.java",
         sync / "app/morphe/extension/syncforreddit/http/comments/FixMoreCommentsPatch.java",
         sync / "app/morphe/extension/syncforreddit/http/imgur/ImgurIds.java",
+        sync / "app/morphe/extension/syncforreddit/redirects/imgur/ImgurRoutes.java",
         tests / "RequestParsingTest.java",
         tests / "ImgurIdsTest.java",
+        tests / "ImgurRoutesTest.java",
     ]
     for source in sources:
         if not source.is_file():
@@ -193,7 +195,7 @@ def main():
             sources.append(path)
         subprocess.run([tool("javac"), "--release", "11", "-nowarn",
                         "-d", str(classes), *map(str, sources)], check=True)
-        for name in ("RequestParsingTest", "ImgurIdsTest"):
+        for name in ("RequestParsingTest", "ImgurIdsTest", "ImgurRoutesTest"):
             subprocess.run([tool("java"), "-cp", str(classes),
                             "app.morphe.extension.syncforreddit.http." + name], check=True)
 
