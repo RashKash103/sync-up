@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.11.0-dev.4](https://github.com/RashKash103/sync-up/releases/tag/v1.11.0-dev.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;35 patches total
+> **[v1.11.0-dev.5](https://github.com/RashKash103/sync-up/releases/tag/v1.11.0-dev.5)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;36 patches total
 <details open>
-<summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;34 patches</summary>
+<summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;35 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -63,6 +63,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Gestures for the video player](#gestures-for-the-video-player) | Double tap a video or GIF to play or pause it rather than zoom, drag sideways to seek, and drag up or down after a double tap for volume. |  |
 | [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps the formatting and links in the body shown under a post, which Sync otherwise discards. |  |
 | [Keep transparency in a picture](#keep-transparency-in-a-picture) | Draws the transparent parts of a picture opened in the viewer as the background behind it rather than as white. |  |
+| [Keep your place in a feed](#keep-your-place-in-a-feed) | Returns a feed to the post you were on rather than to the top, where posts have been cleared out of the cache while you were reading. |  |
 | [Load threads whose text contains a dollar sign](#load-threads-whose-text-contains-a-dollar-sign) | Stops a thread failing to load when the text in it contains a dollar sign. |  |
 | [Lock an account with a PIN](#lock-an-account-with-a-pin) | Adds a PIN to the Security settings that is asked for when an account is opened and, if you like, when the app is opened, beside or instead of Sync's fingerprint lock. |  |
 | [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Draws a bare address in a post's body as a link. |  |

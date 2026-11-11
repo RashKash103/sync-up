@@ -1,3 +1,9 @@
+## [1.11.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.4...v1.11.0-dev.5) (2026-11-11)
+
+### ✨ New Features
+
+* Keep your place in a feed when cached posts are swept away ([3108307](https://github.com/RashKash103/sync-up/commit/310830749e789daffb1fda6ed3ac2d45e6e9ba92))
+
 ## [1.11.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.3...v1.11.0-dev.4) (2026-11-11)
 
 ### ✨ New Features

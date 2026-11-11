@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.11.0-dev.4",
+  "version": "1.11.0-dev.5",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -418,6 +418,33 @@
     {
       "name": "Keep transparency in a picture",
       "description": "Draws the transparent parts of a picture opened in the viewer as the background behind it rather than as white.",
+      "default": true,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.laurencedawson.reddit_sync",
+          "name": "Sync for Reddit",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": null,
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "v23.06.30-13:39",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Keep your place in a feed",
+      "description": "Returns a feed to the post you were on rather than to the top, where posts have been cleared out of the cache while you were reading.",
       "default": true,
       "category": null,
       "compatiblePackages": [
