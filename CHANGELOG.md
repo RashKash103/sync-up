@@ -1,3 +1,9 @@
+## [1.11.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.6...v1.11.0-dev.7) (2026-11-11)
+
+### 🐛 Bug Fixes
+
+* Forget kept pictures when a route changes, so thumbnails are asked again ([b9d353e](https://github.com/RashKash103/sync-up/commit/b9d353e32a6980454620ab5d01c050a440271baf))
+
 ## [1.11.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.5...v1.11.0-dev.6) (2026-11-11)
 
 ### 🐛 Bug Fixes
