@@ -605,6 +605,28 @@ password cannot be typed into the app from a script, which means a pasted certif
 got onto the device through the test harness at all. The certificate reading is covered by
 `test/test_request_parsing.py` instead, where it is deterministic.
 
+**`uiautomator dump` leaves the last dump behind when it fails, and reading it back is
+indistinguishable from reading the screen.** It refuses to dump until the window goes idle, and
+a window with an autoplaying video in it never does — so the command writes nothing, the
+previous `/sdcard/ui.xml` is still there, and `cat` hands back a screen from several minutes
+ago that looks entirely plausible. That is how a dialog that `dumpsys window` said was not
+focused went on appearing in every reading. Delete the file first and refuse an answer that
+holds no `<hierarchy`; where it will not dump at all, `screencap` is the thing that always
+tells the truth.
+
+**The guest's own numbers say whether the emulator is actually starved.** `adb shell top` and
+`adb shell cat /proc/loadavg` are a few seconds and settle in one go what the host's load
+average only suggests: an emulator that was reported as CPU-starved was in fact **383% idle at
+a guest load of 1.15**, and swapping inside its own 2.5 GB — the AVD's memory is fixed whatever
+the host has spare. `am kill-all` and force-stopping Chrome freed 700 MB of it.
+
+**Every `adb install -r` leaves the app running interpreted.** ART compiles it in the
+background, and until it has, a first launch is slow enough to be declared unresponsive —
+which is why ANRs cluster immediately after a reinstall and look like whatever was just
+changed. `adb shell cmd package compile -m speed -f com.laurencedawson.reddit_sync` takes about
+nine seconds and takes the question away. `wm size 540x1200` with `wm density 240` quarters
+what a software-rendered emulator has to draw, and `wm size reset` puts it back.
+
 **An ANR on this emulator is usually the host.** Every one seen here read
 `Waited 5000ms for FocusEvent`, with the skipped frames and the `Davey!` lines belonging to
 `system_server` rather than to the app, and one of them landed on Sync's own Backup screen
