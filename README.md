@@ -304,8 +304,10 @@ decision rather than a default.
   Only Imgur is affected, and only the hosts that are actually refused: Stack Overflow's images
   live on a name ending in Imgur's and are left alone.
 
-#### Text that is missing or inert
-
+#### Text that is missing or inert Pictures already fetched are thrown away when a route is
+  turned on or off, since the app looks in its own store before it asks for anything and
+  would otherwise go on showing the refusal it kept the first time — which is why a feed
+  could show blocked thumbnails while opening the same post worked.
 - <a name="automatically-undelete-reddit-content"></a>**Automatically undelete Reddit content** — Restores the text of removed posts and
   comments from Project Arctic Shift, and the name of an author whose account has since
   been deleted. A note under the author says why the content was taken down. Only text is

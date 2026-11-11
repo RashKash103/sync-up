@@ -481,6 +481,32 @@ call, printing only when the line changes and the first few unconditionally. A c
 same recipe before and after is what shows a two-frame excursion going away; a video of it does
 not, since the recorder never captured the frame in the first place.
 
+**An interceptor never sees a picture that is already kept.** Glide looks in its own cache on
+disk before it goes to the network, so every route in this bundle — the Imgur unblocking above
+all — is simply skipped for anything fetched once before. Measured: the same feed of
+`/domain/imgur.com` opened twice produces the full set of requests the first time and **nothing
+at all** the second, with the interceptor not reached once.
+
+That is what a reader sees as thumbnails still showing Imgur's refusal while opening the same
+post works. The two are different addresses — Sync asks for `i.imgur.com/<id>h.jpeg` for the
+thumbnail and `i.imgur.com/<id>.jpeg` for the picture, the `h` being Imgur's own size suffix —
+so the thumbnail is the one that was fetched and kept while the region was refused, and the
+larger one was never fetched before and is routed normally. Imgur answers a refused region with
+a notice that is a perfectly good image, so Glide keeps it like any other.
+
+Both addresses do reach the interceptor and are read as `PICTURE`, and DuckDuckGo serves the
+suffixed one as readily as the plain one — checked against both. Nothing about the thumbnail is
+special except that it was already kept. `CachedPictures.watch()` therefore throws the kept
+pictures away when a setting that decides *how* one is fetched changes, which is the only moment
+the answer to an address can differ. Confirmed on a device: a reload that made no requests at all
+made 42 after the toggle, and 40 of them were routed once the unblocking was turned back on.
+
+Glide is `Lcom/bumptech/glide/b;` — the package survives, the members do not. `d(Context)` is
+`get`, `b()` is `clearDiskCache` and insists on *not* being on the drawing thread, `c()` is
+`clearMemory` and insists that it *is*. Only the settings that change how a picture is fetched
+count: throwing every picture away because somebody changed whether an address is handed out when
+sharing would cost a reader everything they have for nothing.
+
 **Note that `android:dependency` is not an answer here.** It only keys off a checkbox, so a row
 that should follow a list preference's value has to be turned on and off in code.
 

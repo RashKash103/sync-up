@@ -141,6 +141,11 @@ public abstract class RedirectsScreen extends pa.d {
         }
     }
 
+    /** Opening any of these is the moment a route can be changed, so the watch starts here. */
+    static {
+        CachedPictures.watch();
+    }
+
     /**
      * Called where Sync looks up the fragment for a screen.
      *
