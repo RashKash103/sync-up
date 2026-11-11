@@ -89,7 +89,7 @@ internal val redirectsSettingsPatch = resourcePatch(
             </PreferenceCategory>
             <PreferenceCategory>
                 <$CATEGORY app:categoryTitle="Services" />
-                ${rootRow("Imgur", "Pictures, albums and videos", "SYNC_UP_REDIRECTS_IMGUR",
+                ${rootRow("Imgur", "Pictures, albums, and videos", "SYNC_UP_REDIRECTS_IMGUR",
                     "outline_image_24")}
             </PreferenceCategory>
             """,
@@ -118,7 +118,7 @@ internal val redirectsSettingsPatch = resourcePatch(
                 <$CATEGORY app:categoryTitle="Routes" />
                 ${rootRow("DuckDuckGo proxy", "One picture at a time, nothing to set up",
                     "SYNC_UP_REDIRECTS_DDG", "outline_search_24")}
-                ${rootRow("Rimgo", "Pictures, videos and albums, through an instance you choose",
+                ${rootRow("Rimgo", "Pictures, videos, and albums, through an instance you choose",
                     "SYNC_UP_REDIRECTS_RIMGO", "outline_dns_24")}
                 ${rootRow("Proxy", "Everything, through a proxy of your own",
                     "SYNC_UP_REDIRECTS_PROXY", "outline_lock_24")}
@@ -155,6 +155,13 @@ internal val redirectsSettingsPatch = resourcePatch(
                     android:summary="One picture at a time. It will not serve a video or an album, so those need Rimgo or a proxy."
                     android:selectable="false" />
             </PreferenceCategory>
+            <PreferenceCategory>
+                <$CATEGORY app:categoryTitle="Reference" />
+                <$ROW
+                    android:key="sync_up_redirect_imgur_ddg_credit"
+                    android:title="ImgurUnblocker"
+                    android:summary="How this route works was taken from HexedHero's ImgurUnblocker, the browser extension that does the same thing. Tap to open it on GitHub." />
+            </PreferenceCategory>
             """,
         )
 
@@ -167,12 +174,12 @@ internal val redirectsSettingsPatch = resourcePatch(
                 <$CHECK_BOX
                     android:key="sync_up_redirect_imgur_rimgo"
                     android:title="Use Rimgo"
-                    android:summary="A front end for Imgur that others run. It serves pictures, videos and albums alike. Off until an instance has been chosen, since this means asking someone else's server for your pictures."
+                    android:summary="A front end for Imgur that others run. It serves pictures, videos, and albums alike. Off until an instance has been chosen, since this means asking someone else's server for your pictures."
                     android:defaultValue="false" />
                 <$CHECK_BOX
                     android:key="sync_up_redirect_imgur_rimgo_share"
                     android:title="Share and copy through an instance"
-                    android:summary="Hands out the instance's address instead of Imgur's, for pictures, videos and albums alike, so that what you send works where Imgur is refused."
+                    android:summary="Hands out the instance's address instead of Imgur's, for pictures, videos, and albums alike, so that what you send works where Imgur is refused."
                     android:defaultValue="false" />
             </PreferenceCategory>
             <PreferenceCategory>
@@ -195,6 +202,22 @@ internal val redirectsSettingsPatch = resourcePatch(
                     android:title="Instances behind mTLS"
                     android:summary="Long-press an instance to attach a client certificate. It is offered to that instance alone: a certificate names whoever holds it, and the server decides when to ask for one."
                     android:selectable="false" />
+            </PreferenceCategory>
+            <PreferenceCategory>
+                <$CATEGORY app:categoryTitle="About Rimgo" />
+                <$ROW
+                    android:key="sync_up_redirect_imgur_rimgo_project"
+                    android:title="Rimgo"
+                    android:summary="The front end every one of these instances is running. Tap to open the project on Codeberg." />
+                <$ROW
+                    android:key="sync_up_redirect_imgur_rimgo_selfhost"
+                    android:title="Running your own is better"
+                    android:summary="Public instances are run by whoever cares to and are often unreliable — rate limited by Imgur, overloaded, or simply gone. One of your own answers only to you. It has to run somewhere Imgur is not refusing, though: an instance hosted in the United Kingdom is refused exactly as this app is, and would be no use at all."
+                    android:selectable="false" />
+                <$ROW
+                    android:key="sync_up_redirect_imgur_rimgo_list_credit"
+                    android:title="LibRedirect"
+                    android:summary="The published list of instances is the one LibRedirect keeps for its own extension. Tap to open it on GitHub." />
             </PreferenceCategory>
             """,
         )
@@ -258,7 +281,7 @@ internal val redirectsSettingsPatch = resourcePatch(
                 <$ROW
                     android:key="sync_up_redirect_imgur_proxy_note"
                     android:title="Where this is kept"
-                    android:summary="The address, what it is logged into with and the certificate are kept in a file of their own rather than in Sync's settings, so that Sync's Backup cannot write them out."
+                    android:summary="The address, what it is logged into with, and the certificate are kept in a file of their own rather than in Sync's settings, so that Sync's Backup cannot write them out."
                     android:selectable="false" />
             </PreferenceCategory>
             """,

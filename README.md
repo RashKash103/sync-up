@@ -109,7 +109,7 @@ service being asked.
 #### Getting the app working again
 
 - <a name="spoof-client"></a>**Spoof client** — Replaces Sync's revoked OAuth credentials with your own client ID,
-  redirect URI and user agent. Nothing else works without this. See
+  redirect URI, and user agent. Nothing else works without this. See
   [Getting started](#-getting-started). Its `Imgur client ID` option is separate and optional;
   see [Uploading pictures to Imgur](#uploading-pictures-to-imgur). All four are optional and can
   also be set in the app, under Settings > Everything else > Sync Up client, which means a copy can
@@ -233,7 +233,7 @@ decision rather than a default.
     decoder would draw as a broken picture — so it is only ever offered a picture, and
     **videos and albums need Rimgo or a proxy**. That is a limit of the proxy rather than of
     this patch, and the *DuckDuckGo proxy* screen says so.
-  - **Rimgo** is a front end for Imgur that other people run, and serves pictures, videos and
+  - **Rimgo** is a front end for Imgur that other people run, and serves pictures, videos, and
     albums alike. It is opt-in, and so is each instance: the published list is the one
     LibRedirect's own extension uses, fetched when the screen is first opened, and an instance
     is asked nothing until it has been ticked. One of your own can be typed in and sits
@@ -242,7 +242,7 @@ decision rather than a default.
     instances only nine actually served a picture when this was written. The instance that last
     worked is used again without being asked twice; one that fails is rested for five minutes so
     an outage costs one wait rather than one per picture, and a request that one instance
-    refuses is tried against the next. With Rimgo on, **albums, galleries, videos and GIFs**
+    refuses is tried against the next. With Rimgo on, **albums, galleries, videos, and GIFs**
     open in a refusing region too, which no other route manages: an album's contents are read
     from the instance's own page for it, and a video is asked for as the video rather than as
     the page Imgur wraps it in. Serving pictures and serving albums are two different
@@ -274,11 +274,11 @@ decision rather than a default.
   goes out as Imgur's, since handing somebody a proxy address for an album would hand them a
   broken picture. The proxy route has no switch here and cannot have one — it carries the
   request rather than changing the address. Only a piece of text that is *nothing but* an
-  Imgur address is ever changed: a comment, a title or a sentence that mentions a link is
+  Imgur address is ever changed: a comment, a title, or a sentence that mentions a link is
   passed on exactly as it was.
 
   **Nothing that identifies you is written into a backup.** The certificates, the proxy's
-  address and what it is logged into with live in a file of their own that Sync's Backup has
+  address, and what it is logged into with live in a file of their own that Sync's Backup has
   never heard of. That is deliberate — a backup is handed to whoever is helping and copied
   between devices — and it means a restored copy comes back set up to use a certificate it does
   not have. So a mark that there *was* one travels, and nothing else: the front page of the
@@ -287,7 +287,7 @@ decision rather than a default.
   anything dismissed for good is listed under *Dismissed alerts* on the same screen and can be
   brought back.
 
-  **Where an album still cannot be opened.** Imgur's album page, the embed of it and Imgur's
+  **Where an album still cannot be opened.** Imgur's album page, the embed of it, and Imgur's
   own API are refused together in a refused region, and an album's contents cannot be worked
   out from its id — so with the DuckDuckGo proxy alone there is nothing to read them from, and
   Sync falls back to opening the link in a browser. In order, this tries Imgur's page, the
@@ -295,7 +295,7 @@ decision rather than a default.
   each chosen Rimgo instance, and finally the Wayback Machine, which only holds the albums
   somebody happened to capture.
 
-  The proxy's address, what it is logged into with and the certificate are kept in a file of
+  The proxy's address, what it is logged into with, and the certificate are kept in a file of
   their own rather than in Sync's settings, so that Sync's Backup cannot write them out — the
   same as the client credentials and the account PIN. The instance list and the switches are
   ordinary settings and travel in a backup as everything else does.
@@ -312,10 +312,10 @@ decision rather than a default.
 - <a name="show-a-hidden-profile-from-the-archive"></a>**Show a hidden profile from the archive** — An account can hide its own posts and
   comments from its profile, which Sync shows as a user with nothing to their name. Project
   Arctic Shift still serves what it recorded while those posts were public. Only a profile
-  that comes back empty is filled in, and only its posts, comments and overview tabs.
+  that comes back empty is filled in, and only its posts, comments, and overview tabs.
 - <a name="keep-the-links-in-the-text-of-a-post"></a>**Keep the links in the text of a post** — Sync renders the body shown under a post in
   full and then discards the result, drawing bare characters. Keeping it means quotes,
-  emphasis and links appear. Images are still discarded, so a feed loads no more than it
+  emphasis, and links appear. Images are still discarded, so a feed loads no more than it
   did. A link in a post body in a feed becomes tappable, so tapping directly on one opens
   the link rather than the post.
 - <a name="make-an-address-in-a-post-tappable"></a>**Make an address in a post tappable** — Sync turns a bare address into a link only where
@@ -336,7 +336,7 @@ decision rather than a default.
   runs for one kind of post and reads a body the markers have already been taken out of, so a
   tap said "Missing post information" instead. A spoiler is hidden by being painted in the
   colour it sits on, so the one tapped is remembered and that painting is skipped. Nothing is
-  fetched, stored or rewritten, and a spoiler closes again if the text is built afresh.
+  fetched, stored, or rewritten, and a spoiler closes again if the text is built afresh.
 
 #### The feed and the viewer
 
@@ -457,7 +457,7 @@ decision rather than a default.
   - Those questions were three: whether the copy is paid for, whether a flag was turned on from
     afar, and — for several of them — whether the account reading it is one of the developer's
     own. The last two mean some of these were finished and then never given to anyone.
-  - **What is left alone**: paints, tags and settings kept on Sync's own servers, its cloud
+  - **What is left alone**: paints, tags, and settings kept on Sync's own servers, its cloud
     backup, and its own restoring of removed comments. Those need services that no longer
     answer, and a button that can only fail is worse than no button. Sync's own translating is
     replaced rather than unlocked — see *Translation* above.
@@ -678,6 +678,6 @@ Sync Up adds no further conditions of its own under Section 7.
 
 - [wchill](https://github.com/wchill) and the Patcheddit contributors, whose Sync for Reddit
   patches this project is built from.
-- The [Morphe](https://github.com/MorpheApp) project, for the patcher, the patch library and
+- The [Morphe](https://github.com/MorpheApp) project, for the patcher, the patch library, and
   the tooling.
 - [ReVanced](https://github.com/ReVanced), whose prior work both of the above build on.

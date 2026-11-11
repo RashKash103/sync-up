@@ -2,8 +2,10 @@ package app.morphe.extension.syncforreddit.redirects;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -187,6 +189,29 @@ public abstract class RedirectsScreen extends pa.d {
 
     static final String INSTANCES = "sync_up_redirect_imgur_rimgo_instances";
 
+    // region Where the rows that lead somewhere lead.
+
+    /**
+     * The browser extension this route was written from. Credited because it is where the
+     * trick is from: that DuckDuckGo will fetch a picture for you, and that a bare id has to
+     * be given an ending before it will.
+     */
+    private static final String DDG_CREDIT = "sync_up_redirect_imgur_ddg_credit";
+
+    private static final String IMGUR_UNBLOCKER = "https://github.com/HexedHero/ImgurUnblocker";
+
+    private static final String RIMGO_PROJECT = "sync_up_redirect_imgur_rimgo_project";
+
+    private static final String RIMGO_SITE = "https://codeberg.org/rimgo/rimgo";
+
+    /** Where the published list of instances comes from, which is not ours and is credited. */
+    private static final String RIMGO_LIST_CREDIT =
+            "sync_up_redirect_imgur_rimgo_list_credit";
+
+    private static final String LIBREDIRECT = "https://github.com/libredirect/instances";
+
+    // endregion
+
     static final String TRY_THE_PROXY = "sync_up_redirect_imgur_proxy_try";
 
     // endregion
@@ -302,6 +327,7 @@ public abstract class RedirectsScreen extends pa.d {
     private void duckDuckGo() {
         follow(RedirectSettings.DDG, this::showDuckDuckGoRows);
         showDuckDuckGoRows();
+        opens(DDG_CREDIT, IMGUR_UNBLOCKER);
     }
 
     private void showDuckDuckGoRows() {
@@ -316,6 +342,8 @@ public abstract class RedirectsScreen extends pa.d {
     private void rimgo() {
         follow(RedirectSettings.RIMGO, this::showRimgoRows);
         showRimgoRows();
+        opens(RIMGO_PROJECT, RIMGO_SITE);
+        opens(RIMGO_LIST_CREDIT, LIBREDIRECT);
 
         Preference instances = y(INSTANCES);
         if (instances != null) {
@@ -822,6 +850,34 @@ public abstract class RedirectsScreen extends pa.d {
         holding.setPadding(edge, edge / 2, edge, 0);
         holding.addView(around);
         return holding;
+    }
+
+    /**
+     * Makes a row open a page in whatever the reader opens pages with.
+     *
+     * <p>These stay usable whether the route they sit under is turned on or not: what Rimgo is,
+     * and where the instance list comes from, are exactly what somebody deciding whether to
+     * turn it on wants to read first.
+     */
+    private void opens(String key, String address) {
+        try {
+            Preference row = y(key);
+            if (row == null) {
+                return;
+            }
+            row.A0(tapped -> {
+                try {
+                    Intent going = new Intent(Intent.ACTION_VIEW, Uri.parse(address));
+                    going.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    tapped.k().startActivity(going);
+                } catch (Exception ex) {
+                    Logger.printInfo(() -> "redirects: could not open " + address + ": " + ex);
+                }
+                return true;
+            });
+        } catch (Exception ex) {
+            Logger.printInfo(() -> "redirects: could not make " + key + " open a page: " + ex);
+        }
     }
 
     private void enable(String[] keys, boolean enabled) {

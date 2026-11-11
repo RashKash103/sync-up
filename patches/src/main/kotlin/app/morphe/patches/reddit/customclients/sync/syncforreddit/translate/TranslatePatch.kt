@@ -279,7 +279,7 @@ private val asksForATranslationFingerprint = Fingerprint(
 @Suppress("unused")
 val translatePatch = bytecodePatch(
     name = "Translate posts and comments",
-    description = "Translates a post or comment where it sits, on this device or through DeepL " +
+    description = "Translates a post or comment where it sits, on this device, through DeepL, " +
             "or Google Cloud.",
     default = true
 ) {

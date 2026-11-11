@@ -119,8 +119,8 @@ private val reachedFromTheApp = listOf(
 @Suppress("unused")
 val redirectsPatch = bytecodePatch(
     name = "Unblock Imgur",
-    description = "Loads Imgur pictures, videos and albums another way where Imgur refuses the " +
-            "region, through DuckDuckGo's image proxy, a Rimgo instance or a proxy of your own. " +
+    description = "Loads Imgur pictures, videos, and albums another way where Imgur refuses the " +
+            "region, through DuckDuckGo's image proxy, a Rimgo instance, or a proxy of your own. " +
             "Off until it is turned on under Settings > Redirects.",
     default = true,
 ) {
