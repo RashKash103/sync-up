@@ -142,7 +142,10 @@ service being asked.
   "view more" only ever raised an error. The comments behind it are read from the thread, where
   Reddit still serves any comment and everything hanging from it, and the reply is flattened the
   way the old endpoint answered. The comments already on screen are left out, so nothing is
-  drawn twice.
+  drawn twice. What is asked for is asked for the way Sync asks for it, author pictures
+  included — Reddit only puts those in the answer when they are asked for, and Sync's parser
+  takes a comment's picture from there and from nowhere else, so comments behind a "view more"
+  were drawn with no picture beside the name until this asked as well.
 - <a name="modify-login-webview"></a>**Modify login WebView** — Routes the login page through the extension so that signing in
   completes.
 - <a name="stop-the-toolbar-menus-closing-the-app"></a>**Stop the toolbar menus closing the app** — On some devices the app closed the moment the

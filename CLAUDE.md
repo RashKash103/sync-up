@@ -312,6 +312,16 @@ There are at least three distinct OkHttp clients in play: Volley's, Glide's, and
 `OkHttpHelper` builds for other purposes. Before assuming an interceptor will see a request,
 find out which client actually issues it.
 
+**Reddit only answers with what was asked for, and Sync always asks for the same two things.**
+Every request Sync makes for comments carries `?always_show_media=1&profile_img=true` — the
+thread, and the `/api/morechildren` this bundle stands in for. `profile_img=true` is what puts
+each author's picture into the answer, as `profile_img` on the comment itself, and
+`PostParserHelper` stores it from there into `post_author_profile_pic` and from nowhere else:
+nothing goes back for it afterwards. So a replacement request that leaves the parameter off
+produces comments that are drawn with no picture beside the name, for good, while the ones that
+came with the thread have theirs. That is what made avatars disappear below a "view more", and
+anything else that stands in for one of Sync's requests has to carry what Sync asked for.
+
 **Requests are Volley `Request` subclasses**, one per endpoint, named for what they do
 (`OAuthCommentsRequest`, `GrabRedgifRequest`, `ImgurGalleryRequest`). They parse with
 `org.json`, and Sync reads raw markdown: `body` and `selftext`, never `body_html`. It has no
