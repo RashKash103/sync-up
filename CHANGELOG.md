@@ -1,3 +1,9 @@
+## [1.11.0-dev.6](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.5...v1.11.0-dev.6) (2026-11-11)
+
+### 🐛 Bug Fixes
+
+* Hold the floating button's actions steady while Sync moves it about ([cff1d49](https://github.com/RashKash103/sync-up/commit/cff1d49a8038da89dc1cfb8c0e9bb71b258018b9))
+
 ## [1.11.0-dev.5](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.4...v1.11.0-dev.5) (2026-11-11)
 
 ### ✨ New Features
