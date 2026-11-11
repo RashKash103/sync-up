@@ -35,7 +35,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.11.0-dev.2](https://github.com/RashKash103/sync-up/releases/tag/v1.11.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;35 patches total
+> **[v1.11.0-dev.3](https://github.com/RashKash103/sync-up/releases/tag/v1.11.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;35 patches total
 <details open>
 <summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;34 patches</summary>
 <br>

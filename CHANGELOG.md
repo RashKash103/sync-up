@@ -1,3 +1,17 @@
+## [1.11.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.2...v1.11.0-dev.3) (2026-11-11)
+
+### 🐛 Bug Fixes
+
+* Disable the Imgur route rows while Imgur unblocking is off ([779ffaa](https://github.com/RashKash103/sync-up/commit/779ffaab7f241c6e7138a8c714497e8027b1d448))
+* Keep the author pictures on comments behind a "view more" ([8d48262](https://github.com/RashKash103/sync-up/commit/8d48262f8b604919374df544e4472ea358b1bcec))
+* Open every kind of Imgur link through the routes ([ed7d6e3](https://github.com/RashKash103/sync-up/commit/ed7d6e311f7736499d2e58a39b1dfa7ae17444ce))
+
+### ✨ New Features
+
+* Choose a client certificate from a file ([a6df124](https://github.com/RashKash103/sync-up/commit/a6df1242efe59a6b76d61ea5a303ae92501eaedf)), closes [PKCS#12](https://github.com/RashKash103/PKCS/issues/12)
+* Hand out the route's address when sharing or copying ([85065f2](https://github.com/RashKash103/sync-up/commit/85065f26b24d522c4f9b70be810b55fa6c407764))
+* Say at the top of the settings what needs attention ([c6147ff](https://github.com/RashKash103/sync-up/commit/c6147ff0929fbe58b59facb70260621b4ae8e9b8))
+
 ## [1.11.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.1...v1.11.0-dev.2) (2026-11-10)
 
 ### ✨ New Features
