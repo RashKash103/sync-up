@@ -348,6 +348,21 @@ decision rather than a default.
   credentials off a request of Sync's own. A subreddit with no banner gets no strip, and neither
   does a front page or a multireddit, which have none of their own. A banner that cannot be
   fetched or drawn leaves the feed exactly as it was. On, under *Posts > View tweaks*.
+- <a name="keep-your-place-in-a-feed"></a>**Keep your place in a feed** — Sync writes down where a feed was as a row number and
+  nothing else, which stops meaning the same post the moment the list it counts into changes.
+  It does change: the app throws a cached post away two days after it was written, from inside
+  the very insert that loads the next page, so somebody who has been working down one feed for
+  a couple of days has rows quietly removed from above their place. The saved number then
+  counts to a different post, or past the end of the list — where the layout manager finds the
+  row is no longer there, gives up on it, and lays out from the top. The *Restore position*
+  offer does not come with it, because that offer is only ever built by the deliberate jump to
+  the top and nothing deliberate has happened. This remembers the posts themselves instead:
+  the handful at the top of the screen are noted by the identifier the feed's own list already
+  answers with, and when a new list arrives the same post is found in it and the feed moved
+  back to it, at the pixel offset it had. Where that post has itself been swept away nothing is
+  done and the app behaves exactly as it did before. The note travels in the same saved state
+  the app already keeps, so it survives the screen being rebuilt behind a post — which is when
+  this goes wrong — and being rebuilt from scratch after the app is dropped from memory. On.
 - <a name="more-actions-on-the-floating-button"></a>**More actions on the floating button** — Sync's floating button carries one of three things,
   and everything else it can do is behind the *More actions* sheet. This puts up to three more of
   Sync's own actions beside it, chosen from the two dozen that sheet already offers, with the

@@ -404,6 +404,59 @@ a dialog posted from there is gone before it can be read, while having already c
 `OnboardingActivity` is the first run's, and it stays. Read `dumpsys activity activities` for
 `topResumedActivity` rather than assuming the first activity named is the one in front.
 
+**The feed keeps its place as a row number, and the cache is swept from under it.**
+`RedditProvider.delete` runs `DELETE FROM tbl_posts WHERE age <= '<now - 48h>'` and the same for
+`tbl_lists`, plus `tbl_viewed_new` at 168h, and the only thing that calls it is `bulkInsert` —
+so every new page of posts sweeps whatever has aged out. `VerticalPostsFragment` saves its place
+as a `LinearLayoutManager` anchor *position* under the key `"SyncRecyclerView"`, in `w0` from
+`n2()` and in `u0` from `l2(Bundle)`, and `M3(Cursor)` reads it back. A position stops meaning
+the same post once rows above it are swept, and androidx then drops a pending position that is
+no longer a real row and lays out from the top. `Restore position` does not appear with it,
+because that snackbar is only ever built by `q4()`, the deliberate jump to the top.
+
+`M3` is the *only* caller of the adapter's `S(Cursor)`, so it is the one place to hook, and
+`PostAdapter.o(int)` is `getItemId` answered out of the `hash` column — a post identifier that
+survives its neighbours being deleted, and is what `keepFeedPositionPatch` anchors on.
+
+Three things about that method were found the hard way, and all three cost a round:
+
+- **Opening a post does not stop the feed.** Sync shows `CommentsActivity` translucently over
+  it, so `n2()` never runs and `M3` never restores on that path — the position is kept simply
+  because nothing was destroyed. The restore only happens when the screen is genuinely rebuilt,
+  which is what makes the bug rare, and it means a note held in memory under the old fragment is
+  gone by the time the new one asks. The note has to travel in the bundles themselves.
+- **`M3` holds one `return` but several ways of reaching it.** `if-nez v0` jumps from the middle
+  straight to that return whenever the feed already had posts — every time but the first, and so
+  exactly the times that matter. Counting `return` opcodes does not catch this. Worse, moving the
+  call earlier does not help either: the branches that skip the restore are retargeted onto
+  whatever is inserted in front of their target, so a call placed before the `Bundle.remove` run
+  is jumped over too. What works is to inject only at index 0, where nothing can branch over it,
+  and `post()` the rest.
+- **The adapter is already empty by the second save.** The app saves twice as a screen goes away
+  and `getItemCount()` is 0 on the second, which is the call that carries the outState bundle —
+  the one the rebuilt screen reads back. Working the position out afresh there yields nothing, so
+  the second call has to fall back to what the first worked out or the note never reaches the
+  bundle at all.
+
+**To reproduce it, shorten the window rather than waiting two days.** `Calendar.add` is reached
+twice in `delete` with a shared `const/16 v0, -48` and `const/16 v3, 11` (`HOUR_OF_DAY`); writing
+`12` (`MINUTE`) and `-2` in front of each of the two calls that go on to run the `tbl_posts` and
+`tbl_lists` statements makes the whole thing happen in the time it takes to read a post, and
+leaves the `tbl_viewed_new` week alone because that branch never crosses the insertions. Scroll
+to load a few pages, wait out the window, then scroll to the bottom: the next page load sweeps
+the rest and the list collapses — measured here from 50 rows to 25, with the reader's post moving
+from row 24 to row 5.
+
+**The recycler's own members, since the classes keep their names but nothing else does.**
+`RecyclerView.e0()` is getAdapter and `r0()` getLayoutManager; on `RecyclerView$h` (Adapter)
+`n()` is getItemCount and `o(I)J` getItemId; on `RecyclerView$p` (LayoutManager) `n0(View)` is
+getPosition and `D1(I)` scrollToPosition; `LinearLayoutManager.G2(I I)` is
+scrollToPositionWithOffset (it also invalidates any pending `SavedState`, so it settles where the
+list lands rather than racing a restore) and `g2()` findFirstVisibleItemPosition.
+`LinearLayoutManager$SavedState` keeps its name too, with `a`/`b`/`c` for the anchor position,
+offset and from-end flag. Sync's own `PostsRecyclerView.h2()` already answers
+findFirstVisibleItemPosition across all three of its `Custom*LayoutManager`s.
+
 **Note that `android:dependency` is not an answer here.** It only keys off a checkbox, so a row
 that should follow a list preference's value has to be turned on and off in code.
 
