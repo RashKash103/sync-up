@@ -457,6 +457,30 @@ list lands rather than racing a restore) and `g2()` findFirstVisibleItemPosition
 offset and from-end flag. Sync's own `PostsRecyclerView.h2()` already answers
 findFirstVisibleItemPosition across all three of its `Custom*LayoutManager`s.
 
+**The floating button's place jumps about on its own, and anything standing in for it inherits
+that.** On a refresh, on a jump to the top and on taking the *Restore position* offer, Sync lays
+the button out at the place it sits when the bottom bar is away — `y=2190` on a 2400 tall screen,
+which is inside the bar — for a frame or three, then moves it up to where it is shown (`1917` or
+`1762`). It is drawn at full size and full opacity while it is down there, and the excursion
+repeats several times over a refresh. `translationY` stays `-63` throughout, so nothing is
+fighting over the offset; it is the laid-out position that moves.
+
+**That is the app's own, not this bundle's.** Measured with `extraFabActionsPatch` applied but
+inert — a fresh process with no extra actions chosen, so no surface is built and `over()` returns
+before it touches the button — and the excursions are still there, unchanged. The earlier reading
+that Sync fades the button in, and that the fade covers those frames, was wrong: the fade seen in
+a capture is Sync's animator interpolating up from the zero *this patch writes*, and with the
+alpha left alone the button reads `1.0` the whole way. `fabFollowsSteadily` damps the drop
+instead: going up is followed at once, a small step down is followed at once, and only a drop
+further than the button's own height has to hold for a few frames before the surface goes with
+it. The surface then sits still through the wobble while the button underneath it bounces.
+
+**A flicker cannot be seen in a screenshot, and `screenrecord` drops the frame.** What settles it
+is logging the button's position, opacity, visibility and scale on every `OnPreDrawListener`
+call, printing only when the line changes and the first few unconditionally. A capture of the
+same recipe before and after is what shows a two-frame excursion going away; a video of it does
+not, since the recorder never captured the frame in the first place.
+
 **Note that `android:dependency` is not an answer here.** It only keys off a checkbox, so a row
 that should follow a list preference's value has to be turned on and off in code.
 

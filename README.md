@@ -373,7 +373,10 @@ decision rather than a default.
   fading away with the feed, and where any of it fails the button is given back what it draws
   with rather than the feed coming down. *Orientation* stands the extras vertically or
   horizontally and *Separate the extra actions* draws a line between them; all of it sits under
-  *General > Floating Action Button*.
+  *General > Floating Action Button*. Sync drops its own button to where it sits with the
+  bottom bar away for a frame or two whenever a feed is refreshed or jumps to the top, which
+  reads as a flicker over the bar in anything standing in for it, so a drop that long is only
+  followed once the button has held it.
 - <a name="keep-transparency-in-a-picture"></a>**Keep transparency in a picture** — The zooming view Sync opens a picture in decodes in a
   format with no alpha channel unless something says otherwise, so everything transparent
   arrived opaque, showing whatever the file was saved over — white, for most. The format to

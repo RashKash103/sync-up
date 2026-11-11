@@ -91,6 +91,17 @@ public final class ExtraFabActions {
     /** How often the chosen actions are looked at again, in frames. */
     private static final int LOOK_AGAIN_EVERY = 30;
 
+    /**
+     * How long the button has to stay down before the surface goes down with it.
+     *
+     * <p>Sync puts its button back at the place it sits when the bottom bar is away, for a frame
+     * or three, before moving it up to where it is shown — on a refresh, on a jump to the top,
+     * and on taking the restore offer. That excursion is the app's own: it happens with none of
+     * this running. The button is small and goes by; a surface standing in for it is taller and
+     * reads as a flicker over the bar, so a drop is only followed once it has been held.
+     */
+    private static final int SETTLE_FRAMES = 4;
+
     private ExtraFabActions() {}
 
     public static boolean isPatchIncluded() {
@@ -127,6 +138,12 @@ public final class ExtraFabActions {
         Drawable icon;
         Drawable background;
         boolean listening;
+
+        /** Where the surface is actually being kept, which is not always where the button is. */
+        float restingY = Float.NaN;
+
+        /** How many frames running the button has been well below where the surface sits. */
+        int dropped;
     }
 
     private static final java.util.Map<View, Its> theirs =
@@ -644,7 +661,19 @@ public final class ExtraFabActions {
                 : fab.getY() + (fab.getHeight() - surface.getHeight()) / 2f;
 
         surface.setX(x);
-        surface.setY(y);
+        // Going up is followed at once, since that is the button arriving and nothing is gained
+        // by being late to it. Going down is followed at once too while it is a small step,
+        // which is the button sliding away with the feed. Only a long drop has to prove itself,
+        // and that is the one the app makes and takes back.
+        float dropping = Float.isNaN(its.restingY) ? 0f : y - its.restingY;
+        if (Float.isNaN(its.restingY) || dropping <= fab.getHeight()) {
+            its.restingY = y;
+            its.dropped = 0;
+        } else if (++its.dropped >= SETTLE_FRAMES) {
+            its.restingY = y;
+            its.dropped = 0;
+        }
+        surface.setY(its.restingY);
         // Scaled about the part standing for the button, so what grows and shrinks is the
         // button itself rather than the middle of a row.
         surface.setPivotX(vertical ? surface.getWidth() / 2f : surface.getWidth());
