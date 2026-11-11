@@ -1,3 +1,9 @@
+## [1.11.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.3...v1.11.0-dev.4) (2026-11-11)
+
+### ✨ New Features
+
+* Credit and link what the Imgur routes were built from ([d19a021](https://github.com/RashKash103/sync-up/commit/d19a0215c1193ad2412ea0cfdf4f49104685d432))
+
 ## [1.11.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.2...v1.11.0-dev.3) (2026-11-11)
 
 ### 🐛 Bug Fixes
