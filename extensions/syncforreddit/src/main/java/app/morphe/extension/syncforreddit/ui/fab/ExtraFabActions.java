@@ -94,11 +94,11 @@ public final class ExtraFabActions {
     /**
      * How long the button has to stay down before the surface goes down with it.
      *
-     * <p>Sync puts its button back at the place it sits when the bottom bar is away, for a frame
-     * or three, before moving it up to where it is shown — on a refresh, on a jump to the top,
-     * and on taking the restore offer. That excursion is the app's own: it happens with none of
-     * this running. The button is small and goes by; a surface standing in for it is taller and
-     * reads as a flicker over the bar, so a drop is only followed once it has been held.
+     * <p>Sync throws its button between two places for a frame or three at a time — on a
+     * refresh, on a jump to the top, on taking the restore offer, and while a screen is
+     * changing. Those excursions are the app's own: they happen with none of this running. The
+     * button is small and goes by; a surface standing in for it is taller and reads as a
+     * flicker, so a jump is only followed once the button has stayed where it jumped to.
      */
     private static final int SETTLE_FRAMES = 4;
 
@@ -142,8 +142,10 @@ public final class ExtraFabActions {
         /** Where the surface is actually being kept, which is not always where the button is. */
         float restingY = Float.NaN;
 
-        /** How many frames running the button has been well below where the surface sits. */
-        int dropped;
+        /** Where the button has jumped to and may yet stay, and for how many frames running. */
+        float settlingAt = Float.NaN;
+
+        int settling;
     }
 
     private static final java.util.Map<View, Its> theirs =
@@ -661,17 +663,33 @@ public final class ExtraFabActions {
                 : fab.getY() + (fab.getHeight() - surface.getHeight()) / 2f;
 
         surface.setX(x);
-        // Going up is followed at once, since that is the button arriving and nothing is gained
-        // by being late to it. Going down is followed at once too while it is a small step,
-        // which is the button sliding away with the feed. Only a long drop has to prove itself,
-        // and that is the one the app makes and takes back.
-        float dropping = Float.isNaN(its.restingY) ? 0f : y - its.restingY;
-        if (Float.isNaN(its.restingY) || dropping <= fab.getHeight()) {
+        // A step of about the button's own size or less is followed at once: that is the button
+        // sliding or growing, and being late to it would be a stutter. A jump further than that
+        // has to stay where it jumped to for a few frames running before the surface goes with
+        // it, which is what tells a move apart from the app throwing the button somewhere and
+        // taking it straight back.
+        //
+        // Both directions, and that matters: an earlier go at this followed a jump upwards at
+        // once and only made a drop wait, and a button laid out high for a moment while a screen
+        // changed took the surface with it and then would not let it come back down for several
+        // frames — which looks, reasonably enough, like the button having vanished.
+        float reach = Math.max(1f, fab.getHeight());
+        if (Float.isNaN(its.restingY) || Math.abs(y - its.restingY) <= reach) {
             its.restingY = y;
-            its.dropped = 0;
-        } else if (++its.dropped >= SETTLE_FRAMES) {
-            its.restingY = y;
-            its.dropped = 0;
+            its.settlingAt = Float.NaN;
+            its.settling = 0;
+        } else {
+            if (Float.isNaN(its.settlingAt) || Math.abs(y - its.settlingAt) > reach) {
+                its.settlingAt = y;
+                its.settling = 1;
+            } else {
+                its.settling++;
+            }
+            if (its.settling >= SETTLE_FRAMES) {
+                its.restingY = y;
+                its.settlingAt = Float.NaN;
+                its.settling = 0;
+            }
         }
         surface.setY(its.restingY);
         // Scaled about the part standing for the button, so what grows and shrinks is the
@@ -714,6 +732,7 @@ public final class ExtraFabActions {
             return;
         }
     }
+
 
     private static float fromDp(Context context, float dp) {
         return dp * context.getResources().getDisplayMetrics().density;

@@ -470,10 +470,24 @@ inert — a fresh process with no extra actions chosen, so no surface is built a
 before it touches the button — and the excursions are still there, unchanged. The earlier reading
 that Sync fades the button in, and that the fade covers those frames, was wrong: the fade seen in
 a capture is Sync's animator interpolating up from the zero *this patch writes*, and with the
-alpha left alone the button reads `1.0` the whole way. `fabFollowsSteadily` damps the drop
-instead: going up is followed at once, a small step down is followed at once, and only a drop
-further than the button's own height has to hold for a few frames before the surface goes with
-it. The surface then sits still through the wobble while the button underneath it bounces.
+alpha left alone the button reads `1.0` the whole way. The surface damps the jump instead: a step
+of about the button's own size or less is followed at once, and anything further has to stay
+where it jumped to for a few frames running before the surface goes with it. The surface then
+sits still through the wobble while the button underneath it bounces.
+
+**Damp both directions.** The first go at this followed a jump *upwards* at once and only made a
+drop wait, on the reasoning that a drop is what the wobble does. It is not the only thing that
+does: a screen change lays the button out high for a moment, the surface took that at once, and
+the slow release then left it stranded about twelve hundred pixels above the button for several
+frames — which reads as the button having vanished. Measured as `held=948` while the button sat
+at 1917. A rule that is instant one way and patient the other latches onto whichever transient
+goes the instant way.
+
+**"Autohide FAB" turned off hides the button, and that is Sync's.** Measured with the patch
+inert — *Show FAB* on, *Autohide FAB* off, no extra actions chosen so no surface is built and
+`over()` returns before touching anything — and the button is still `vis=4`. Nothing here ever
+writes the button's visibility; the surface only mirrors it, so a surface that is not drawn in
+that state is the button not being drawn.
 
 **A flicker cannot be seen in a screenshot, and `screenrecord` drops the frame.** What settles it
 is logging the button's position, opacity, visibility and scale on every `OnPreDrawListener`
