@@ -1,3 +1,9 @@
+## [1.11.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.7...v1.11.0-dev.8) (2026-11-12)
+
+### 🐛 Bug Fixes
+
+* Follow the floating button steadily in both directions, not just down ([bd50db5](https://github.com/RashKash103/sync-up/commit/bd50db5beff7eac301a8f93cbb8d764c2b672eae))
+
 ## [1.11.0-dev.7](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.6...v1.11.0-dev.7) (2026-11-11)
 
 ### 🐛 Bug Fixes
