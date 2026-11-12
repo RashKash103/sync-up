@@ -483,11 +483,29 @@ frames — which reads as the button having vanished. Measured as `held=948` whi
 at 1917. A rule that is instant one way and patient the other latches onto whichever transient
 goes the instant way.
 
-**"Autohide FAB" turned off hides the button, and that is Sync's.** Measured with the patch
-inert — *Show FAB* on, *Autohide FAB* off, no extra actions chosen so no surface is built and
-`over()` returns before touching anything — and the button is still `vis=4`. Nothing here ever
-writes the button's visibility; the surface only mirrors it, so a surface that is not drawn in
-that state is the button not being drawn.
+**Counting frames is not enough, because the button genuinely stays there.** On a *pull* to
+refresh the button sits at the lower place for as long as a finger keeps moving, so any patience
+runs out and the surface follows it down across the bar — measured as the settle counter
+reaching its limit and `held` going to 2041 at frame 517 of a drag. The rule that actually holds
+is physical rather than timed: read where the bottom bar is and never put the surface over it.
+`SyncBottomNavigationView` sits at `y=2127 h=273` on a 2400 tall screen while this happens, so
+the button at `y=2190` is plainly inside it and the button at `1917` is not. The bar is found by
+shape, not by name — the showing child as wide as its parent, against the bottom of it — so a bar
+sliding away carries its own position with it and the room reappears as it goes, which is what
+lets the surface follow the button down when the bar really has gone.
+
+**"Autohide FAB" turned off hides the button, and that is Sync's — but it is ours to put
+right.** Measured with the patch inert — *Show FAB* on, *Autohide FAB* off, no extra actions
+chosen so no surface is built and `over()` returns before touching anything — and the button is
+still `vis=4`. With autohide off the app never runs the path that shows its button, so it is
+left invisible for good and there is no floating button at all. Nothing here writes the button's
+visibility and the surface only mirrors it, so the surface went the same way.
+
+It is put right rather than merely attributed: `SettingsSingleton.x()` hands back a `Settings`
+whose fields keep their names, and `mainFab` with `mainFabAutohide` say exactly whether the
+reader asked for a button that never hides. Where they do and the button is invisible, it is
+shown. Where autohide is on, being invisible is the app doing what it was told and nothing is
+touched.
 
 **A flicker cannot be seen in a screenshot, and `screenrecord` drops the frame.** What settles it
 is logging the button's position, opacity, visibility and scale on every `OnPreDrawListener`

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import app.morphe.extension.shared.Logger;
+import com.laurencedawson.reddit_sync.singleton.SettingsSingleton;
 import app.morphe.extension.syncforreddit.settings.SyncUpSettings;
 
 import com.laurencedawson.reddit_sync.ui.activities.BaseActivity;
@@ -609,6 +610,8 @@ public final class ExtraFabActions {
             rebuild(fab);
         }
 
+        showItWhereSyncWillNot(fab);
+
         View surface = parent.findViewWithTag(TAG);
         if (surface == null || surface.getWidth() == 0 || fab.getWidth() == 0) {
             return;
@@ -673,9 +676,27 @@ public final class ExtraFabActions {
         // once and only made a drop wait, and a button laid out high for a moment while a screen
         // changed took the surface with it and then would not let it come back down for several
         // frames — which looks, reasonably enough, like the button having vanished.
+        // Where the button is put over a bottom bar that is plainly still there, it is not
+        // somewhere to follow it to at all. Sync moves its button down to where it sits with
+        // the bar away while the bar is still shown — for a frame or two on a refresh, and for
+        // as long as a finger keeps moving on a pull to refresh — and a surface that followed
+        // would sit across the bar for all of it. Staying put is right until the button is
+        // somewhere it could sensibly be.
+        //
+        // Nothing is assumed about when the bar is up: it is read. A bar sliding away carries
+        // its own position with it, so the room reappears as it goes and the surface follows
+        // the button down exactly as it should.
+        float noLowerThan = roomAboveTheBar(parent, fab, surface);
+        boolean wouldCoverTheBar = !Float.isNaN(noLowerThan) && y > noLowerThan;
+
         float reach = Math.max(1f, fab.getHeight());
-        if (Float.isNaN(its.restingY) || Math.abs(y - its.restingY) <= reach) {
-            its.restingY = y;
+        if (wouldCoverTheBar && !Float.isNaN(its.restingY)) {
+            // Stay exactly where it is, and forget any jump that was being considered: the
+            // button is somewhere it cannot sensibly be drawn.
+            its.settlingAt = Float.NaN;
+            its.settling = 0;
+        } else if (Float.isNaN(its.restingY) || Math.abs(y - its.restingY) <= reach) {
+            its.restingY = wouldCoverTheBar ? noLowerThan : y;
             its.settlingAt = Float.NaN;
             its.settling = 0;
         } else {
@@ -733,6 +754,70 @@ public final class ExtraFabActions {
         }
     }
 
+
+
+    /**
+     * @return The lowest the surface may sit without covering a bottom bar that is up, or
+     *         nothing where there is no such bar to keep clear of.
+     *
+     * <p>The bar is found rather than named: the one thing beside the button that is showing,
+     * as wide as its parent, sitting against the bottom of it and not reaching up into the
+     * screen. That holds whatever the app calls it.
+     */
+    private static float roomAboveTheBar(ViewGroup parent, View fab, View surface) {
+        float top = Float.NaN;
+        int tall = parent.getHeight();
+        int wide = parent.getWidth();
+        if (tall <= 0 || wide <= 0) {
+            return Float.NaN;
+        }
+        for (int at = 0; at < parent.getChildCount(); at++) {
+            View child = parent.getChildAt(at);
+            if (child == null || child == fab || child == surface
+                    || child.getVisibility() != View.VISIBLE
+                    || child.getHeight() <= 0
+                    || child.getWidth() * 5 < wide * 4) {
+                continue;
+            }
+            float childTop = child.getY();
+            float childBottom = childTop + child.getHeight();
+            // Against the bottom, and not something that merely reaches it from far above.
+            if (childTop * 2 < tall || Math.abs(childBottom - tall) * 2 > child.getHeight()) {
+                continue;
+            }
+            if (Float.isNaN(top) || childTop < top) {
+                top = childTop;
+            }
+        }
+        return Float.isNaN(top) ? Float.NaN : top - surface.getHeight();
+    }
+
+    /**
+     * Puts the button back on the screen where Sync has asked for one and then not shown it.
+     *
+     * <p>With <i>Autohide FAB</i> turned off the app never runs the path that shows its button,
+     * so the button is left at {@code INVISIBLE} for good and there is no floating button at
+     * all. That is the app's own — it happens with none of this running — but it is the button
+     * this patch is built on, and a surface standing in for something invisible is invisible
+     * too, so it is put right here rather than worked around.
+     *
+     * <p>Only where the reader has asked for a button that never hides. Where autohide is on,
+     * being invisible is the app doing exactly what it was told and nothing is touched.
+     */
+    private static void showItWhereSyncWillNot(View fab) {
+        try {
+            SettingsSingleton.Settings settings = SettingsSingleton.x();
+            if (settings == null || !settings.mainFab || settings.mainFabAutohide) {
+                return;
+            }
+            if (fab.getVisibility() != View.VISIBLE) {
+                fab.setVisibility(View.VISIBLE);
+                Logger.printDebug(() -> "fab: shown, since it is set never to hide");
+            }
+        } catch (Throwable ex) {
+            Logger.printDebug(() -> "fab: could not tell whether it should be shown: " + ex);
+        }
+    }
 
     private static float fromDp(Context context, float dp) {
         return dp * context.getResources().getDisplayMetrics().density;

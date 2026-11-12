@@ -375,10 +375,12 @@ decision rather than a default.
   fading away with the feed, and where any of it fails the button is given back what it draws
   with rather than the feed coming down. *Orientation* stands the extras vertically or
   horizontally and *Separate the extra actions* draws a line between them; all of it sits under
-  *General > Floating Action Button*. Sync throws its own button between two places for a
-  frame or two whenever a feed is refreshed, is pulled down to refresh, or jumps to the top,
-  which reads as a flicker in anything standing in for it, so a jump is only followed once the
-  button has stayed where it jumped to.
+  *General > Floating Action Button*. Sync moves its own button down to where it sits
+  with the bottom navigation away while that bar is still on the screen — for a frame or two on a
+  refresh or a jump to the top, and for as long as a finger keeps moving on a pull to refresh —
+  so the actions are never drawn across a bar that is up, and follow the button down only once
+  the bar has actually gone. Where *Autohide FAB* is turned off and Sync then never shows its
+  button at all, it is shown.
 - <a name="keep-transparency-in-a-picture"></a>**Keep transparency in a picture** — The zooming view Sync opens a picture in decodes in a
   format with no alpha channel unless something says otherwise, so everything transparent
   arrived opaque, showing whatever the file was saved over — white, for most. The format to
