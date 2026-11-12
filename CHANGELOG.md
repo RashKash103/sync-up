@@ -1,3 +1,9 @@
+## [1.11.0-dev.9](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.8...v1.11.0-dev.9) (2026-11-12)
+
+### 🐛 Bug Fixes
+
+* Keep the floating button's actions off the bottom bar, and show it ([369e3ce](https://github.com/RashKash103/sync-up/commit/369e3ce0658d7a45225b68044b27dd218a6b6c0c))
+
 ## [1.11.0-dev.8](https://github.com/RashKash103/sync-up/compare/v1.11.0-dev.7...v1.11.0-dev.8) (2026-11-12)
 
 ### 🐛 Bug Fixes
