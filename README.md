@@ -381,6 +381,42 @@ decision rather than a default.
   so the actions are never drawn across a bar that is up, and follow the button down only once
   the bar has actually gone. Where *Autohide FAB* is turned off and Sync then never shows its
   button at all, it is shown.
+- <a name="choose-what-the-bottom-bar-shows"></a>**Choose what the bottom bar shows** — The bottom navigation bar carries four items — Posts,
+  Actions, Explore and Inbox — and Sync offers a choice about one of them, *Show actions*, kept
+  in Experimental and off by default. This replaces that with five rows under
+  *General > Bottom navigation*, named for the place each button sits: **Button 1 (Posts)**,
+  **Button 2 (Actions)**, **Button 3 (Explore)**, **Button 4 (Inbox)** and **Button 5 (Extra)**.
+
+  Each of the first four can be left alone, taken off, or **replaced** with one of the actions
+  from Sync's own actions sheet — Saved, Search, Submit, Profile, Settings and eighteen others —
+  drawn under the name and the icon Sync gives it there. Button 5 is a further button beside
+  them, which is *None* until something is chosen for it.
+
+  Only one further button, because Material caps the bottom bar at five items and the rail at
+  seven, and the count includes the items the bar is not drawing — so taking something off does
+  not make room for anything. Replacing needs no room, which is what makes four custom buttons
+  possible on a bar that only fits five.
+
+  **Button 2 has taken over Sync's own *Show actions*.** That switch is hidden where it stood
+  rather than taken out, and follows this row: choosing *Show* turns it on, anything else turns
+  it off. A copy of Sync that already had it on arrives with Button 2 set to *Show*, and one that
+  had it off arrives set to *Hide*, so nothing changes under anyone who had already chosen. Both
+  settings still travel in a backup and still mean what they say.
+
+  Elsewhere the app keeps the last word: *Show* can never put something on the bar that Sync
+  decided to leave off, so the inbox stays away while nobody is signed in. A replacement is
+  different and deliberately so — a button carrying out an action is no longer the thing the app
+  made that decision about, so it is drawn either way. Turning everything off leaves the first
+  button rather than an empty strip; *Use bottom navigation* is what takes the bar away.
+
+  **The unread count follows the inbox.** Wherever the inbox has been put — left where it was,
+  chosen as the action on another button, or on Button 5 — that is where the badge is drawn, and
+  no other button is left wearing it. A button carrying an action is also not marked as the
+  screen the app is on, since it is not one.
+
+  A row takes effect as it is chosen, without restarting the app. The navigation rail that
+  replaces the bar in tablet mode is covered by the same rows; its fifth item, Settings, has none
+  and is left alone.
 - <a name="keep-transparency-in-a-picture"></a>**Keep transparency in a picture** — The zooming view Sync opens a picture in decodes in a
   format with no alpha channel unless something says otherwise, so everything transparent
   arrived opaque, showing whatever the file was saved over — white, for most. The format to
