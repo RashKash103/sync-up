@@ -412,8 +412,12 @@ decision rather than a default.
 
   **The unread count follows the inbox.** Wherever the inbox has been put — left where it was,
   chosen as the action on another button, or on Button 5 — that is where the badge is drawn, and
-  no other button is left wearing it. A button carrying an action is also not marked as the
-  screen the app is on, since it is not one.
+  no other button is left wearing it.
+
+  One rough edge: the pill under the button for the screen you are on belongs to Material, and
+  nothing here touches it. So replacing **Button 1 (Posts)** leaves that pill on the replacement
+  when the app opens, since the app really is on the Posts screen and that screen no longer has a
+  button. It stays where it is put rather than moving about.
 
   A row takes effect as it is chosen, without restarting the app. The navigation rail that
   replaces the bar in tablet mode is covered by the same rows; its fifth item, Settings, has none

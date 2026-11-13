@@ -16,9 +16,6 @@ internal const val RAIL_CLASS =
 internal const val NAVIGATION_BAR_CLASS =
     "Lcom/google/android/material/navigation/NavigationBarView;"
 
-private const val BOTTOM_NAVIGATION_VIEW_CLASS =
-    "Lcom/google/android/material/bottomnavigation/BottomNavigationView;"
-
 internal const val BADGE_DRAWABLE_CLASS =
     "Lcom/google/android/material/badge/BadgeDrawable;"
 
@@ -159,51 +156,4 @@ internal val navigationTapFingerprint = Fingerprint(
                 method.parameterTypes.first().toString() == "Landroid/content/Context;" &&
                 method.parameterTypes.last().toString() == "Landroid/view/MenuItem;"
     },
-)
-
-/**
- * Whether a method is the one that marks a destination as the one the app is on: it is the only
- * one on either bar that checks a menu item.
- */
-private fun marksTheDestination(
-    method: Method,
-    @Suppress("UNUSED_PARAMETER") classDef: ClassDef,
-) = method.indexOfFirstInstruction {
-    getReference<MethodReference>()?.name == "setChecked"
-} >= 0
-
-/**
- * Where the bottom bar draws the pill under the button for the screen the app is on, which it is
- * told by the id of that screen's item.
- *
- * A button that has been given an action is not a screen, so being told to mark one is being told
- * something that stopped being true when the button was replaced.
- */
-internal val bottomBarMarksTheDestinationFingerprint = Fingerprint(
-    definingClass = BOTTOM_BAR_CLASS,
-    parameters = listOf("I"),
-    returnType = "V",
-    custom = ::marksTheDestination,
-)
-
-/** The same, on the rail. */
-internal val railMarksTheDestinationFingerprint = Fingerprint(
-    definingClass = RAIL_CLASS,
-    parameters = listOf("I"),
-    returnType = "V",
-    custom = ::marksTheDestination,
-)
-
-/**
- * `BottomNavigationView.getMaxItemCount()`, which answers five.
- *
- * Read once, by `NavigationBarView`'s constructor, and kept as the number the menu refuses to go
- * past — nothing else in the app asks it, so answering one more raises the cap and changes
- * nothing else. The rail answers seven already, which is one more than it needs.
- */
-internal val bottomBarMaxItemsFingerprint = Fingerprint(
-    definingClass = BOTTOM_NAVIGATION_VIEW_CLASS,
-    name = "f",
-    parameters = emptyList(),
-    returnType = "I",
 )

@@ -8,7 +8,6 @@ import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.util.returnEarly
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.reddit.customclients.sync.SyncForRedditCompatible
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.extension.sharedExtensionPatch
@@ -23,8 +22,6 @@ private const val BADGES_METHOD = "badges(Landroid/view/View;)V"
 
 private const val CLAIMED_METHOD =
     "claimed(Landroid/content/Context;Landroid/view/MenuItem;)Z"
-
-private const val MARKS_METHOD = "marks(Landroid/view/View;I)Z"
 
 /**
  * What the extension calls on Material's own navigation bar, each of which has to be public
@@ -58,18 +55,6 @@ val bottomNavigationItemsPatch = bytecodePatch(
             }
         }
 
-        // One more item than Material allows, for the sake of the pill under the selected
-        // button. A button carrying an action is not a screen and must not wear it, and the only
-        // way to take it off is to put it on something else — marking is exclusive, and
-        // unmarking a member of an exclusive group is what marks it. So it goes on an item the
-        // bar never draws, which needs an item spare: without this, a bar with all four buttons
-        // replaced and the added one in use has every item showing and nowhere to put it.
-        //
-        // The number is read once, by the constructor, and kept as the cap the menu refuses to go
-        // past. Nothing else in the app asks it, and the item it makes room for is never visible,
-        // so no more than five are ever drawn. The rail answers seven already and needs nothing.
-        bottomBarMaxItemsFingerprint.method.returnEarly(6)
-
         // Called at the end, where the bar is dressed and the app has already taken off whatever
         // it did not want. Both methods hold a single return that every path reaches, so nothing
         // can branch over the call.
@@ -102,29 +87,6 @@ val bottomNavigationItemsPatch = bytecodePatch(
                 return-void
                 """,
             )
-        }
-
-        // The pill under the button for the screen the app is on. A button that has been given
-        // an action is not a screen, so marking one says the reader is somewhere they are not —
-        // which is what a replaced Posts button looked like the moment the app opened. Where the
-        // destination has been replaced the extension answers no and the app leaves the bar
-        // alone, having first taken the pill off whatever was wearing it.
-        listOf(
-            bottomBarMarksTheDestinationFingerprint,
-            railMarksTheDestinationFingerprint,
-        ).forEach {
-            it.method.apply {
-                addInstructionsWithLabels(
-                    0,
-                    """
-                    invoke-static   { p0, p1 }, $EXTENSION_CLASS_DESCRIPTOR->$MARKS_METHOD
-                    move-result     v0
-                    if-nez          v0, :the_app_marks_it
-                    return-void
-                    """,
-                    ExternalLabel("the_app_marks_it", getInstruction(0)),
-                )
-            }
         }
 
         // A tap on a button that has been given an action is carried out here and answered, so

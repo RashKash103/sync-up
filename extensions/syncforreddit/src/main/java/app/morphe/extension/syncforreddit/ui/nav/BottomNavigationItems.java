@@ -100,20 +100,6 @@ public final class BottomNavigationItems {
      */
     private static final int EXTRA_ID = 0x7E0000A1;
 
-    /**
-     * An item the bar never draws, there only to hold the mark that says which button is the
-     * screen the app is on.
-     *
-     * <p>A button carrying an action is not a screen and must not wear that mark, and the only
-     * way to take a mark off is to put it on something else: marking is exclusive, and unmarking
-     * a member of an exclusive group is what marks it. Marking one the bar is not drawing unmarks
-     * every visible button and draws nothing itself.
-     *
-     * <p>It needs an item spare, which is why the patch answers Material's cap with one more than
-     * it would have: with all four of the app's buttons replaced and the added one in use, every
-     * other item is showing and there would be nowhere to put the mark.
-     */
-    private static final int PARK_ID = 0x7E0000A2;
 
     /** Left as the app drew it. The default, so that the bar is Sync's until something is asked. */
     private static final int SHOW = -2;
@@ -277,116 +263,9 @@ public final class BottomNavigationItems {
         }
     }
 
-    /**
-     * Takes the pill off a button that has been given an action, by marking one the bar is not
-     * drawing.
-     *
-     * <p>Marking is exclusive, so marking a hidden item unmarks every visible one and draws
-     * nothing itself; an item cannot simply be unmarked, since unmarking one of an exclusive
-     * group is what marks it.
-     *
-     * <p>There is an item kept for exactly this, which the patch makes room for by answering
-     * Material's cap with one more than it would have, so there is somewhere to put the mark
-     * however many buttons are being drawn. Any other hidden item will do just as well, and is
-     * taken where that one could not be added.
-     */
-    private static void takeTheMarkOff(Menu menu) {
-        MenuItem wearing = null;
-        MenuItem spare = menu.findItem(PARK_ID);
-        for (int at = 0; at < menu.size(); at++) {
-            MenuItem item = menu.getItem(at);
-            if (item == null) {
-                continue;
-            }
-            if (!item.isVisible()) {
-                if (spare == null) {
-                    spare = item;
-                }
-            } else if (item.isChecked() && replaced(item.getItemId())) {
-                wearing = item;
-            }
-        }
-        if (wearing == null) {
-            return;
-        }
-        final CharSequence was = wearing.getTitle();
-        if (park(spare)) {
-            Logger.printDebug(() -> "nav: took the mark off " + was + ", which carries an action");
-        }
-    }
 
-    /**
-     * Puts the mark on an item the bar is not drawing, which takes it off every button that is
-     * being drawn.
-     *
-     * @return Whether there was anywhere to put it.
-     */
-    private static boolean park(@Nullable MenuItem spare) {
-        if (spare == null) {
-            Logger.printInfo(() -> "nav: nowhere to put the mark, so it stays where it is");
-            return false;
-        }
-        spare.setChecked(true);
-        return true;
-    }
 
-    /**
-     * Whether the app should mark this item as the screen it is on.
-     *
-     * <p>A button that has been given an action is not a screen. Marking one draws the pill under
-     * it and says the reader is somewhere they are not — which is what a replaced Posts button
-     * looked like the moment the app opened.
-     *
-     * <p>Where the answer is no, the mark is taken off whatever is wearing it first, by putting
-     * it on the item kept for that.
-     *
-     * @return Whether the app should go on and mark it.
-     */
-    public static boolean marks(View view, int itemId) {
-        try {
-            if (!replaced(itemId)) {
-                return true;
-            }
-            NavigationBarView bar = view instanceof NavigationBarView
-                    ? (NavigationBarView) view : null;
-            Menu menu = bar == null ? null : bar.g();
-            if (menu != null) {
-                MenuItem spare = menu.findItem(PARK_ID);
-                if (spare == null) {
-                    for (int at = 0; at < menu.size(); at++) {
-                        MenuItem item = menu.getItem(at);
-                        if (item != null && !item.isVisible()) {
-                            spare = item;
-                            break;
-                        }
-                    }
-                }
-                // Outright, rather than only where what is wearing the mark is itself a
-                // replacement: the app is going to a screen whose button carries an action, so
-                // whichever button has the mark, it is not the one the app is on.
-                park(spare);
-            }
-            Logger.printDebug(() -> "nav: " + Integer.toHexString(itemId)
-                    + " carries an action, so it is not marked as where the app is");
-            return false;
-        } catch (Exception ex) {
-            Logger.printInfo(() -> "nav: could not answer what is marked: " + ex);
-            return true;
-        }
-    }
 
-    /** @return Whether this button has been given one of Sync's actions to carry out. */
-    private static boolean replaced(int itemId) {
-        if (itemId == EXTRA_ID) {
-            return extra() != NOTHING;
-        }
-        for (int at = 0; at < OURS.length; at++) {
-            if (idOf(at) == itemId) {
-                return choice(at) >= 0;
-            }
-        }
-        return false;
-    }
 
     /** Carries out one of Sync's own actions, the way Sync's own actions sheet carries it out. */
     private static void carryOut(Context context, int action) {
@@ -453,12 +332,11 @@ public final class BottomNavigationItems {
     }
 
     /**
-     * Puts the added button and the item that holds the mark on the bar, once each, so far as
-     * Material has room for them.
+     * Puts the added button on the bar, once, so far as Material has room for it.
      *
-     * <p>Both are added whether or not anything has been chosen, and the button is hidden while
-     * nothing has: the room is taken at a moment that can be reasoned about rather than the first
-     * time a reader chooses something, and nothing else in the app ever adds an item.
+     * <p>Added whether or not anything has been chosen for it, and hidden while nothing has: the
+     * room is taken at a moment that can be reasoned about rather than the first time a reader
+     * chooses something, and nothing else in the app ever adds an item.
      */
     private static void addOurItems(NavigationBarView bar, Menu menu) {
         Its its = bars.get(bar);
@@ -470,7 +348,6 @@ public final class BottomNavigationItems {
         // every frame.
         its.carriesOurs = true;
         add(bar, menu, EXTRA_ID, "the added button");
-        add(bar, menu, PARK_ID, "somewhere to put the mark");
     }
 
     /** Puts one item of ours on the bar, hidden, if there is room for it. */
@@ -558,12 +435,6 @@ public final class BottomNavigationItems {
         if (extra != null) {
             dress(extra, added, null, null);
         }
-
-        // Material marks the item at the place it last had one as the screen the app is on, and
-        // that is the first of them when the bar is new — so a replaced first button wears the
-        // pill the moment the app opens, saying the reader is on a screen that button no longer
-        // goes to.
-        takeTheMarkOff(menu);
 
         final String which = bar.getClass().getSimpleName();
         Logger.printDebug(() -> "nav: " + which + " showing " + showing(menu));

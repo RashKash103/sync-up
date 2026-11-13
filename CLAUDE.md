@@ -648,21 +648,29 @@ undone by the next: `bottomNavigationItemsPatch` stands in for the whole method 
 reproduces those calls exactly. `getOrCreateBadge` is safe on an item the bar is not drawing — the
 badge is simply attached to nothing — so it never has to be guarded.
 
-**The selected pill is Material's, not Sync's.** Sync marks a destination through `O(I)` on the
-bar and `X(I)` on the rail, each eight instructions ending in `MenuItem.setChecked(true)`. But
-neither runs at startup: Material's own `buildMenuView` re-checks the item at the position it last
-had one, which is the first when the bar is new. So a replaced first button wears the pill the
-moment the app opens, and hooking Sync's method alone does nothing — measured, with the hook never
-once reached. Nor can a check simply be removed: every nav item is exclusive-checkable, and
-`setChecked(false)` on one of those *checks* it. What works is marking an item the bar is not
-drawing, which unmarks every visible one and draws nothing itself.
+**Leave the selected pill alone.** Material keeps the selected item **twice** — by id, which
+draws the filled icon, and by position, which draws the pill — and reconciles the two only on a
+real selection event. Any menu change can leave the position stale while the id stays right, and
+a menu of ours changes whenever a row is turned over.
 
-That needs an item to spare, and with all four buttons replaced and the added one in use there
-would be none — so the patch answers `BottomNavigationView.f()` with **6** instead of 5 and keeps
-a permanently hidden item for the mark alone. That number is read **once**, by
-`NavigationBarView`'s constructor, which passes it to `NavigationBarMenu` as the cap; nothing else
-in the app asks it, and the extra item is never visible, so no more than five are ever drawn. The
-rail answers 7 already, which is one more than it needs.
+An attempt to control the pill cost four bug reports in a row and was taken out again. It had
+been reasonable on the face of it: Sync marks a destination through `O(I)` on the bar and `X(I)`
+on the rail, each eight instructions ending in `MenuItem.setChecked(true)`, and a button carrying
+an action is not a screen. But neither of those runs at startup — Material's own `buildMenuView`
+re-checks the item at the position it last had one, measured with the hook never once reached —
+and a check cannot simply be removed, since every nav item is exclusive-checkable and
+`setChecked(false)` on one of those *checks* it. What was shipped instead was a hidden item to
+park the mark on, with `BottomNavigationView.f()` answered as 6 rather than 5 to make room for it.
+On a device that produced a pill on the newly added button while the feed was still on Posts, a
+pill that would not move when Posts was tapped, and a pill and a filled icon on different buttons
+at once; tapping another destination and back repaired it every time, which is the tell that the
+two halves had drifted apart.
+
+So nothing here writes `setChecked`, adds an item for the mark, or touches the cap. What is left
+is one static wrongness — replacing the first button leaves the pill on the replacement at
+startup — and it is worth far less than the instability of trying to fix it. Fixing it properly
+would mean writing `NavigationBarMenuView`'s remembered position directly, which is a private
+member of an internal Material class.
 
 **A setting of Sync's can be taken over, and hidden rather than removed.** `Show actions` under
 Experimental writes `navigation_bottom_actions`, and that key appears as a string in exactly one
