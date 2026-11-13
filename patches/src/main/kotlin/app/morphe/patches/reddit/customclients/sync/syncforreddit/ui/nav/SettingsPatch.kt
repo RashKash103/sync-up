@@ -8,6 +8,12 @@ import org.w3c.dom.Element
 private const val LIST =
     "com.laurencedawson.reddit_sync.ui.preferences.defaults.SyncListPreference"
 
+private const val CATEGORY_HEADER =
+    "com.laurencedawson.reddit_sync.ui.preferences.defaults.CategoryHeaderPreference"
+
+/** What the rows sit under. Their own, for the reason given where it is built. */
+private const val CATEGORY_TITLE = "Navigation buttons"
+
 /** Left as the app drew it, which is the default. Matches the extension. */
 private const val SHOW = "-2"
 
@@ -96,15 +102,32 @@ internal val bottomNavigationItemsSettingsPatch = resourcePatch(
         }
 
         document("res/xml/cat_general.xml").use { document ->
-            // Sync names this category, which is what the rows are added to the end of. Added
-            // rather than replacing or moving anything: Sync's Backup walks the settings it
-            // knows and writes them out, so a row that is no longer where the app expects
-            // breaks a screen that has nothing to do with this.
-            val category = document.getElementsByTagName("PreferenceCategory").let { categories ->
+            // A category of our own, put straight after Sync's Bottom navigation one so that it
+            // reads as a continuation of it.
+            //
+            // Not inside it, which is where these rows began: in tablet mode
+            // PreferencesGeneralFragment hides the whole of that category — and the drawer one
+            // beside it — in a single call, and rows of ours inside it went with it. Tablet mode
+            // is exactly when they are wanted, since it is the rail that is drawn then and these
+            // rows are what configure it. The rows stayed in the settings search, which reads the
+            // file rather than the screen, so searching one and tapping it scrolled to where it
+            // would have been and landed on the category below.
+            //
+            // Added rather than replacing or moving anything: Sync's Backup walks the settings it
+            // knows and writes them out, so a row that is no longer where the app expects breaks
+            // a screen that has nothing to do with this.
+            val above = document.getElementsByTagName("PreferenceCategory").let { categories ->
                 (0 until categories.length)
                     .map { categories.item(it) as Element }
                     .firstOrNull { it.getAttribute("android:key") == "bottom" }
-            } ?: throw PatchException("No Bottom navigation category to add the rows to")
+            } ?: throw PatchException("No Bottom navigation category to put the rows after")
+
+            val category = document.createElement("PreferenceCategory")
+            document.createElement(CATEGORY_HEADER).let { header ->
+                header.setAttribute("app:categoryTitle", CATEGORY_TITLE)
+                category.appendChild(header)
+            }
+            above.parentNode.insertBefore(category, above.nextSibling)
 
             fun add(attributes: Map<String, String>) {
                 val row = document.createElement(LIST)

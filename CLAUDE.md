@@ -110,6 +110,32 @@ walks straight through a `catch (Exception)`. R8 does quietly fix some of it —
 becomes `Collections.EMPTY_MAP` — so what the dex holds is worth reading before changing
 anything.
 
+### Everything must be tried in tablet mode as well
+
+**Tablet mode is a different app, not a wider one.** `pa.d.S3()` reads `tablet_mode` from the
+`PreferencesTabletFragment` file, defaulting to a bool resource, and screens branch on it —
+`PreferencesGeneralFragment.C3` hides the whole of the `drawer` category *and* the whole of the
+`bottom` category in a single pair of calls when it is true. A settings row added inside one of
+those categories is therefore simply gone on a tablet or an unfolded foldable, which is exactly
+where it is most wanted: tablet mode is when the rail is drawn. Anything of ours that is to
+survive goes in a category of its own, as a sibling rather than a child.
+
+The bar and the rail diverge the same way — two bars built at once, different item order, a fifth
+item on the rail — so a patch touching navigation has to be run both ways round, and so does its
+**settings screen**, not merely its behaviour. v1.12.0-dev.1 shipped five rows nobody with a
+foldable could see, because the rail's behaviour was driven from the settings *file* across 81
+combinations while the settings *screen* was only ever opened with `tablet_mode` false.
+
+`adb shell "run-as <pkg> ..."` to write `tablet_mode` into the per-account file, force-stop, and
+launch: the whole switch costs a few seconds, and it belongs in every run that touches a screen.
+
+**Sync's own settings search mis-lands in tablet mode, and that one is not ours.** Searching a
+row and tapping the result scrolls to the wrong place entirely — measured on Sync's own
+`Autohide FAB`, which landed in the `General` category, with a control build carrying neither
+`Choose what the bottom bar shows` nor `More actions on the floating button`. It behaves in
+portrait. Do not go looking for a patch to blame when a search result lands somewhere odd on a
+tablet; check portrait first, and check a stock row.
+
 ### A patch that touches the settings must be tested against Backup
 
 **Back up and restore on a device before shipping anything that adds, moves, hides or changes a
@@ -576,6 +602,14 @@ its minified name. It runs as the bar is built, after the constructor's own hidi
 through `h()` whenever the theme or the settings change, and its single return is reached by
 every path on both classes. In tablet mode **both** bars are built, so anything keyed on the
 view has to expect two.
+
+**A settings row of ours must not live inside one of Sync's categories.**
+`PreferencesGeneralFragment.C3` hides the `drawer` and `bottom` categories whole when
+`pa.d.S3()` says tablet mode, so rows added inside `bottom` vanish on a foldable — see
+[Everything must be tried in tablet mode as well](#everything-must-be-tried-in-tablet-mode-as-well).
+`bottomNavigationItemsSettingsPatch` builds a `PreferenceCategory` of its own, with a
+`CategoryHeaderPreference app:categoryTitle=...` as Sync's own categories do, and inserts it as
+the next sibling of `bottom` so it still reads as a continuation of it.
 
 **The two bars do not draw the same four items in the same order.** The bottom bar inflates
 Posts, Actions, Explore, Inbox; the rail inflates Posts, Explore, Inbox, Actions, Settings. So

@@ -385,7 +385,7 @@ decision rather than a default.
 - <a name="choose-what-the-bottom-bar-shows"></a>**Choose what the bottom bar shows** — The bottom navigation bar carries four items — Posts,
   Actions, Explore and Inbox — and Sync offers a choice about one of them, *Show actions*, kept
   in Experimental and off by default. This replaces that with five rows under
-  *General > Bottom navigation*, named for the place each button sits: **Button 1 (Posts)**,
+  *General > Navigation buttons*, named for the place each button sits: **Button 1 (Posts)**,
   **Button 2 (Actions)**, **Button 3 (Explore)**, **Button 4 (Inbox)** and **Button 5 (Extra)**.
 
   Each of the first four can be left alone, taken off, or **replaced** with one of the actions
