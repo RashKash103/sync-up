@@ -1,3 +1,5 @@
+## [1.12.0-dev.4](https://github.com/RashKash103/sync-up/compare/v1.12.0-dev.3...v1.12.0-dev.4) (2026-11-13)
+
 ## [1.12.0-dev.3](https://github.com/RashKash103/sync-up/compare/v1.12.0-dev.2...v1.12.0-dev.3) (2026-11-13)
 
 ## [1.12.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.12.0-dev.1...v1.12.0-dev.2) (2026-11-13)
