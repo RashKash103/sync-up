@@ -192,6 +192,21 @@ the setup time, since it turns a CI round trip into a few seconds.
    `dde016e1…b482`, which is what is on the test device.
 5. **A Sync APK** — the supported build, `v23.06.30-13:39`. One is at
    `~/Downloads/sync-revanced/` on this machine.
+
+   **Sign in, or half of what is worth measuring never happens.** Reddit answers the API 401
+   unauthenticated, so the feed is empty, nothing draws, and anything watching a view per frame
+   is being read on a screen that produces a frame or two a second. A build patched with the
+   `AAAAAAAAAAAAAAAAAAAAAA` placeholder from the recipe above **cannot** sign in — the authorize
+   page comes back blank, and the only thing that says why is the WebView's own console line in
+   logcat naming `client_id=AAAA…`. Patch with the real `client-id` and it loads. The account's
+   credentials are in `~/reddit-creds.txt`; **never commit either, and never write the client id
+   into a file in the repository** — pass it on the command line. The fresh account's Frontpage
+   is nearly as quiet as no account at all, so switch it to the All feed.
+
+   Two things about typing them in: `adb shell ime disable` is the wrong move here, because with
+   no enabled keyboard the system puts up its input-method chooser over the form and eats the
+   rest of what is typed. The password field disables suggestions by itself, so leave the
+   keyboard alone and move between the two fields with `KEYCODE_TAB`.
 6. **The emulator comes up locked, and a locked device has no app.** The AVD here carries a
    device lock, so after a cold boot the user is `RUNNING_LOCKED` and credential-encrypted
    storage is shut. In that state Sync's components are not registered at all: `am start`
@@ -519,6 +534,31 @@ the button at `y=2190` is plainly inside it and the button at `1917` is not. The
 shape, not by name — the showing child as wide as its parent, against the bottom of it — so a bar
 sliding away carries its own position with it and the room reappears as it goes, which is what
 lets the surface follow the button down when the bar really has gone.
+
+**A soft keyboard moves the button most of the way up the screen, and the window does not
+shrink.** Opening the search sheet and tapping its field puts Sync's button at `y=1097` on a
+2400 tall screen, from the `1917` it was resting at, and back again when the keyboard goes —
+measured frame by frame. A surface that follows it is a surface stranded in the middle of the
+feed, which is exactly what a reader sees, at about 45% down.
+
+Two readings matter about how to tell. The button's **parent stays 2400 tall throughout**, so
+nothing about the window's own height says a keyboard is up; the coordinator passes the inset
+to its children instead. What does say it is `getRootWindowInsets()`: `883/63`
+(`getSystemWindowInsetBottom()`/`getStableInsetBottom()`) with the keyboard up against `63/63`
+without it, so the difference between what the system is taking now and what it always takes is
+decisive and needs nothing past API 23 — `WindowInsets.Type.ime()` is API 30 and this is offered
+from 23.
+
+**The sheet is read as the bottom bar while it is up**, which moves `noLowerThan` from `1980` to
+`1160`. That is conservative rather than wrong — it only makes the surface stay put more often —
+but it is why the number moves, and it is not the keyboard shrinking anything.
+
+**The emulator cannot finish this one, and the reason is worth knowing.** The search sheet
+covers the whole screen on a phone, so the activity behind stops drawing and only two or three
+pre-draws land while the keyboard is up — short of the four a jump needs before it is followed.
+A fold leaves the feed visible beside the sheet, which supplies the frames. So the half that can
+be measured here is the beginning of the move: the settle counter reaching `settlingAt=1097
+settling=1` where the surface is allowed to follow, and staying at `settling=0` where it is not.
 
 **"Autohide FAB" turned off hides the button, and that is Sync's — but it is ours to put
 right.** Measured with the patch inert — *Show FAB* on, *Autohide FAB* off, no extra actions
