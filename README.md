@@ -393,10 +393,10 @@ decision rather than a default.
   drawn under the name and the icon Sync gives it there. Button 5 is a further button beside
   them, which is *None* until something is chosen for it.
 
-  Only one further button, because Material caps the bottom bar at five items and the rail at
-  seven, and the count includes the items the bar is not drawing — so taking something off does
-  not make room for anything. Replacing needs no room, which is what makes four custom buttons
-  possible on a bar that only fits five.
+  Only one further button, because the bottom bar has room for five and the rail for seven,
+  counted over every item the menu holds rather than over the ones being drawn — so taking
+  something off does not make room for anything. Replacing needs no room, which is what makes
+  four custom buttons possible on a bar that only fits five.
 
   **Button 2 has taken over Sync's own *Show actions*.** That switch is hidden where it stood
   rather than taken out, and follows this row: choosing *Show* turns it on, anything else turns
