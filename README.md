@@ -380,8 +380,10 @@ decision rather than a default.
   with the bottom navigation away while that bar is still on the screen — for a frame or two on a
   refresh or a jump to the top, and for as long as a finger keeps moving on a pull to refresh —
   so the actions are never drawn across a bar that is up, and follow the button down only once
-  the bar has actually gone. Where *Autohide FAB* is turned off and Sync then never shows its
-  button at all, it is shown.
+  the bar has actually gone. A soft keyboard moves Sync's button most of the way up the screen
+  in the same way — opening the search and tapping its field is enough — and the actions stay
+  where they are through that rather than being left stranded in the middle of the feed. Where
+  *Autohide FAB* is turned off and Sync then never shows its button at all, it is shown.
 - <a name="choose-what-the-bottom-bar-shows"></a>**Choose what the bottom bar shows** — The bottom navigation bar carries four items — Posts,
   Actions, Explore and Inbox — and Sync offers a choice about one of them, *Show actions*, kept
   in Experimental and off by default. This replaces that with five rows under
