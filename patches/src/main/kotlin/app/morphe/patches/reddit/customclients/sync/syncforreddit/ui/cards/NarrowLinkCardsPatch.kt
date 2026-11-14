@@ -23,7 +23,7 @@ val narrowLinkCardsPatch = bytecodePatch(
             "title in the width that is left over.",
     default = true,
 ) {
-    category("Feed")
+    category("4. Feed")
 
     dependsOn(sharedExtensionPatch)
 

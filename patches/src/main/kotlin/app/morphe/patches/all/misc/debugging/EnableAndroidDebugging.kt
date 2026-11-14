@@ -9,7 +9,7 @@ internal val enableAndroidDebuggingPatch = resourcePatch(
     description = "Enables Android developer debugging capabilities. Including this patch can slow down the app.",
     default = false
 ) {
-    category("Advanced")
+    category("8. Advanced")
 
     execute {
         document("AndroidManifest.xml").use { document ->

@@ -27,7 +27,7 @@ val revealSpoilersPatch = bytecodePatch(
             "with \"Missing post information\".",
     default = true
 ) {
-    category("Essentials")
+    category("1. Essentials")
 
     dependsOn(sharedExtensionPatch)
 

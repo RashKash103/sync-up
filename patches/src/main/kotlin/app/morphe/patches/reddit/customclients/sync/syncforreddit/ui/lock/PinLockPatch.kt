@@ -114,7 +114,7 @@ val pinLockPatch = bytecodePatch(
             "fingerprint lock.",
     default = true
 ) {
-    category("Privacy")
+    category("7. Privacy")
 
     dependsOn(sharedExtensionPatch, pinLockSettingsPatch)
 

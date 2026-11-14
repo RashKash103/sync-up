@@ -124,7 +124,7 @@ val redirectsPatch = bytecodePatch(
             "Off until it is turned on under Settings > Redirects.",
     default = true,
 ) {
-    category("Media")
+    category("2. Media")
 
     dependsOn(
         sharedExtensionPatch,

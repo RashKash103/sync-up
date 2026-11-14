@@ -21,7 +21,7 @@ val extraFabActionsPatch = bytecodePatch(
     description = "Puts up to four of Sync's own actions beside the feed's floating button.",
     default = true
 ) {
-    category("Interface")
+    category("5. Interface")
 
     dependsOn(sharedExtensionPatch, extraFabActionsSettingsPatch)
 

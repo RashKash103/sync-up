@@ -55,7 +55,7 @@ val swipeBackPatch = bytecodePatch(
             "left black.",
     default = true
 ) {
-    category("Feed")
+    category("4. Feed")
 
     dependsOn(sharedExtensionPatch)
 

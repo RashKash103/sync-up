@@ -87,7 +87,7 @@ val unlockUltraPatch = bytecodePatch(
             "the offers to buy it.",
     default = true,
 ) {
-    category("Essentials")
+    category("1. Essentials")
 
     dependsOn(sharedExtensionPatch, ultraSettingsPatch, interceptHttpRequests)
 

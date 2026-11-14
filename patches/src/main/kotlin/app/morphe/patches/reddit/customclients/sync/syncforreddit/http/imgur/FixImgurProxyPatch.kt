@@ -40,7 +40,7 @@ val fixImgurProxyPatch = bytecodePatch(
             "exists.",
     default = true
 ) {
-    category("Media")
+    category("2. Media")
 
     dependsOn(sharedExtensionPatch, interceptHttpRequests)
 

@@ -25,7 +25,7 @@ val toolbarMenuCrashPatch = bytecodePatch(
             "which closes it on some devices.",
     default = true
 ) {
-    category("Essentials")
+    category("1. Essentials")
 
     dependsOn(sharedExtensionPatch)
 

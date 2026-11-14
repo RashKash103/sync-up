@@ -18,7 +18,7 @@ val redirectGfycatPatch = bytecodePatch(
             "its own proxy for.",
     default = true
 ) {
-    category("Media")
+    category("2. Media")
 
     dependsOn(sharedExtensionPatch, interceptHttpRequests)
 

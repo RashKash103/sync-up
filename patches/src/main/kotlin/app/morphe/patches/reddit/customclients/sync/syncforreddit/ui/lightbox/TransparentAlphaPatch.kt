@@ -30,7 +30,7 @@ val transparentAlphaPatch = bytecodePatch(
             "background behind it rather than as white.",
     default = true
 ) {
-    category("Media")
+    category("2. Media")
 
     dependsOn(sharedExtensionPatch, transparentAlphaSettingsPatch)
 

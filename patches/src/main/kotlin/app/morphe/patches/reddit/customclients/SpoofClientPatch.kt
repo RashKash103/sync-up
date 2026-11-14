@@ -32,7 +32,7 @@ fun spoofClientPatch(
 ) {
     // Named here rather than by the caller, since without this one the app cannot reach Reddit
     // at all whichever client it is built for.
-    category("Essentials")
+    category("1. Essentials")
 
     val clientIdOption = stringOption(
         "client-id",

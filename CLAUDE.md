@@ -1269,14 +1269,21 @@ is in [NOTICE](NOTICE). Two things constrain the code:
 
   | Category | What goes in it |
   | --- | --- |
-  | `Essentials` | Without it the app is broken or cannot reach Reddit at all |
-  | `Media` | Pictures and video: loading them, playing them, drawing them |
-  | `Archives` | Recovers what Reddit or Imgur no longer serves, by asking a third-party archive |
-  | `Feed` | The list of posts itself — what it shows and where it sits |
-  | `Interface` | Sync's own controls: the bars, the buttons, the gestures |
-  | `Text` | The words of a post or comment, and what is done to them |
-  | `Privacy` | Keeps something from being seen or handed out |
-  | `Advanced` | Changes the build rather than the app: cloning, debugging |
+  | `1. Essentials` | Without it the app is broken or cannot reach Reddit at all |
+  | `2. Media` | Pictures and video: loading them, playing them, drawing them |
+  | `3. Archives` | Recovers what Reddit or Imgur no longer serves, by asking a third-party archive |
+  | `4. Feed` | The list of posts itself — what it shows and where it sits |
+  | `5. Interface` | Sync's own controls: the bars, the buttons, the gestures |
+  | `6. Text` | The words of a post or comment, and what is done to them |
+  | `7. Privacy` | Keeps something from being seen or handed out |
+  | `8. Advanced` | Changes the build rather than the app: cloning, debugging |
+
+  **The number is load bearing and is shown to the reader.** The manager sorts the groups by
+  the category string itself — `byCategory.keys.filterNotNull().sortedBy { it.lowercase() }` in
+  `PatchesListShared.kt`, with `title = category` drawn raw — and there is no ordering field, so
+  without the number the groups come out alphabetically and `Advanced` leads the list. A ninth
+  category takes the next number; renumbering to insert one in the middle means touching every
+  patch in the groups below it, so add at the end unless the order really matters.
 
   A patch takes exactly one, so file it under what it is *for* rather than everything it
   touches — *Unblock Imgur* goes in `Media` though it routes through proxies, because what it

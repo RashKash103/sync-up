@@ -18,7 +18,7 @@ val videoGesturesPatch = bytecodePatch(
             "sideways to seek, and drag up or down after a double tap for volume.",
     default = true
 ) {
-    category("Interface")
+    category("5. Interface")
 
     dependsOn(sharedExtensionPatch, videoGestureSettingsPatch)
 

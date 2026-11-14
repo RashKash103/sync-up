@@ -18,7 +18,7 @@ val quoteReplacementsPatch = bytecodePatch(
     description = "Stops a thread failing to load when the text in it contains a dollar sign.",
     default = true
 ) {
-    category("Essentials")
+    category("1. Essentials")
 
     compatibleWith(*SyncForRedditCompatible)
 

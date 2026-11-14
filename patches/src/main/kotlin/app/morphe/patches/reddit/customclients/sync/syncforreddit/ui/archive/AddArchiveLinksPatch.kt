@@ -38,7 +38,7 @@ val addArchiveLinksPatch = bytecodePatch(
             "behind a link.",
     default = true
 ) {
-    category("Archives")
+    category("3. Archives")
 
     dependsOn(sharedExtensionPatch)
 

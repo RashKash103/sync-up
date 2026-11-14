@@ -32,7 +32,7 @@ val subredditBannerPatch = bytecodePatch(
             "on its About page.",
     default = true
 ) {
-    category("Feed")
+    category("4. Feed")
 
     dependsOn(sharedExtensionPatch, interceptHttpRequests, subredditBannerSettingsPatch)
 

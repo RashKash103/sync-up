@@ -24,7 +24,7 @@ val keepSelftextLinksPatch = bytecodePatch(
             "otherwise discards.",
     default = true
 ) {
-    category("Text")
+    category("6. Text")
 
     dependsOn(sharedExtensionPatch)
 

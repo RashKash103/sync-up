@@ -44,7 +44,7 @@ val bottomNavigationItemsPatch = bytecodePatch(
             "rail used in tablet mode as well.",
     default = true,
 ) {
-    category("Interface")
+    category("5. Interface")
 
     dependsOn(sharedExtensionPatch, bottomNavigationItemsSettingsPatch)
 
