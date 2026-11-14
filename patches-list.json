@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.13.0",
+  "version": "1.14.0-dev.1",
   "patches": [
     {
       "name": "Add archive links to menus",
@@ -754,6 +754,33 @@
     {
       "name": "Redirect Gfycat links to RedGifs",
       "description": "Loads Gfycat links from RedGifs, including the autoplaying video Sync asks its own proxy for.",
+      "default": true,
+      "category": "2. Media",
+      "compatiblePackages": [
+        {
+          "packageName": "com.laurencedawson.reddit_sync",
+          "name": "Sync for Reddit",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": null,
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "v23.06.30-13:39",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Repair a gallery Reddit says has failed",
+      "description": "Finds the pictures of a gallery that opens empty because Reddit marked them as failed, by asking i.redd.it for them, and leaves a gallery with nothing wrong untouched.",
       "default": true,
       "category": "2. Media",
       "compatiblePackages": [
