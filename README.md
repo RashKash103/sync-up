@@ -208,6 +208,22 @@ service being asked.
   any other media and plays in Sync's own player. Whether it is drawn is governed by Sync's
   own *Inline image previews* setting.
 
+- <a name="play-a-youtube-video-where-syncs-player-cannot"></a>**Play a YouTube video where Sync's player cannot** — Sync plays YouTube through the
+  YouTube Android Player API, a client library that plays nothing itself: it binds to a
+  service inside the official YouTube app, and Google retired the API and took the service
+  out. So the player cannot start on a current device, and what Sync does about that differs
+  by where the video is. In the sheet a link opens in, the frame is hidden and the video is
+  silently absent. In the full screen player, the library's own offer to get or update the
+  YouTube app appears — which cannot help — and Sync then turns its own YouTube link handling
+  off for good and hands the link to a browser.
+
+  Both of those are failure handlers, which is what makes this safe: it is reached only once
+  the native player has declined, so anyone whose YouTube app still answers keeps the player
+  they had. Where it is reached, YouTube's own embedded player is put up in the space the
+  video was to occupy, which needs no YouTube app, no API key, and no service. The one thing
+  deliberately not reproduced is Sync turning its link handling off, since that setting is how
+  the reader asked for YouTube to open in the app in the first place.
+
 #### Redirects
 
 Imgur refuses whole regions — the United Kingdom among them — and answers a picture with a

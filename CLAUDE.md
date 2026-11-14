@@ -989,6 +989,39 @@ rather than by tapping switches. `run-as` cannot read `/sdcard`, so the file goe
 `/data/local/tmp` with `chmod 644`. Tapping a `SyncCheckBoxPreference`'s switch directly often
 does not register on this emulator; tapping the row's words does.
 
+**YouTube's embedded player refuses a page that has no origin of its own, and that is the whole
+of why it would not play.** Sync's own YouTube player is the retired Android Player API, which
+binds to a service the YouTube app no longer has, so it never starts and a stand-in has to put
+the embed up itself. Four ways of doing that were measured against the same video, and three of
+them answer *This video is unavailable, error 152 - 4*:
+
+| how the page holding the embed is loaded | plays |
+| --- | --- |
+| `loadDataWithBaseURL`, whatever base URL is named | no |
+| the embed itself as the whole document, with or without a `Referer` | no |
+| served by `shouldInterceptRequest` at an address on `youtube.com` | no |
+| served by `shouldInterceptRequest` at an address on any other host | **yes** |
+
+So it is the *origin* that decides, not the host the embed is asked of —
+`youtube-nocookie.com` fails from an opaque origin and the ordinary host plays from a real one.
+A base URL does not give a document an origin: content handed to a WebView is opaque whatever is
+named beside it. Being framed by `youtube.com` itself is refused too, since an embed is built to
+be framed by a third party. The only way to be one in a WebView is to answer for an address
+rather than to hand over a document, and the address needs no owner: `sync-up.invalid` is a
+reserved name that can never resolve, nothing is ever asked of it, and it plays.
+
+`m.youtube.com/watch` plays as well and needs none of this, but it is the whole mobile site —
+masthead, comments, Shorts, recommendations — so it is a fallback rather than a player.
+
+**A WebView draws its own poster over a video that has not started, and it is stretched.** Before
+the first frame arrives the view puts a grey play button over the `<video>` element, scaled to
+whatever shape that element is, so on a full width player it is a wide grey band with a smeared
+ellipse in it — which reads as something being broken rather than as something loading. It cannot
+be turned off, but what is drawn is whatever `WebChromeClient.getDefaultVideoPoster()` hands
+back, so handing back a single transparent pixel takes it away. Measured by capturing thirty
+frames across a cold start, twice each way: ten of thirty frames carried the grey box without the
+override and none did with it — the one grey frame left was the film's own title card.
+
 **Dead endpoints Sync still calls.** Worth knowing before diagnosing a media bug:
 
 - `api.gfycat.com` and `gfycat.com` — DNS no longer resolves at all.
