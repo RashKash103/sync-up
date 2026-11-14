@@ -1,3 +1,9 @@
+## [1.13.0-dev.2](https://github.com/RashKash103/sync-up/compare/v1.13.0-dev.1...v1.13.0-dev.2) (2026-11-14)
+
+### 🐛 Bug Fixes
+
+* Number the patch groups so they are read in the order they matter ([d499859](https://github.com/RashKash103/sync-up/commit/d499859e01899f86ffe94832ae19db1395f1bbdc))
+
 ## [1.13.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.12.0...v1.13.0-dev.1) (2026-11-14)
 
 ### ✨ New Features
