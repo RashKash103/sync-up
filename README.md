@@ -248,6 +248,23 @@ service being asked.
   video was to occupy, which needs no YouTube app, no API key, and no service. The one thing
   deliberately not reproduced is Sync turning its link handling off, since that setting is how
   the reader asked for YouTube to open in the app in the first place.
+- <a name="repair-a-gallery-reddit-says-has-failed"></a>**Repair a gallery Reddit says has failed** — Reddit answers some galleries with nothing
+  but `{"status":"failed"}` for every picture: no address, no size, no preview. Sync does not
+  treat that as an error — it writes an empty address for the picture and carries on — so the
+  gallery opens on a spinner that never stops, which is what a reader sees as a gallery that
+  will not load. The pictures themselves are still served: every one of the six in the gallery
+  this was written for answers at `i.redd.it/<media id>.jpeg`. This asks i.redd.it for each
+  missing picture, trying the format that answered last first, and writes the entry Reddit
+  should have sent.
+
+  A gallery with nothing wrong is handed back untouched and asks nothing of the network, so
+  nothing is slower for it. The looking is bounded — three seconds a request, ten for the whole
+  gallery, and it gives up after two pictures turn out to be genuinely gone — because it happens
+  on the thread the reader is waiting behind. Where no picture can be found, Sync is left with
+  exactly what Reddit sent and shows whatever it would have shown. Credit for finding the cause
+  goes to the [rif patches](https://github.com/MojiRS/revanced-rif-patches), where it was fixed
+  first.
+
 - <a name="keep-transparency-in-a-picture"></a>**Keep transparency in a picture** — The zooming view Sync opens a picture in decodes in a
   format with no alpha channel unless something says otherwise, so everything transparent
   arrived opaque, showing whatever the file was saved over — white, for most. The format to
