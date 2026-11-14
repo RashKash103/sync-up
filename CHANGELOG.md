@@ -1,3 +1,12 @@
+## [1.13.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.12.0...v1.13.0-dev.1) (2026-11-14)
+
+### ✨ New Features
+
+* Clone the Sync app in a way that leaves it able to read its own data ([4f43859](https://github.com/RashKash103/sync-up/commit/4f43859e3636e599d826060bdecbbc8a5964d42e))
+* Play a YouTube video where Sync's player cannot ([e441dc3](https://github.com/RashKash103/sync-up/commit/e441dc33c7e072b4a616ee0a206f40489c6cebb9))
+* Put every patch in a group ([edd2ad8](https://github.com/RashKash103/sync-up/commit/edd2ad8afbdfbbc5072dd61e4736a0dd0328cac3))
+* Stack a link post's picture over its title in columns ([d11e74a](https://github.com/RashKash103/sync-up/commit/d11e74a407d7eed49365159c3a0b80d0f8aa7387))
+
 ## [1.12.0](https://github.com/RashKash103/sync-up/compare/v1.11.0...v1.12.0) (2026-11-13)
 
 ### ✨ New Features

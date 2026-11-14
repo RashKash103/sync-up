@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.12.0](https://github.com/RashKash103/sync-up/releases/tag/v1.12.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;37 patches total
+> **[v1.13.0-dev.1](https://github.com/RashKash103/sync-up/releases/tag/v1.13.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;40 patches total
 <details open>
-<summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;36 patches</summary>
+<summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;39 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -51,6 +51,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Automatically undelete Imgur media](#automatically-undelete-imgur-media) | Loads Imgur images and videos that no longer exist from the Wayback Machine. |  |
 | [Automatically undelete Reddit content](#automatically-undelete-reddit-content) | Restores the text of removed posts and comments, and the names of deleted authors, from Project Arctic Shift. |  |
 | [Choose what the bottom bar shows](#choose-what-the-bottom-bar-shows) | Lets each item on the bottom navigation bar — Posts, Actions, Explore and Inbox — be left alone, taken off, or replaced with one of the actions from Sync's own actions sheet, and adds one further button beside them. Covers the navigation rail used in tablet mode as well. |  |
+| [Clone Sync app](#clone-sync-app) | Changes the app package name so that the app can be installed more than once, with ".morphe" appended to it unless another name is given. Each cloned install needs a package name of its own. Use this rather than the universal "Clone app" patch, which leaves the app unable to read or write anything once its providers are renamed, and select only one of the two. | • Package name<br>• Update permissions<br>• Update providers<br>• App name |
 | [Disable Sync for Lemmy bottom sheet](#disable-sync-for-lemmy-bottom-sheet) | Disables the bottom sheet at the startup that asks you to signup to "Sync for Lemmy". |  |
 | [Disable ads](#disable-ads) | Removes the ads shown between posts. |  |
 | [Fix /s/ links](#fix-s-links) | Opens Reddit's shortened /s/ share links in the app. |  |
@@ -70,6 +71,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Make an address in a post tappable](#make-an-address-in-a-post-tappable) | Draws a bare address in a post's body as a link. |  |
 | [Modify login WebView](#modify-login-webview) | Modify the WebView used for logging into reddit to prevent login issues |  |
 | [More actions on the floating button](#more-actions-on-the-floating-button) | Puts up to four of Sync's own actions beside the feed's floating button. |  |
+| [Play a YouTube video where Sync's player cannot](#play-a-youtube-video-where-sync-s-player-cannot) | Plays the video in a web view when Sync's YouTube player fails to start, which it now always does: the player asks the official YouTube app for a service Google has removed. Covers the player in a link's sheet and the full screen one. |  |
 | [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Loads a post's thumbnail from the Wayback Machine when its Reddit preview has been purged. |  |
 | [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Loads Gfycat links from RedGifs, including the autoplaying video Sync asks its own proxy for. |  |
 | [Show a hidden profile from the archive](#show-a-hidden-profile-from-the-archive) | Fills in a profile from Project Arctic Shift when Reddit answers with nothing. |  |
@@ -78,6 +80,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Show the feed while a post is swiped away](#show-the-feed-while-a-post-is-swiped-away) | Draws the screen behind a post as it is dragged aside, which is otherwise left black. |  |
 | [Show videos posted in comments](#show-videos-posted-in-comments) | Draws a video posted in a comment in the comment, and plays it when tapped. |  |
 | [Spoof client](#spoof-client) | Restores functionality of the app by using custom client ID. | • OAuth client ID<br>• Redirect URI<br>• User agent<br>• Imgur client ID |
+| [Stack a link post's picture over its title in columns](#stack-a-link-post-s-picture-over-its-title-in-columns) | Draws a link post's picture across the top of its card with the title underneath where the feed is in more than one column, instead of beside the title in the width that is left over. |  |
 | [Stop the toolbar menus closing the app](#stop-the-toolbar-menus-closing-the-app) | Keeps Sync open when the sort or overflow button in the toolbar is tapped, which closes it on some devices. |  |
 | [Translate posts and comments](#translate-posts-and-comments) | Translates a post or comment where it sits, on this device, through DeepL, or Google Cloud. |  |
 | [Unblock Imgur](#unblock-imgur) | Loads Imgur pictures, videos, and albums another way where Imgur refuses the region, through DuckDuckGo's image proxy, a Rimgo instance, or a proxy of your own. Off until it is turned on under Settings > Redirects. |  |
