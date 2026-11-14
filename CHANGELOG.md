@@ -1,3 +1,9 @@
+## [1.14.0-dev.1](https://github.com/RashKash103/sync-up/compare/v1.13.0...v1.14.0-dev.1) (2026-11-14)
+
+### ✨ New Features
+
+* Repair a gallery Reddit says has failed ([d4775f9](https://github.com/RashKash103/sync-up/commit/d4775f9c21e47eb0251d9e2db87397aa4a14b936)), closes [#49](https://github.com/RashKash103/sync-up/issues/49)
+
 ## [1.13.0](https://github.com/RashKash103/sync-up/compare/v1.12.0...v1.13.0) (2026-11-14)
 
 ### 🐛 Bug Fixes

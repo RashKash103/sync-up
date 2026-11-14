@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.13.0](https://github.com/RashKash103/sync-up/releases/tag/v1.13.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;40 patches total
+> **[v1.14.0-dev.1](https://github.com/RashKash103/sync-up/releases/tag/v1.14.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;41 patches total
 <details open>
-<summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;39 patches</summary>
+<summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;40 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -74,6 +74,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Play a YouTube video where Sync's player cannot](#play-a-youtube-video-where-sync-s-player-cannot) | Plays the video in a web view when Sync's YouTube player fails to start, which it now always does: the player asks the official YouTube app for a service Google has removed. Covers the player in a link's sheet and the full screen one. |  |
 | [Recover post thumbnails from the archive](#recover-post-thumbnails-from-the-archive) | Loads a post's thumbnail from the Wayback Machine when its Reddit preview has been purged. |  |
 | [Redirect Gfycat links to RedGifs](#redirect-gfycat-links-to-redgifs) | Loads Gfycat links from RedGifs, including the autoplaying video Sync asks its own proxy for. |  |
+| [Repair a gallery Reddit says has failed](#repair-a-gallery-reddit-says-has-failed) | Finds the pictures of a gallery that opens empty because Reddit marked them as failed, by asking i.redd.it for them, and leaves a gallery with nothing wrong untouched. |  |
 | [Show a hidden profile from the archive](#show-a-hidden-profile-from-the-archive) | Fills in a profile from Project Arctic Shift when Reddit answers with nothing. |  |
 | [Show a subreddit's banner on its feed](#show-a-subreddit-s-banner-on-its-feed) | Draws the banner a subreddit sets at the top of its posts, rather than only on its About page. |  |
 | [Show media in a comment where it sits](#show-media-in-a-comment-where-it-sits) | Draws a link in a comment as the picture or video it points at rather than as a chip naming where it goes. |  |
@@ -248,6 +249,23 @@ service being asked.
   video was to occupy, which needs no YouTube app, no API key, and no service. The one thing
   deliberately not reproduced is Sync turning its link handling off, since that setting is how
   the reader asked for YouTube to open in the app in the first place.
+- <a name="repair-a-gallery-reddit-says-has-failed"></a>**Repair a gallery Reddit says has failed** — Reddit answers some galleries with nothing
+  but `{"status":"failed"}` for every picture: no address, no size, no preview. Sync does not
+  treat that as an error — it writes an empty address for the picture and carries on — so the
+  gallery opens on a spinner that never stops, which is what a reader sees as a gallery that
+  will not load. The pictures themselves are still served: every one of the six in the gallery
+  this was written for answers at `i.redd.it/<media id>.jpeg`. This asks i.redd.it for each
+  missing picture, trying the format that answered last first, and writes the entry Reddit
+  should have sent.
+
+  A gallery with nothing wrong is handed back untouched and asks nothing of the network, so
+  nothing is slower for it. The looking is bounded — three seconds a request, ten for the whole
+  gallery, and it gives up after two pictures turn out to be genuinely gone — because it happens
+  on the thread the reader is waiting behind. Where no picture can be found, Sync is left with
+  exactly what Reddit sent and shows whatever it would have shown. Credit for finding the cause
+  goes to the [rif patches](https://github.com/MojiRS/revanced-rif-patches), where it was fixed
+  first.
+
 - <a name="keep-transparency-in-a-picture"></a>**Keep transparency in a picture** — The zooming view Sync opens a picture in decodes in a
   format with no alpha channel unless something says otherwise, so everything transparent
   arrived opaque, showing whatever the file was saved over — white, for most. The format to
