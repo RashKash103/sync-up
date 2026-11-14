@@ -87,6 +87,8 @@ val unlockUltraPatch = bytecodePatch(
             "the offers to buy it.",
     default = true,
 ) {
+    category("Essentials")
+
     dependsOn(sharedExtensionPatch, ultraSettingsPatch, interceptHttpRequests)
 
     compatibleWith(*SyncForRedditCompatible)

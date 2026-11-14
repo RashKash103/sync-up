@@ -23,6 +23,8 @@ fun modifyWebViewPatch(
     description = "Modify the WebView used for logging into reddit to prevent login issues",
     default = true
 ) {
+    category("Essentials")
+
     compatibleWith(*compatible)
 
     dependsOn(

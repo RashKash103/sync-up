@@ -1262,6 +1262,29 @@ is in [NOTICE](NOTICE). Two things constrain the code:
   release that would ship it. A `chore:` commit publishes nothing, so a diagnostic that has to
   reach a device goes on `build(Needs bump):`, which releases a prerelease and is hidden from
   the notes — the scope has to be exactly that for `.releaserc` to match it.
+- **Every patch names a category, and a new one joins an existing group rather than starting
+  its own.** `category("...")` in the patch builder is what the manager groups the list by, and
+  a bundle where some patches are grouped and others are loose reads as a mistake. The eight in
+  use, with what belongs in each:
+
+  | Category | What goes in it |
+  | --- | --- |
+  | `Essentials` | Without it the app is broken or cannot reach Reddit at all |
+  | `Media` | Pictures and video: loading them, playing them, drawing them |
+  | `Archives` | Recovers what Reddit or Imgur no longer serves, by asking a third-party archive |
+  | `Feed` | The list of posts itself — what it shows and where it sits |
+  | `Interface` | Sync's own controls: the bars, the buttons, the gestures |
+  | `Text` | The words of a post or comment, and what is done to them |
+  | `Privacy` | Keeps something from being seen or handed out |
+  | `Advanced` | Changes the build rather than the app: cloning, debugging |
+
+  A patch takes exactly one, so file it under what it is *for* rather than everything it
+  touches — *Unblock Imgur* goes in `Media` though it routes through proxies, because what it
+  does for the reader is make a picture appear. Add a ninth category only where a patch fits
+  none of these, never to give one patch a group of its own. The *What the patches do* section
+  of `README.md` carries the same eight headings, so a patch moved between groups moves in both
+  places.
+
 - **Patch descriptions are one or two sentences of what the patch does.** They are read in the
   manager by someone choosing patches, not by someone maintaining them: no reasoning about why
   the patch exists, no account of what was learnt writing it. The detail — what a patch changes

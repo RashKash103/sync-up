@@ -38,6 +38,8 @@ val youTubePlayerPatch = bytecodePatch(
             "Google has removed. Covers the player in a link's sheet and the full screen one.",
     default = true,
 ) {
+    category("Media")
+
     dependsOn(sharedExtensionPatch)
 
     compatibleWith(*SyncForRedditCompatible)

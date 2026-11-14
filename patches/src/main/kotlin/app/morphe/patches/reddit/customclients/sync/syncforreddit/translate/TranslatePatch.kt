@@ -283,6 +283,8 @@ val translatePatch = bytecodePatch(
             "or Google Cloud.",
     default = true
 ) {
+    category("Text")
+
     dependsOn(
         sharedExtensionPatch,
         translationSettingsPatch,

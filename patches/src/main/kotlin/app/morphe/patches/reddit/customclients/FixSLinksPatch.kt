@@ -15,6 +15,8 @@ fun fixSLinksPatch(
     description = "Opens Reddit's shortened /s/ share links in the app.",
     default = true
 ) {
+    category("Essentials")
+
     dependsOn(extensionPatch)
 
     block()

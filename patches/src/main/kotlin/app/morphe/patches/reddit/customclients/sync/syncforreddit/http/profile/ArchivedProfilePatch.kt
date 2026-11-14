@@ -16,6 +16,8 @@ val archivedProfilePatch = bytecodePatch(
     description = "Fills in a profile from Project Arctic Shift when Reddit answers with nothing.",
     default = true
 ) {
+    category("Archives")
+
     dependsOn(sharedExtensionPatch, interceptHttpRequests)
 
     compatibleWith(*SyncForRedditCompatible)

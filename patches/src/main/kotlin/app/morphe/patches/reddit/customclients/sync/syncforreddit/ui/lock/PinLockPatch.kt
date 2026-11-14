@@ -114,6 +114,8 @@ val pinLockPatch = bytecodePatch(
             "fingerprint lock.",
     default = true
 ) {
+    category("Privacy")
+
     dependsOn(sharedExtensionPatch, pinLockSettingsPatch)
 
     compatibleWith(*SyncForRedditCompatible)

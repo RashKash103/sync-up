@@ -10,6 +10,8 @@ val fixPostThumbnailsPatch = bytecodePatch(
     description = "Fixes loading post thumbnails by correcting their URLs.",
     default = true
 ) {
+    category("Media")
+
 
     compatibleWith(*SyncForRedditCompatible)
 

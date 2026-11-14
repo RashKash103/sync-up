@@ -27,6 +27,8 @@ val revealSpoilersPatch = bytecodePatch(
             "with \"Missing post information\".",
     default = true
 ) {
+    category("Essentials")
+
     dependsOn(sharedExtensionPatch)
 
     compatibleWith(*SyncForRedditCompatible)

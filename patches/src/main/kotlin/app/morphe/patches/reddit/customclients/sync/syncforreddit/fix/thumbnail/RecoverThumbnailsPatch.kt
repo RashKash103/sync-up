@@ -25,6 +25,8 @@ val recoverThumbnailsPatch = bytecodePatch(
             "been purged.",
     default = true
 ) {
+    category("Archives")
+
     dependsOn(sharedExtensionPatch, interceptHttpRequests)
 
     compatibleWith(*SyncForRedditCompatible)

@@ -162,6 +162,8 @@ val cloneAppPatch = resourcePatch(
             "its providers are renamed, and select only one of the two.",
     default = false,
 ) {
+    category("Advanced")
+
     compatibleWith(*SyncForRedditCompatible)
 
     dependsOn(cloneProviderAddressesPatch)

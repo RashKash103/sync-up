@@ -18,6 +18,8 @@ val undeleteRedditPatch = bytecodePatch(
             "authors, from Project Arctic Shift.",
     default = true
 ) {
+    category("Archives")
+
     dependsOn(sharedExtensionPatch, interceptHttpRequests, notesInTheHeaderPatch)
 
     compatibleWith(*SyncForRedditCompatible)

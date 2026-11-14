@@ -40,6 +40,8 @@ val fixImgurProxyPatch = bytecodePatch(
             "exists.",
     default = true
 ) {
+    category("Media")
+
     dependsOn(sharedExtensionPatch, interceptHttpRequests)
 
     compatibleWith(*SyncForRedditCompatible)

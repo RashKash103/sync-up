@@ -55,6 +55,8 @@ val swipeBackPatch = bytecodePatch(
             "left black.",
     default = true
 ) {
+    category("Feed")
+
     dependsOn(sharedExtensionPatch)
 
     compatibleWith(*SyncForRedditCompatible)

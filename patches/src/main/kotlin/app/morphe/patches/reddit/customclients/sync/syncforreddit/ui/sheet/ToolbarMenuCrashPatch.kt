@@ -25,6 +25,8 @@ val toolbarMenuCrashPatch = bytecodePatch(
             "which closes it on some devices.",
     default = true
 ) {
+    category("Essentials")
+
     dependsOn(sharedExtensionPatch)
 
     compatibleWith(*SyncForRedditCompatible)

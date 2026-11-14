@@ -21,6 +21,8 @@ val keepFeedPositionPatch = bytecodePatch(
             "have been cleared out of the cache while you were reading.",
     default = true,
 ) {
+    category("Feed")
+
     dependsOn(sharedExtensionPatch)
 
     compatibleWith(*SyncForRedditCompatible)

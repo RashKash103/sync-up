@@ -21,6 +21,8 @@ val playCommentVideoPatch = bytecodePatch(
     description = "Draws a video posted in a comment in the comment, and plays it when tapped.",
     default = true
 ) {
+    category("Media")
+
     dependsOn(sharedExtensionPatch, interceptHttpRequests)
 
     compatibleWith(*SyncForRedditCompatible)
