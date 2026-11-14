@@ -232,6 +232,50 @@ java -jar morphe-desktop.jar patch \
 gets past it. The result is not a usable app, but patch application is what is being tested.
 Grep the output for `Applied:` and `FAILED`.
 
+### Building a copy to test
+
+**A change is tried in a build of the whole thing before a prerelease goes out**, unless asked
+otherwise. A patch that applies cleanly is not a patch that works, and the only thing that
+settles it is the app running on a device. The emulator here is a phone, and half of what this
+bundle touches behaves differently in tablet mode, so it does not answer everything on its own.
+
+Build it as a **clone**, so it installs beside an existing copy rather than asking to replace
+it. `Clone Sync app` with `.testing` and the name `Sync Testing` is what that means here: the
+package becomes `com.laurencedawson.reddit_sync.testing`, the home screen says *Sync Testing*,
+and the two sit side by side with their own settings and their own account. That also sidesteps
+the signing key: an install can only replace a copy signed with the same key as the build, so a
+copy built anywhere else is refused however the package is named.
+
+Options go in a **file**, not on the command line. `-O` binds to the `-e` that follows it and
+silently reaches nothing where no `-e` follows, which reads exactly like an option that was
+ignored: a run died on `The option clone-package-name requires a value` with the value plainly
+given. Generate the file, fill it in, and pass it:
+
+```sh
+java -jar morphe-desktop.jar options-create -p patches/build/libs/patches-*.mpp \
+  -f com.laurencedawson.reddit_sync -o opts.json
+# set client-id, enable "Clone Sync app", and give it
+#   packageName=com.laurencedawson.reddit_sync.testing, appName=Sync Testing
+java -jar morphe-desktop.jar patch -p patches/build/libs/patches-*.mpp \
+  --options-file opts.json --keystore=$HOME/.android/sync-up/morphe.keystore \
+  -o sync-testing.apk <the Sync APK>
+```
+
+The options file carries the client id, so **keep it outside the repository** — scratch
+directory only, and never committed.
+
+Two things to check before handing the build over, both of which have been wrong here:
+
+- **The patch list.** `grep -c '^INFO: Applied'` and compare against what `list-patches` says is
+  on by default, rather than trusting the run to be silent about a failure.
+- **What is in the dex.** A diagnostic left in, or a stale bundle patched by name, is invisible
+  in the log. `unzip -p out.apk classes*.dex | strings | grep` for the class the change added and
+  for whatever the diagnostic printed.
+
+Where the change is one whose effect can be reasoned about but not seen, compare the dex against
+a build already measured: two builds whose `classes*.dex` hash alike behave alike, which is what
+carried a device measurement across a patch being rewritten.
+
 ### Inspecting the APK
 
 Fingerprints have to be written against real bytecode, never guessed. `androguard` via
