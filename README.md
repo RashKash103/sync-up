@@ -424,6 +424,18 @@ decision rather than a default.
   A row takes effect as it is chosen, without restarting the app. The navigation rail that
   replaces the bar in tablet mode is covered by the same rows; its fifth item, Settings, has none
   and is left alone.
+- <a name="stack-a-link-posts-picture-over-its-title-in-columns"></a>**Stack a link post's picture
+  over its title in columns** — A link post's card in *Cards* view puts its picture in an 80dp
+  square against the right edge and gives the title whatever width is left. At one column that
+  reads well. At two the card is about half the screen, the picture and its margins take a
+  hundred density pixels of it, and the title comes out a word or two to a line — a long thin
+  column of text. This stacks the two instead wherever the feed is drawn in more than one column,
+  the way an image post's card already does: the picture goes across the top and the words have
+  the whole width underneath. One column is left exactly as it was, and the size the picture is
+  fetched at is raised to match, so a thumbnail meant for an 80dp square is not blown up across a
+  card. The navigation rail's tablet mode is covered by the same rule, and the height follows
+  whatever width the column turns out to have, so a rotation or a fold settles it again.
+
 - <a name="keep-transparency-in-a-picture"></a>**Keep transparency in a picture** — The zooming view Sync opens a picture in decodes in a
   format with no alpha channel unless something says otherwise, so everything transparent
   arrived opaque, showing whatever the file was saved over — white, for most. The format to
