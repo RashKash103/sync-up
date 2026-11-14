@@ -595,6 +595,27 @@ decision rather than a default.
 - <a name="enable-android-debugging"></a>**Enable Android debugging** — Inherited from upstream, off by default, and applies to any
   app rather than to Sync alone. It slows the app down and is only useful when debugging it.
 
+- <a name="clone-sync-app"></a>**Clone Sync app** — Off by default. Changes the package name so the app can be installed
+  more than once, with `.morphe` appended unless the `Package name` option says otherwise, and
+  optionally gives the clone a name of its own through `App name` so the two can be told apart on
+  the home screen. Use this rather than the universal `Clone app` patch, and select only one of
+  the two: this one is derived from it and differs in what makes a clone of *this* app actually
+  work.
+
+  Two installed apps may not declare the same content provider, so the second install is simply
+  refused unless the providers are renamed, which is what `Update providers` does. But Sync does
+  not ask Android what its own providers are called: it writes the addresses down as whole
+  strings, seventy-odd of them, every `content://…provider.RedditProvider/…` it reads or writes a
+  post through plus the file provider a shared picture goes to. Renaming the providers and
+  leaving those alone points the whole app at something that is not installed, and the app comes
+  up unable to read or write anything — measured as `Failed to find provider info` with
+  `IllegalArgumentException: Unknown URI` behind it. This patch rewrites those strings to match,
+  so the two halves agree and `Update providers` can be left on.
+
+  With `Update providers` off the app's code is left untouched, byte for byte, and the clone is
+  the same as one made by any other clone patch: installable only where nothing else already
+  holds Sync's provider.
+
 ## 🚀 Getting started
 
 1. Install [Morphe Manager](https://morphe.software/) and switch it to advanced/expert mode.
