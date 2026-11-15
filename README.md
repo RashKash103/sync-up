@@ -211,6 +211,15 @@ service being asked.
   captured while Imgur still rendered the list into the page can be recovered.
 - <a name="fix-post-thumbnails"></a>**Fix post thumbnails** — Corrects the thumbnail URLs Sync builds.
 - <a name="fix-video-downloads"></a>**Fix video downloads** — Corrects Sync's MPD parser, which saved only the audio track.
+- <a name="fix-the-video-position-bar-falling-behind"></a>**Fix the video position bar falling behind** — The bar under a video stops where it is
+  while the video plays on and the clock beside it keeps counting, then jumps to catch up
+  the seconds it sat out — a touch anywhere brings it back sooner. The viewer asks for a new
+  position about thirty times a second, and from Android 7 it asks for the move to be
+  animated; each ask replaces the animation the one before it started, so where they are
+  replaced faster than they are drawn, none of them moves the bar at all. The position is
+  written straight to the bar instead, which is what Sync already does on Android 6 and
+  below. Measured on a two and a half minute video: the bar sat still for up to two seconds
+  at a time before, and not once after.
 - <a name="show-media-in-a-comment-where-it-sits"></a>**Show media in a comment where it sits** — Sync draws a link in a comment inline only
   where the address ends in one of five extensions or names one of a handful of services;
   everything else becomes a chip naming where it goes. This widens that to everything Sync
