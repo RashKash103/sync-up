@@ -329,6 +329,9 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
                     Logger.printDebug(() -> "banner: the feed is back; strip shown again");
                 }
                 View list = listIn((ViewGroup) feed);
+                if (list != null) {
+                    keepRoom((ViewGroup) feed, list);
+                }
                 int gone = list == null ? -1 : scrolledBy(list);
                 if (gone >= 0) {
                     strip.setTranslationY(-gone);
@@ -352,6 +355,9 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
 
     /** How many times the offset is worth writing down before the point is made. */
     private static int said2;
+
+    /** The same, for the room the posts are given. */
+    private static int said3;
 
     /** @return How far the list has scrolled, or -1 where it will not say. */
     private static int scrolledBy(View list) {
@@ -381,6 +387,30 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
     private static int height(ViewGroup holder) {
         return (int) (HEIGHT_DP
                 * holder.getContext().getResources().getDisplayMetrics().density);
+    }
+
+    /**
+     * Makes sure the posts are still starting below the strip, every time the screen is drawn.
+     *
+     * <p>Where the room is asked for once, it only has to be taken away once for the first post
+     * to be left under the banner for good, and the app sets that padding itself for its own
+     * reasons — on a fold, on an inset arriving, on the feed being laid out again. Asking again
+     * each frame costs a comparison and settles it whoever wrote last.
+     *
+     * <p>Only ever more room, never less: where the app wants the posts further down than the
+     * strip needs, that is its business and it is left alone.
+     */
+    private static void keepRoom(ViewGroup feed, View list) {
+        int room = height(feed) + gap(feed);
+        if (list.getPaddingTop() >= room) {
+            return;
+        }
+        if (said3 < 5) {
+            said3++;
+            Logger.printDebug(() -> "banner: the posts had come back up to " + list.getPaddingTop()
+                    + "; putting them down to " + room);
+        }
+        makeRoom(feed, room);
     }
 
     /**
