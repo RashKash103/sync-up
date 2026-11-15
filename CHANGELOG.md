@@ -1,3 +1,9 @@
+## [1.14.1](https://github.com/RashKash103/sync-up/compare/v1.14.0...v1.14.1) (2026-11-15)
+
+### 🐛 Bug Fixes
+
+* Stop the video position bar falling behind ([0a6d9c8](https://github.com/RashKash103/sync-up/commit/0a6d9c862b06da5b375b5908bcc7c4d98f039bfb))
+
 ## [1.14.1-dev.1](https://github.com/RashKash103/sync-up/compare/v1.14.0...v1.14.1-dev.1) (2026-11-15)
 
 ### 🐛 Bug Fixes
