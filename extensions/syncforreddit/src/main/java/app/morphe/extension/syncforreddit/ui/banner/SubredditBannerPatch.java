@@ -196,6 +196,11 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
         }
 
         strip.setTag(WHOSE, subreddit);
+        // Which feed the strip is standing above, so it can be told to go when that feed is no
+        // longer the one on the screen. Written every time, since the posts are given a new view
+        // whenever the app rebuilds them.
+        strip.setTag(FEED, feed);
+        followTheList(strip);
 
         final ImageView showing = strip;
         Bitmap picture = SubredditBanners.bannerFor(subreddit,
@@ -227,7 +232,6 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
             showing.setClickable(true);
             showing.setOnClickListener(view -> open(view, link));
         }
-        followTheList(feed, showing);
         Logger.printDebug(() -> "banner: drawn for r/" + subreddit);
     }
 
@@ -250,17 +254,24 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
     }
 
     /**
-     * Moves the banner up with the posts, so it scrolls off rather than standing at the top.
+     * Keeps the strip with the feed it belongs to: moving up as the posts scroll, so it scrolls
+     * off rather than standing at the top, and going entirely while the posts are not what the
+     * screen is showing.
+     *
+     * <p>The strip is not in the feed's own view. That view is a refresh layout, which lays out
+     * its list and nothing else, so the strip goes in the container the feed sits in — which the
+     * app also puts the inbox in, hiding the posts rather than taking them away. Everything in
+     * that container therefore stays on the screen when the reader leaves the feed, and a strip
+     * that is not told to go hangs over whatever arrives next.
+     *
+     * <p>Which feed to ask is read from the strip rather than held here, because the posts are
+     * given a new view whenever the app rebuilds them and the listener is only ever added once.
      *
      * <p>How far the list has gone is asked of it by a name the framework gave it, which
      * minifying cannot rename; the name Sync's own androidx would use for a listener can be, and
      * asking for one of those is what would fail without a word.
      */
-    private static void followTheList(ViewGroup feed, View strip) {
-        View list = listIn(feed);
-        if (list == null) {
-            return;
-        }
+    private static void followTheList(ImageView strip) {
         if (Boolean.TRUE.equals(strip.getTag(FOLLOWING))) {
             return;
         }
@@ -268,7 +279,25 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
 
         strip.getViewTreeObserver().addOnPreDrawListener(() -> {
             try {
-                int gone = scrolledBy(list);
+                Object feed = strip.getTag(FEED);
+                boolean belongs = feed instanceof ViewGroup && ((View) feed).isShown()
+                        && strip.getDrawable() != null;
+                if (!belongs) {
+                    // Not laid out away, merely not drawn: a view goes between shown and unshown
+                    // on every change of tab, and asking for the container to be laid out again
+                    // from inside a draw is both more than is needed and poor manners.
+                    if (strip.getVisibility() != View.INVISIBLE) {
+                        strip.setVisibility(View.INVISIBLE);
+                        Logger.printDebug(() -> "banner: the feed is not the screen; strip away");
+                    }
+                    return true;
+                }
+                if (strip.getVisibility() != View.VISIBLE) {
+                    strip.setVisibility(View.VISIBLE);
+                    Logger.printDebug(() -> "banner: the feed is back; strip shown again");
+                }
+                View list = listIn((ViewGroup) feed);
+                int gone = list == null ? -1 : scrolledBy(list);
                 if (gone >= 0) {
                     strip.setTranslationY(-gone);
                 }
@@ -285,6 +314,9 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
 
     /** Which subreddit the strip is currently showing. */
     private static final int WHOSE = 0x7E000002;
+
+    /** The feed the strip is standing above, which is not what it is a child of. */
+    private static final int FEED = 0x7E000003;
 
     /** How many times the offset is worth writing down before the point is made. */
     private static int said2;
