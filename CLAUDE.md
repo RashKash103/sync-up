@@ -542,6 +542,34 @@ list lands rather than racing a restore) and `g2()` findFirstVisibleItemPosition
 offset and from-end flag. Sync's own `PostsRecyclerView.h2()` already answers
 findFirstVisibleItemPosition across all three of its `Custom*LayoutManager`s.
 
+**The video viewer's position bar is animated, and the animation is what makes it stall.**
+`ImageViewerFragment.L4()` is the one place the clock and the bar are written, driven by a
+runnable that reposts itself every 30ms and never stops while the viewer is open — Sync's own
+`isVideoPlaying()` answers whether there is a player at all, so the loop's own guard is always
+true. `L4` writes the clock with `setText` and then, from API 24, moves the bar with
+`SeekBar.setProgress(int, true)`; below 24 it calls the plain `setProgress(int)` a few
+instructions further down. The animated form hands the move to an 80ms `ObjectAnimator` with
+`setAutoCancel(true)`, so each of the thirty asks a second replaces the animator the one before
+it started. Where they are replaced faster than they are given a frame to run in, none of them
+ever writes anything: the bar sits still while the clock counts on, then jumps the whole way
+when one survives. Measured here on a 2:35 video — the thumb's centroid held at exactly 367.00
+for 2.0s and then moved 13px in one step, which is precisely the motion it had missed.
+
+Two things about diagnosing it. **The clock advancing while the bar does not is not enough to
+blame `D0`**, the fragment's "the reader is dragging the bar" flag and `L4`'s only gate: a real
+stuck drag freezes the clock too, because `onStartTrackingTouch` pauses the video, and that was
+measured before it was ruled out. And **`adb shell input` cancels whatever stream is already in
+flight**, so a drag left deliberately unfinished cannot be held across a later injected tap —
+which is also why a touch anywhere repairs the bar on a device.
+
+What answers it is the thumb's **centroid**, read sub-pixel from `screenrecord` frames rather
+than from screenshots: `screencap` costs 5-10s a go here, far too coarse for a stall of a
+second or two, while `ffmpeg -vf "fps=5,crop=..."` over a recording gives both the bar and the
+clock on the same timeline for the price of one run. The rightmost bright pixel quantises
+badly; the intensity-weighted centroid of the thumb's own row does not. Do not try to settle
+it by turning `animator_duration_scale` down — a scale of 0 still waits for one animation
+frame, so the stall survives it and only the catch-up changes.
+
 **The floating button's place jumps about on its own, and anything standing in for it inherits
 that.** On a refresh, on a jump to the top and on taking the *Restore position* offer, Sync lays
 the button out at the place it sits when the bottom bar is away — `y=2190` on a 2400 tall screen,

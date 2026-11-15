@@ -35,9 +35,9 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.14.0](https://github.com/RashKash103/sync-up/releases/tag/v1.14.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;41 patches total
+> **[v1.14.1-dev.1](https://github.com/RashKash103/sync-up/releases/tag/v1.14.1-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;42 patches total
 <details open>
-<summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;40 patches</summary>
+<summary>📦 Sync for Reddit&nbsp;&nbsp;•&nbsp;&nbsp;41 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -61,6 +61,7 @@ Add this patch source to Morphe Manager: https://morphe.software/add-source?gith
 | [Fix opening albums](#fix-opening-albums) | Looks a post up through Reddit's thread endpoint instead of the one Reddit stopped answering, which is what an album is opened by. |  |
 | [Fix post thumbnails](#fix-post-thumbnails) | Fixes loading post thumbnails by correcting their URLs. |  |
 | [Fix revealing spoilers](#fix-revealing-spoilers) | Opens a spoiler where it sits when it is tapped, which Sync otherwise answers with "Missing post information". |  |
+| [Fix the video position bar falling behind](#fix-the-video-position-bar-falling-behind) | Moves the position bar under a video straight to where the video has reached, instead of animating it there. The animation can be left unfinished for seconds at a time, which leaves the bar sitting still while the video plays on. |  |
 | [Fix video downloads](#fix-video-downloads) | Fixes a bug in Sync's MPD parser resulting in only the audio-track being saved. |  |
 | [Gestures for the video player](#gestures-for-the-video-player) | Double tap a video or GIF to play or pause it rather than zoom, drag sideways to seek, and drag up or down after a double tap for volume. |  |
 | [Keep the links in the text of a post](#keep-the-links-in-the-text-of-a-post) | Keeps the formatting and links in the body shown under a post, which Sync otherwise discards. |  |
@@ -211,6 +212,15 @@ service being asked.
   captured while Imgur still rendered the list into the page can be recovered.
 - <a name="fix-post-thumbnails"></a>**Fix post thumbnails** — Corrects the thumbnail URLs Sync builds.
 - <a name="fix-video-downloads"></a>**Fix video downloads** — Corrects Sync's MPD parser, which saved only the audio track.
+- <a name="fix-the-video-position-bar-falling-behind"></a>**Fix the video position bar falling behind** — The bar under a video stops where it is
+  while the video plays on and the clock beside it keeps counting, then jumps to catch up
+  the seconds it sat out — a touch anywhere brings it back sooner. The viewer asks for a new
+  position about thirty times a second, and from Android 7 it asks for the move to be
+  animated; each ask replaces the animation the one before it started, so where they are
+  replaced faster than they are drawn, none of them moves the bar at all. The position is
+  written straight to the bar instead, which is what Sync already does on Android 6 and
+  below. Measured on a two and a half minute video: the bar sat still for up to two seconds
+  at a time before, and not once after.
 - <a name="show-media-in-a-comment-where-it-sits"></a>**Show media in a comment where it sits** — Sync draws a link in a comment inline only
   where the address ends in one of five extensions or names one of a handful of services;
   everything else becomes a chip naming where it goes. This widens that to everything Sync
