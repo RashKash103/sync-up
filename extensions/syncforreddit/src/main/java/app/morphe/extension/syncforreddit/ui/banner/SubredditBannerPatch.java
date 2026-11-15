@@ -148,7 +148,52 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
         return new SubredditBannerPatch().isPatchIncluded();
     }
 
+    /**
+     * Every feed a strip has been put above, weakly, so that whatever is told later reaches the
+     * one on the screen.
+     *
+     * <p>Opening a subreddit in a new window leaves two of them, and a window the reader has gone
+     * back from is still there with its own strip above its own posts. Only the main thread
+     * touches this.
+     */
+    private static final java.util.Map<ViewGroup, Boolean> FEEDS = new java.util.WeakHashMap<>();
+
+    /** Where to put work that has to happen where views can be touched. */
+    private static final android.os.Handler MAIN =
+            new android.os.Handler(android.os.Looper.getMainLooper());
+
+    /**
+     * What is run when something is learnt about a subreddit: every feed on the screen is drawn
+     * again.
+     *
+     * <p>It is one unchanging object on purpose. What learns the banners keeps a single thing to
+     * tell, so a second window registering its own would be the only one ever told again — which
+     * is precisely what left a subreddit opened by a tap with no banner while the same subreddit
+     * opened in a new window had one. Which subreddit a feed is about is asked afresh here rather
+     * than remembered, since by now the screen may be showing another.
+     */
+    private static final Runnable LOOK_AGAIN = () -> MAIN.post(() -> {
+        String subreddit = SubredditBanners.showing();
+        if (subreddit == null) {
+            return;
+        }
+        for (ViewGroup feed : new java.util.ArrayList<>(FEEDS.keySet())) {
+            // A feed that is not on the screen is left with what it had: it belongs to a window
+            // the reader has gone back from, which is about its own subreddit, not this one.
+            if (feed == null || !feed.isShown()) {
+                continue;
+            }
+            try {
+                draw(feed, subreddit);
+            } catch (Throwable ex) {
+                Logger.printInfo(() -> "banner: could not be drawn again: " + ex);
+            }
+        }
+    });
+
     private static void draw(ViewGroup feed, String subreddit) {
+        FEEDS.put(feed, Boolean.TRUE);
+
         ViewGroup holder = feed.getParent() instanceof ViewGroup
                 ? (ViewGroup) feed.getParent() : null;
         if (holder == null) {
@@ -203,20 +248,7 @@ public class SubredditBannerPatch extends PatchedditInterceptor {
         followTheList(strip);
 
         final ImageView showing = strip;
-        Bitmap picture = SubredditBanners.bannerFor(subreddit,
-                () -> showing.post(() -> {
-                    try {
-                        // Asked again rather than taken from here: by the time this runs the
-                        // window may be showing something else, and drawing what it was showing
-                        // when the strip went up is how the last subreddit's banner stayed.
-                        String nowShowing = SubredditBanners.showing();
-                        if (nowShowing != null) {
-                            draw(feed, nowShowing);
-                        }
-                    } catch (Throwable ex) {
-                        Logger.printInfo(() -> "banner: could not be drawn: " + ex);
-                    }
-                }));
+        Bitmap picture = SubredditBanners.bannerFor(subreddit, LOOK_AGAIN);
         if (picture == null) {
             Logger.printDebug(() -> "banner: nothing to draw for r/" + subreddit + " yet");
             makeRoom(feed, 0);
