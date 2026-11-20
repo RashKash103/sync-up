@@ -1167,6 +1167,17 @@ override and none did with it — the one grey frame left was the film's own tit
 - `67.205.181.214` — a house ad loaded into a WebView when AdMob fails. Dead, and unreachable
   anyway once `Disable ads` is applied.
 
+**Searching subreddits empties out under a burst, and that is Reddit's.** `/subreddits/search.json`
+answers 200 with a 122 character listing holding no children once it has been asked a few times
+in quick succession, which Sync draws as the search's own title over *This sub has no posts*. It
+looks exactly like a search that is broken, and it is not: the suggestions underneath the search
+field come from `/api/search_subreddits`, which goes on answering normally throughout, so the
+account and the connection are plainly fine. Measured here — two queries answered with 250 KB,
+every query after that with 122 bytes for several minutes including across a one minute pause,
+then 211 KB and 250 KB again with nothing changed. Nothing of ours touches it: the undelete
+interceptor passes a listing it has not changed straight through, and its log line says how many
+characters came off the wire. Wait it out rather than looking for a patch to blame.
+
 **Not dead, despite appearances.** Checked and working, so do not "fix" them:
 
 - `todo.syncforreddit.com` — serves the launcher icons, `licenses.html`, and the translate
