@@ -503,6 +503,22 @@ view it was added through is not being drawn. Which feed to ask is kept on the s
 captured in the listener: the posts are given a new view whenever the app rebuilds them, and a
 listener holding the old one leaves the strip hidden for good.
 
+**A subreddit opened in a new window leaves the old feed drawing, so "on the screen" does not
+mean "being looked at".** Holding a subreddit in the search panel starts `CasualActivity` over
+`MainActivity`, and Sync makes it translucent for its own swipe-back — `SwipeBack: setTranslucent(true)
+answered true` in the log — so the activity underneath is never stopped and its feed answers
+`isShown()` with true throughout. Anything of ours that walks every feed on the screen therefore
+reaches both windows at once: the banner was kept as one value for the app, and opening r/pics in
+a new window drew r/pics over the r/all the reader had left behind, where it was found on going
+back and scrolling to the top. The tell in the log is `banner: drawn for r/pics` twice in the same
+millisecond, one per window.
+
+What a feed is about is therefore kept **per window** — the activity the view belongs to, found by
+unwrapping the view's context, held weakly — and the strip is only ever drawn with what its own
+window is showing. `PostsFab.Q(I, String)` is handed the button as well as the name for exactly
+this reason: the button says which window settled it. Reading `hasWindowFocus()` instead would not
+do, since the announcement arrives while the window being opened has not taken focus yet.
+
 **The posts list's top padding belongs to Sync, and it takes it back.** The banner is drawn in
 a strip over the feed and the posts are started below it by padding the list, which is fine
 until the app writes that padding itself — *Slides* does, setting 21px on a 420dpi screen, and
