@@ -1,4 +1,4 @@
-## [1.14.3-dev.1](https://github.com/RashKash103/sync-up/compare/v1.14.2...v1.14.3-dev.1) (2026-11-22)
+## [1.14.3](https://github.com/RashKash103/sync-up/compare/v1.14.2...v1.14.3) (2026-11-22)
 
 ### 🐛 Bug Fixes
 
